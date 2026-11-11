@@ -934,6 +934,31 @@ function roadFor(r,c){
     return inb(r-d[0],c-d[1])?['end',ro]:['straight',(n||so)?1:0]} // route qui s'arrête : bout arrondi sauf si elle sort du plateau
   return ['dot',0];
 }
+function plazaSprite(mask,vr){
+  const key='P'+mask+'_'+vr;if(ROADS[key])return ROADS[key];
+  const cv=cvs(32,32),g=cv.getContext('2d'),im=g.createImageData(32,32),d=im.data,hx=h=>hex2rgb(h);
+  const OUT=hx('#1a0f2a'),CL=hx('#c4bed6'),CD=hx('#6a6480'),CM=hx('#8f89a6'),A0=hx('#2b2733'),A1=hx('#35303f'),A2=hx('#221e2b'),CR=hx('#120c1c'),GV=hx('#2f6b3c'),RB=hx('#5a5470');
+  const put=(x,y,c)=>{if(x<0||y<0||x>31||y>31)return;const i=(y*32+x)*4;d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2];d[i+3]=255};
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){
+    const px=x+.5,py=y+.5;let dk=99,lit=false;
+    if(mask&1){if(py<dk){dk=py;lit=false}}   // nord bloqué
+    if(mask&2){if(32-px<dk){dk=32-px;lit=true}} // est
+    if(mask&4){if(32-py<dk){dk=32-py;lit=true}} // sud
+    if(mask&8){if(px<dk){dk=px;lit=false}}   // ouest
+    let c;
+    if(dk<1)c=OUT;else if(dk<3)c=lit?CM:CL;else if(dk<4)c=lit?CD:CM;
+    else{c=A0;const q=rh(x,y,vr+9);if(q<70)c=A1;else if(q<95)c=A2;if(dk<5&&!lit)c=A2}
+    put(x,y,c)}
+  if(vr){const seed=vr*13+mask;
+    const asph=(x,y)=>{const i=(y*32+x)*4;return x>=0&&y>=0&&x<32&&y<32&&d[i]<=60&&d[i+1]<=52};
+    const crack=(x,y,n)=>{for(let k=0;k<n;k++){if(asph(x,y))put(x,y,CR);const q=rh(x,y,seed+k);x+=q%3-1;y+=(q>>1)%2?1:0;if(q%5===0)x+=1}};
+    if(vr===1){for(let n=0;n<2;n++){const q=rh(n,seed,5);crack(6+q%20,4+(q>>3)%24,10+q%8)}}
+    else{const cx=10+rh(1,seed,2)%12,cy=10+rh(2,seed,2)%12;
+      for(let y=cy-3;y<=cy+3;y++)for(let x=cx-4;x<=cx+4;x++){const e=((x-cx)/4)**2+((y-cy)/2.8)**2;if(e<=1&&asph(x,y))put(x,y,CR);else if(e<=1.4&&e>1&&asph(x,y))put(x,y,RB)}
+      for(let n=0;n<3;n++){const q=rh(n,seed,21),x=4+q%24,y=4+(q>>5)%24;if(asph(x,y)){put(x,y,GV);put(x,y-1,GV)}}
+      crack(cx+3,cy+1,8)}}
+  g.putImageData(im,0,0);return ROADS[key]=cv;
+}
 function ensureGround(){
   const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|');
   if(key===groundKey&&groundCv)return;groundKey=key;
@@ -941,7 +966,10 @@ function ensureGround(){
   const idd=oc.getImageData(0,0,PX,PX),d=idd.data;
   for(let i=0;i<d.length;i+=4){const c=quantG(d[i],d[i+1],d[i+2]);d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2]}
   oc.putImageData(idd,0,0);oc.imageSmoothingEnabled=false;
-  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c]){const [t,rot]=roadFor(r,c);{const hv=rh(r,c,77)%100;oc.drawImage(roadSprite(t,rot,hv<50?0:hv<78?1:2),c*C,r*C)}}
+  const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c]){const hv=rh(r,c,77)%100,vr=hv<50?0:hv<78?1:2;
+    if(pz(r,c)){const ob=(y,x)=>inb(y,x)&&!em(y,x)&&!pz(y,x);const mk=(ob(r-1,c)?1:0)|(ob(r,c+1)?2:0)|(ob(r+1,c)?4:0)|(ob(r,c-1)?8:0);oc.drawImage(plazaSprite(mk,vr),c*C,r*C)}
+    else{const [t,rot]=roadFor(r,c);oc.drawImage(roadSprite(t,rot,vr),c*C,r*C)}}
 }
 const GPAL=['#2c2838','#383247','#454056','#50496a','#5a5470','#6a647c','#7a748c','#9a94a8','#2f6b3c','#58c46a','#0e0b14','#14101c','#1b1722','#2b2733','#3a3545','#4a4458','#5a546a','#8a8498','#f4efe4','#d8b840'].map(hex2rgb);
 function quantG(r,g,b){let best=0,bd=1e9;for(let i=0;i<GPAL.length;i++){const p=GPAL[i],d=(p[0]-r)*(p[0]-r)+(p[1]-g)*(p[1]-g)+(p[2]-b)*(p[2]-b);if(d<bd){bd=d;best=i}}return GPAL[best]}
