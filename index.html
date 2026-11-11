@@ -976,16 +976,28 @@ let mStep=0,mTimer=null;
   ['touchend','click','pointerup','keydown'].forEach(ev=>document.addEventListener(ev,unlock,{passive:true}));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AU.ctx&&AU.ctx.state!=='running')AU.ctx.resume().catch(()=>{})});
 })();
+const PROGS=[[57,53,48,55],[57,60,55,52],[53,48,55,57],[57,55,53,52],[50,57,53,55],[57,53,55,60]];
+const MSC=[0,3,5,7,10,12,15,17];
+function sr(n){n=Math.imul(n^0x9e3779b9,0x85ebca6b);n^=n>>>13;n=Math.imul(n,0xc2b2ae35);return((n^(n>>>16))>>>0)/4294967296}
 function musicStart(){
   if(mTimer)return;
   mTimer=setInterval(()=>{
     if(!AU.on||!AU.ctx||document.hidden)return;
-    const s=mStep++%64,b=s%16;
-    tone(midi(BASS[b]),.15,'sawtooth',.035);
+    const st=mStep++,b=st%16,bar=Math.floor(st/16),ph=Math.floor(bar/4),sec=Math.floor(ph/2);
+    const prog=PROGS[(sec*5+Math.floor(sr(sec)*3))%PROGS.length],root=prog[bar%4]-12;
+    const bp=sec%3;
+    const bassOn=bp===0?[0,3,6,8,11,14]:bp===1?[0,4,8,12,14]:[0,2,4,6,8,10,12,14];
+    if(bassOn.includes(b))tone(midi(root+(b===8||b===14?7:0)),.15,'sawtooth',.035);
     if(b%4===0)tone(120,.13,'sine',.09,-80);
     if(b%8===4)tone(900,.05,'square',.012,-500);
-    const r=ROOT[Math.floor(s/16)%4];
-    tone(midi(r+[0,3,7,12][b%4]+12),.1,'square',.012);
+    if(sec%2===1&&b%2===1)tone(7000,.02,'square',.006);
+    const arp=sec%2?[0,7,12,7]:[0,3,7,12];
+    tone(midi(root+24+arp[b%4]),.1,'square',.011);
+    if(bar%8>=2&&(b%2===0||sr(st+sec*77)<.2)&&sr(ph*131+b)<.62){
+      const k=Math.floor(sr(ph*17+b*3+(sec%2?5:0))*MSC.length);
+      tone(midi(root+36+MSC[k]),.18,'triangle',.03);
+    }
+    if(b===0&&bar%16===15)tone(midi(root+48),.4,'triangle',.02);
   },140);
 }
 const sfx={
@@ -1456,12 +1468,12 @@ function openShop(){
   if(!G||G.busy||G.over)return;
   G.armed=false;G.swapA=null;G.sel=null;
   const res=G.res!=null;
-  showModal(`<h2>LE MARCHAND</h2><p style="text-align:center">Vous avez <span class="coin"></span> <b style="color:#ffd84a">${G.coins}</b> pièces.${res?'<br><span style="color:#ff7a8a">Réserve pleine : libérez-la pour acheter une pièce.</span>':'<br>Les pièces achetées vont en réserve.'}</p>
-  <div class="mrow" style="gap:6px">${SHOP.map((it,i)=>`<button class="btn cy shopi" data-a="${i}" ${G.coins<it.p||(it.t>0&&res)||(it.t===0&&G.pcd===0)||(it.t<0&&!G.undo)?'disabled':''}><canvas width="64" height="64" data-t="${it.t}"></canvas><div><div class="t" style="font-size:10px">${it.n.toUpperCase()}</div><div style="font-family:VT323;font-size:17px;line-height:1">${it.d}</div></div><span class="p">${it.p}</span></button>`).join('')}
+  showModal(`<h2>LE MARCHAND</h2><p style="text-align:center">Vous avez <span class="coin"></span> <b style="color:#ffd84a">${G.coins}</b> pièces.${res?'<br><span style="color:#ff7a8a">Réserve pleine : la pièce achetée remplacera la pièce en main.</span>':'<br>Les pièces achetées vont en réserve.'}</p>
+  <div class="mrow" style="gap:6px">${SHOP.map((it,i)=>`<button class="btn cy shopi" data-a="${i}" ${G.coins<it.p||(it.t===0&&G.pcd===0)||(it.t<0&&!G.undo)?'disabled':''}><canvas width="64" height="64" data-t="${it.t}"></canvas><div><div class="t" style="font-size:10px">${it.n.toUpperCase()}</div><div style="font-family:VT323;font-size:17px;line-height:1">${it.d}</div></div><span class="p">${it.p}</span></button>`).join('')}
   <button class="btn" data-a="x">FERMER</button></div>`,a=>{
     if(a==='x'){hideModal();return}
     const it=SHOP[+a];if(!it||G.coins<it.p)return;
-    G.coins-=it.p;if(it.t>0)G.res=it.t;else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
+    G.coins-=it.p;if(it.t>0){if(G.res==null)G.res=it.t;else G.cur=it.t}else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
     sfx.place();updateHud();openShop();
   });
   $('mbox').querySelectorAll('canvas[data-t]').forEach(cv=>{const t=+cv.dataset.t;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;if(t>0)g.drawImage(spriteCanvas(t,0,0),0,0,64,64);else if(t===0)drawHeroTo(cv,G.hero);else{g.fillStyle='#6a6a58';g.font='bold 44px sans-serif';g.textAlign='center';g.fillText('↶',32,46)}});
