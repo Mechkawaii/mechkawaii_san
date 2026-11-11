@@ -4,7 +4,7 @@
   "description": "Jeu de fusion en pixel art dans l'univers Mechkawaii.",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0c0a14",
   "theme_color": "#0c0a14",
