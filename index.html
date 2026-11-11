@@ -215,18 +215,18 @@ const hIdx=id=>HIDS.indexOf(id);
 const UNLOCK={duke:0,khurt:1,faline:2,rasmus:3,rhoney:4};
 const isOpen=id=>UNLOCK[id]===undefined||!!save.done[UNLOCK[id]];
 const SECTORS=[
- {name:'Périphérie Est',pro:2,free:0,make:[2,8],rate:.03,map:["##....","##....","#.....","....##","...###","....##"],
+ {name:'Périphérie Est',pro:1,free:0,make:[2,8],rate:.03,map:["##....","##....","#.....","....##","...###","....##"],
   intro:"Ici le général Sheepard. Les Prodromes tiennent la périphérie. Bâtissez huit panneaux solaires pour établir la ligne."},
- {name:'Zone industrielle',pro:3,free:0,make:[4,2],rate:.04,map:["#....#","##..##","#....#","#....#","##..##","#....#"],
+ {name:'Zone industrielle',pro:1,free:0,make:[4,2],rate:.04,map:["#....#","##..##","#....#","#....#","##..##","#....#"],
   intro:"Zone industrielle. Piégez les Prodromes : leurs carcasses feront d'excellentes balises. Construisez deux Usines."},
- {name:'Quartier Néon',pro:3,free:0,make:[4,4],rate:.045,map:["#.#.#.",".#.#.#","#.#.#.",".#.#.#","#.#.#.",".#.#.#"],
+ {name:'Quartier Néon',pro:2,free:0,make:[4,4],rate:.045,map:["#.#.#.",".#.#.#","#.#.#.",".#.#.#","#.#.#.",".#.#.#"],
   intro:"Quartier Néon. Il nous faut quatre usines pour tenir la ligne. Ils arrivent en nombre, soldat."},
- {name:'Les Docks',pro:4,free:0,make:[5,2],rate:.05,map:["######","#....#","#....#","#....#","#....#","######"],
+ {name:'Les Docks',pro:2,free:0,make:[5,2],rate:.05,map:["######","#....#","#....#","#....#","#....#","######"],
   intro:"Les Docks. Fusionnez des usines pour ériger deux Bases. Elle tiendra toute la zone."},
- {name:'Porte du vaisseau-mère',pro:5,free:0,make:[6,1],rate:.055,map:["######","######","##..##","##..##","######","######"],
+ {name:'Porte du vaisseau-mère',pro:3,free:0,make:[6,1],rate:.055,map:["######","######","##..##","##..##","######","######"],
   intro:"Dernière offensive. Érigez une Tour, et on chasse ces saletés d'Erret. Mechkawaii, en avant !"}
 ];
-const ENDLESS={name:'Mode infini',pro:2,free:0,make:null,rate:.03,map:null,
+const ENDLESS={name:'Mode infini',pro:1,free:0,make:null,rate:.03,map:null,
   intro:"Tenez le terrain aussi longtemps que possible, soldat. Les brèches se rouvriront sans cesse."};
 
 let G=null,grid=[],floorC=[],texA=null,texB=null,groundCv=null,groundKey='';
