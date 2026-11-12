@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.1</title>
+<title>Mechkawaii San 三 v5.2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.1 · Prodromes yeux et voyants animés</div>
+  <div class="foot">Version 5.2 · aperçu en maintenant le doigt</div>
 </main>
 
 <main id="select" class="screen">
@@ -1479,7 +1479,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v5.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1660,7 +1660,7 @@ function render(ts){
       const ok=valid(r,c),col=ok?'rgba(86,224,255,':'rgba(255,79,106,';
       (ok?pwArea(r,c):[[r,c]]).forEach(([yy,xx])=>{g.fillStyle=col+(.25+.3*pulse)+')';rrect(g,xx*C+2,yy*C+2,C-4,C-4,5);g.fill()});
     }else if(valid(r,c)){
-      if(G.cur!==20){g.globalAlpha=.62;const t=G.cur===21?(crystalBest(r,c)||1):G.cur;if(HDR&&hdImg(t,0)){g.globalAlpha=1;hdGhosts.push([t,x,y,.62,0])}else g.drawImage(spriteCanvas(t,0,0),x,y,C,C);g.globalAlpha=1}
+      if(G.cur!==20){g.globalAlpha=.62;const t=G.cur===21?(crystalBest(r,c)||1):G.cur,rt=(pg.length&&NEXTM[t])?NEXTM[t]:t;if(HDR&&hdImg(rt,0)){g.globalAlpha=1;hdGhosts.push([rt,x,y,pg.length?.85:.62,0])}else g.drawImage(spriteCanvas(t,0,0),x,y,C,C);g.globalAlpha=1}
       pg.forEach(([yy,xx])=>{g.strokeStyle='rgba(255,230,120,'+(.55+.4*pulse)+')';g.lineWidth=1;rrect(g,xx*C+3,yy*C+3,C-6,C-6,5);g.stroke()});
     }
     g.strokeStyle=(G.cur===20||G.armed)?'#ff4f6a':'#ffffff';g.lineWidth=1;g.lineCap='butt';
@@ -1672,6 +1672,7 @@ function render(ts){
   if(HDR){bg2.drawImage(hdGroundCv,0,0,board.width,board.height)}
   bg2.drawImage(off,0,0,board.width,board.height);
   if(HDR){for(const [tl,px,py,s] of hdItems){{const an=tl.t===12?{ts,ph:tl.ph}:null;hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1),tl.v,an)}bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
+  if(HDR&&pg.length&&G.sel&&!G.armed){const S=HD.CELL;bg2.save();pg.forEach(([yy,xx])=>{bg2.fillStyle='rgba(255,230,120,'+(.14+.12*pulse)+')';bg2.strokeStyle='rgba(255,230,120,'+(.6+.4*pulse)+')';bg2.lineWidth=4;const rx=xx*S+8,ry=yy*S+8,rw=S-16;bg2.beginPath();bg2.roundRect?bg2.roundRect(rx,ry,rw,rw,14):bg2.rect(rx,ry,rw,rw);bg2.fill();bg2.stroke()});bg2.restore()}
   if(HDR){for(const [t,gx,gy,a,gv] of hdGhosts){bg2.globalAlpha=a;hdDrawBuilding(bg2,t,Math.round(gx),Math.round(gy),1,gv);bg2.globalAlpha=1}}
   tickScore();
 }
@@ -1690,8 +1691,12 @@ $('curSlot').addEventListener('pointerdown',()=>{if(G&&G.cur)holdStart(G.cur)});
 board.addEventListener('pointerdown',e=>{e.preventDefault();au();musicStart();const p=cellFromEvent(e);if(!p)return;
   const tl=grid[p[0]][p[1]];
   if(tl&&!G.armed&&!G.busy&&G.cur!==20&&!G.swapA){holdStart(tl.t,tl.v);return}
+  if(e.pointerType!=='mouse'&&G&&!G.busy&&!G.over&&valid(p[0],p[1])){ // doigt : on voit l'effet tant qu'on appuie, on pose en relâchant
+    G.drag=e.pointerId;G.sel=p;try{board.setPointerCapture(e.pointerId)}catch(x){}return}
   onCell(p[0],p[1],e.pointerType)});
-board.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'||!G||G.busy||G.over)return;const p=cellFromEvent(e);G.sel=p&&valid(p[0],p[1])?p:null});
+board.addEventListener('pointerup',e=>{if(!G||G.drag!==e.pointerId)return;G.drag=null;const sl=G.sel;G.sel=null;if(sl&&!G.busy&&!G.over)onCell(sl[0],sl[1],e.pointerType)});
+board.addEventListener('pointercancel',e=>{if(G&&G.drag===e.pointerId){G.drag=null;G.sel=null}});
+board.addEventListener('pointermove',e=>{if(!G||G.busy||G.over)return;if(G.drag===e.pointerId||e.pointerType==='mouse'){const p=cellFromEvent(e);G.sel=p&&valid(p[0],p[1])?p:null}});
 board.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&G)G.sel=null});
 $('resSlot').addEventListener('click',()=>{au();swapReserve()});
 $('bSnd').addEventListener('click',()=>{AU.on=!AU.on;au();try{localStorage.setItem('mk_snd',AU.on?'1':'0')}catch(e){}$('bSnd').style.opacity=AU.on?1:.45;if(AU.on)musicStart()});
