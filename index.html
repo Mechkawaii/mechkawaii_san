@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v4.0</title>
+<title>Mechkawaii San 三 v4.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 4.0 · nouvelles routes</div>
+  <div class="foot">Version 4.1 · style Neo Industriel</div>
 </main>
 
 <main id="select" class="screen">
@@ -1473,7 +1473,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v4.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v4.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={on:!/[?&]hd=0/.test(location.search),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear()};im.src=src};
   ld('assets/hd/tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})();
@@ -1498,7 +1498,7 @@ function ensureHdGround(){
     if(side==='E')run(0,S,(a,b)=>g.drawImage(vT,S-T1,a,th,b-a,x+S-th,y+a,th,b-a))};
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){
     const x=c*S,y=r*S;
-    if(!em(r,c)){g.drawImage(hdTile(rh(r,c,5)%3),x,y);continue}
+    if(!em(r,c)){{const w=rh(r,c,5)%100;g.drawImage(hdTile(w<68?52:w<84?0:w<94?1:2),x,y)}continue}
     if(pz(r,c)){
       g.drawImage(hdTile(51),x,y);
       [['N',-1,0],['E',0,1],['S',1,0],['W',0,-1]].forEach(([sd,dy,dx])=>{const yy=r+dy,xx=c+dx;if(!inb(yy,xx))return;if(!em(yy,xx))wall(sd,x,y,false);else if(!pz(yy,xx))wall(sd,x,y,true)});
