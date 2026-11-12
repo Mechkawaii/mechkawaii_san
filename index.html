@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.1</title>
+<title>Mechkawaii San 三 v6.2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.1 · correctifs routes</div>
+  <div class="foot">Version 6.2 · sol NeoPixel sous les bâtiments</div>
 </main>
 
 <main id="select" class="screen">
@@ -1491,14 +1491,15 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
-  ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17,20,21].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im));[0,1,2,3,4].forEach(v=>ld('assets/hd/p'+v+'.png',im=>HD.p[v]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
+  ld(HD.dir+'tiles.png',im=>HD.tiles=im);ld('assets/np/tiles.png',im=>HD.sol=im);[1,2,3,4,5,6,9,10,11,16,17,20,21].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im));[0,1,2,3,4].forEach(v=>ld('assets/hd/p'+v+'.png',im=>HD.p[v]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
 const hdReady=()=>HD.on&&HD.n>=7;
 // planche assets/hd/tiles.png (8 colonnes de 128 px) : 0-2 sols ; 3+3*forme+état routes (normal, fissures, gravats) ; 51 asphalte de place
 const HDS={H:0,V:1,cSW:2,cNW:3,cNE:4,cES:5,tN:6,tE:7,tS:8,tW:9,X:10,bN:11,bE:12,bS:13,bW:14,dot:15};
+function hdSol(i){const k='s'+i;let c=HD.cache.get(k);if(c)return c;const S=HD.CELL,src=HD.sol||HD.tiles;c=cvs(S,S);c.getContext('2d').drawImage(src,(i%8)*S,Math.floor(i/8)*S,S,S,0,0,S,S);HD.cache.set(k,c);return c}
 function hdTile(i){let c=HD.cache.get(i);if(c)return c;
   const S=HD.CELL;c=cvs(S,S);c.getContext('2d').drawImage(HD.tiles,(i%8)*S,Math.floor(i/8)*S,S,S,0,0,S,S);HD.cache.set(i,c);return c}
 const hdRoad=(shape,r,c)=>{const w=rh(r,c,77)%100;return 3+HDS[shape]*3+(w<62?0:w<84?1:2)};
@@ -1561,7 +1562,7 @@ function ensureHdGround(){
       g.fillStyle=KD;g.fillRect(bx+2,by+bh-5,bw-4,3);g.fillRect(bx+bw-5,by+2,3,bh-4)}
     g.restore()};
   // 1. sols
-  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(em(r,c))continue;const w=rh(r,c,5)%100;g.drawImage(hdTile(w<68?52:w<84?0:w<94?1:2),c*S,r*S)}
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(em(r,c))continue;const w=rh(r,c,5)%100;g.drawImage(hdSol(w<68?52:w<84?0:w<94?1:2),c*S,r*S)}
   // 2. routes
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){
     if(!em(r,c))continue;const x=c*S,y=r*S;
