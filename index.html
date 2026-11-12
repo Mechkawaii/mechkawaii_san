@@ -850,13 +850,28 @@ PAINT.sheep=g=>{ // portrait de Sheepard
 };
 const cache=new Map();
 const TSZ=[17,20,23,25,27,29];
+const SHARP=new Set([1,2,3,4,5,6]);
 function spriteCanvas(t,v=0,f=0){
   const key=t+'_'+v+'_'+f;if(cache.has(key))return cache.get(key);
-  const SS=4,H=32*SS,hi=document.createElement('canvas');hi.width=hi.height=H;const g=hi.getContext('2d');
+  const sharp=SHARP.has(t),SS=sharp?8:4,H=32*SS,hi=document.createElement('canvas');hi.width=hi.height=H;const g=hi.getContext('2d');
   g.scale(SS,SS);PAINT[t===13?'sheep':t](g,v,f);
   // boîte englobante
   const d=g.getImageData?hi.getContext('2d').getImageData(0,0,H,H).data:null;
   let x0=H,y0=H,x1=-1,y1=-1;for(let y=0;y<H;y++)for(let x=0;x<H;x++)if(d[(y*H+x)*4+3]>60){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(sharp&&x1>=0){ // pixel art net : échantillonnage par couleur dominante, sans lissage ni dégradé
+    const w=(x1-x0+1)/SS,h=(y1-y0+1)/SS,sc=Math.min(1,(RANK[t]?TSZ[RANK[t]-1]:27)/Math.max(w,h)),dw=Math.max(1,Math.round(w*sc)),dh=Math.max(1,Math.round(h*sc));
+    const ox=Math.round((32-dw)/2),oy=TOPD.has(t)?Math.round((32-dh)/2):Math.round(30.5-dh);
+    const cv=document.createElement('canvas');cv.width=cv.height=32;const og=cv.getContext('2d'),oi=og.createImageData(32,32),o=oi.data,SW=x1-x0+1,SH=y1-y0+1;
+    for(let py=0;py<dh;py++)for(let px=0;px<dw;px++){
+      const sx0=x0+px*SW/dw,sx1=x0+(px+1)*SW/dw,sy0=y0+py*SH/dh,sy1=y0+(py+1)*SH/dh,cnt=new Map();let op=0,tot=0;
+      for(let j=0;j<4;j++)for(let i=0;i<4;i++){const xx=Math.min(H-1,Math.floor(sx0+(sx1-sx0)*(i+.5)/4)),yy=Math.min(H-1,Math.floor(sy0+(sy1-sy0)*(j+.5)/4)),k=(yy*H+xx)*4;tot++;
+        if(d[k+3]>128){op++;const key=(d[k]<<16)|(d[k+1]<<8)|d[k+2];cnt.set(key,(cnt.get(key)||0)+1)}}
+      if(op<tot*.5)continue;let bk=0,bv=0;cnt.forEach((v,k)=>{if(v>bv){bv=v;bk=k}});
+      const X=ox+px,Y=oy+py;if(X<0||Y<0||X>31||Y>31)continue;const i=(Y*32+X)*4;o[i]=bk>>16;o[i+1]=(bk>>8)&255;o[i+2]=bk&255;o[i+3]=255}
+    og.putImageData(oi,0,0);
+    const S=32,A=(x,y)=>(x<0||y<0||x>=S||y>=S)?0:o[(y*S+x)*4+3],out=document.createElement('canvas');out.width=out.height=S;const q=out.getContext('2d'),qi=q.createImageData(S,S),r=qi.data;
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){const i=(y*S+x)*4;if(o[i+3]){r[i]=o[i];r[i+1]=o[i+1];r[i+2]=o[i+2];r[i+3]=255}else if(A(x-1,y)||A(x+1,y)||A(x,y-1)||A(x,y+1)){r[i]=OUTC[0];r[i+1]=OUTC[1];r[i+2]=OUTC[2];r[i+3]=255}}
+    q.putImageData(qi,0,0);cache.set(key,out);return out}
   const cv=document.createElement('canvas');cv.width=cv.height=32;const c=cv.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
   if(x1>=0){const w=(x1-x0+1)/SS,h=(y1-y0+1)/SS,sc=Math.min(1,(RANK[t]?TSZ[RANK[t]-1]:27)/Math.max(w,h)),dw=w*sc,dh=h*sc;
     c.drawImage(hi,x0,y0,x1-x0+1,y1-y0+1,Math.round((32-dw)/2),TOPD.has(t)?Math.round((32-dh)/2):Math.round(30.5-dh),Math.round(dw),Math.round(dh))}
