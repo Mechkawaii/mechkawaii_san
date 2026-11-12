@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.9</title>
+<title>Mechkawaii San 三 v6.0</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.9 · routes HD aux couleurs actuelles</div>
+  <div class="foot">Version 6.0 · routes HD sans raccords</div>
 </main>
 
 <main id="select" class="screen">
@@ -1491,8 +1491,8 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
-const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
+/* ---------- essai HD (v6.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
   ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17,20,21].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im));[0,1,2,3,4].forEach(v=>ld('assets/hd/p'+v+'.png',im=>HD.p[v]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
@@ -1503,7 +1503,7 @@ function hdTile(i){let c=HD.cache.get(i);if(c)return c;
   const S=HD.CELL;c=cvs(S,S);c.getContext('2d').drawImage(HD.tiles,(i%8)*S,Math.floor(i/8)*S,S,S,0,0,S,S);HD.cache.set(i,c);return c}
 const hdRoad=(shape,r,c)=>{const w=rh(r,c,77)%100;return 3+HDS[shape]*3+(w<62?0:w<84?1:2)};
 let hdGroundCv=null,hdGroundKey='';
-function ensureHdGround(){
+function ensureHdGroundTiles(){
   const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
   const S=HD.CELL,W=S*N;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
   const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
@@ -1530,6 +1530,76 @@ function ensureHdGround(){
       if(n)L=inb(r+1,c)?'bN':'V';else if(s)L=inb(r-1,c)?'bS':'V';
       else if(e)L=inb(r,c-1)?'bE':'H';else L=inb(r,c+1)?'bW':'H'}
     g.drawImage(hdTile(hdRoad(L,r,c)),x,y)}
+}
+
+/* ---------- routes HD continues : tout est dessiné d'un seul tenant, sans raccord de tuiles ---------- */
+let hdAsph=null,hdAsphSrc=null;
+function hdAsphalt(){ // asphalte sans couture : on mélange la tuile avec elle-même décalée de moitié
+  const src=hdTile(51);if(hdAsph&&hdAsphSrc===HD.tiles)return hdAsph;hdAsphSrc=HD.tiles;const S=HD.CELL,h=S/2;
+  const a=src.getContext('2d').getImageData(0,0,S,S),r=cvs(S,S),rg=r.getContext('2d');
+  rg.drawImage(src,h,h);rg.drawImage(src,-h,h);rg.drawImage(src,h,-h);rg.drawImage(src,-h,-h);
+  const b=rg.getImageData(0,0,S,S),o=cvs(S,S),og2=o.getContext('2d'),oi=og2.createImageData(S,S);
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const wx=Math.sin(Math.PI*x/S)**2,wy=Math.sin(Math.PI*y/S)**2,w=wx*wy,i=(y*S+x)*4;
+    for(let k=0;k<3;k++)oi.data[i+k]=a.data[i+k]*w+b.data[i+k]*(1-w);oi.data[i+3]=255}
+  og2.putImageData(oi,0,0);hdAsph=o;return o}
+function ensureHdGround(){
+  if(HD.roads==='old')return ensureHdGroundTiles();
+  const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
+  const S=HD.CELL,W=S*N,T=26;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
+  const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
+  const asph=g.createPattern(hdAsphalt(),'repeat');
+  const KB='#6a5792',KL='#8d79b6',KD='#3a2a5c',KO='#1f1431';
+  const dalle=(x,y,w,h,vert)=>{ // bande de trottoir : dalles de 32 px alignées sur la grille globale
+    g.save();g.beginPath();g.rect(x,y,w,h);g.clip();
+    const n0=Math.floor((vert?y:x)/32)*32,end=(vert?y+h:x+w);
+    for(let p=n0;p<end;p+=32){
+      const v=rh(vert?Math.floor(x/S):Math.floor(p/32),vert?Math.floor(p/32):Math.floor(y/S),11)%100,sh=v<30?-10:v<70?0:10;
+      const c=`rgb(${106+sh},${87+sh},${146+sh})`;
+      const bx=vert?x:p,by=vert?p:y,bw=vert?w:32,bh=vert?32:h;
+      g.fillStyle=KO;g.fillRect(bx,by,bw,bh);g.fillStyle=c;g.fillRect(bx+2,by+2,bw-4,bh-4);
+      g.fillStyle=KL;g.fillRect(bx+2,by+2,bw-4,3);g.fillRect(bx+2,by+2,3,bh-4);
+      g.fillStyle=KD;g.fillRect(bx+2,by+bh-5,bw-4,3);g.fillRect(bx+bw-5,by+2,3,bh-4)}
+    g.restore()};
+  // 1. sols
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(em(r,c))continue;const w=rh(r,c,5)%100;g.drawImage(hdTile(w<68?52:w<84?0:w<94?1:2),c*S,r*S)}
+  // 2. routes
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    if(!em(r,c))continue;const x=c*S,y=r*S;
+    g.fillStyle=asph;g.fillRect(x,y,S,S);
+    const cN=inb(r-1,c)&&!em(r-1,c),cS=inb(r+1,c)&&!em(r+1,c),cW=inb(r,c-1)&&!em(r,c-1),cE=inb(r,c+1)&&!em(r,c+1);
+    // fissures discrètes
+    if(rh(r,c,31)%100<38){g.save();g.strokeStyle='rgba(18,10,28,.55)';g.lineWidth=2;g.beginPath();let px=x+24+rh(r,c,32)%80,py=y+24+rh(r,c,33)%80;g.moveTo(px,py);
+      for(let k=0;k<5;k++){px+=(rh(r,c,40+k)%40)-20;py+=(rh(r,c,50+k)%34)-6;px=Math.max(x+12,Math.min(x+S-12,px));py=Math.max(y+12,Math.min(y+S-12,py));g.lineTo(px,py)}g.stroke();g.restore()}
+    // lignes jaunes discrètes (pas sur les places)
+    if(!pz(r,c)){
+      const n=em(r-1,c),e=em(r,c+1),s2=em(r+1,c),w2=em(r,c-1),cnt=n+e+s2+w2,cx=x+S/2,cy=y+S/2;
+      g.save();g.strokeStyle='rgba(222,190,70,.8)';g.lineWidth=5;g.lineCap='butt';g.setLineDash([16,16]);
+      const seg=(x1,y1,x2,y2)=>{g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke()};
+      if(cnt===2&&!((n&&s2)||(e&&w2))){ // virage : deux demi-arcs, un depuis chaque bord, pour que les pointillés se raccordent
+        const px=w2?x:x+S,py=n?y:y+S,aW=n?Math.PI/2:-Math.PI/2,aV=w2?0:Math.PI;
+        let da=aV-aW;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;const mid=aW+da/2;
+        g.beginPath();g.arc(px,py,S/2,aW,mid,da<0);g.stroke();g.beginPath();g.arc(px,py,S/2,aV,mid,da>0);g.stroke()
+      }else if(cnt>0){ // droites, T, carrefours, bouts : du bord vers le centre
+        if(n)seg(cx,y,cx,cy);if(s2)seg(cx,y+S,cx,cy);if(w2)seg(x,cy,cx,cy);if(e)seg(x+S,cy,cx,cy)}
+      g.restore()}
+    // trottoirs
+    const rc=46; // rayon du virage de bordure
+    const hasN=cN,hasS=cS,hasW=cW,hasE=cE;
+    if(hasN)dalle(x+(hasW?T:0),y,S-(hasW?T:0)-(hasE?T:0),T,false);
+    if(hasS)dalle(x+(hasW?T:0),y+S-T,S-(hasW?T:0)-(hasE?T:0),T,false);
+    if(hasW)dalle(x,y+(hasN?0:0),T,S,true);
+    if(hasE)dalle(x+S-T,y,T,S,true);
+    // coins arrondis (virages de bordure) là où deux trottoirs se rejoignent
+    const fillet=(cx2,cy2,sx,sy)=>{g.save();g.beginPath();g.rect(Math.min(cx2,cx2+sx*rc),Math.min(cy2,cy2+sy*rc),rc,rc);g.clip();
+      g.beginPath();g.rect(cx2-rc,cy2-rc,rc*2,rc*2);g.arc(cx2+sx*rc,cy2+sy*rc,rc,0,6.2832,true);g.fillStyle=KB;g.fill('evenodd');
+      g.beginPath();g.arc(cx2+sx*rc,cy2+sy*rc,rc,0,6.2832);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
+      g.beginPath();g.arc(cx2+sx*rc,cy2+sy*rc,rc-T+6,0,6.2832);g.strokeStyle=KL;g.lineWidth=2;g.stroke();g.restore()};
+    if(hasN&&hasW)fillet(x,y,1,1);if(hasN&&hasE)fillet(x+S,y,-1,1);if(hasS&&hasW)fillet(x,y+S,1,-1);if(hasS&&hasE)fillet(x+S,y+S,-1,-1);
+    // poteaux aux angles rentrants (voisins ouverts mais diagonale pleine)
+    const dg=(dy,dx)=>inb(r+dy,c+dx)&&!em(r+dy,c+dx);
+    [[-1,-1,x,y],[-1,1,x+S-T,y],[1,-1,x,y+S-T],[1,1,x+S-T,y+S-T]].forEach(([dy,dx,px,py])=>{
+      if(em(r+dy,c)&&em(r,c+dx)&&dg(dy,dx)){g.fillStyle=KO;g.fillRect(px,py,T,T);g.fillStyle=KB;g.fillRect(px+2,py+2,T-4,T-4);g.fillStyle=KL;g.fillRect(px+2,py+2,T-4,3)}})
+  }
 }
 function hdImg(t,v){return t===12?HD.p[v|0]:(t>=30&&t<35)?HD.p[t-30]:HD.b[t]}
 function hdDrawBuilding(g,t,px,py,s,v,an){ // px,py en coordonnées logiques (32/case)
