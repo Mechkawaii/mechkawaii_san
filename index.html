@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.8</title>
+<title>Mechkawaii San 三 v5.9</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.8 · sprites cristal et drone</div>
+  <div class="foot">Version 5.9 · routes HD aux couleurs actuelles</div>
 </main>
 
 <main id="select" class="screen">
@@ -1491,9 +1491,9 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
-const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
-const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
+/* ---------- essai HD (v5.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
+const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
   ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17,20,21].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im));[0,1,2,3,4].forEach(v=>ld('assets/hd/p'+v+'.png',im=>HD.p[v]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
 const hdReady=()=>HD.on&&HD.n>=7;
