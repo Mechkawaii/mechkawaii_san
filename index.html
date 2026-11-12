@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.6</title>
+<title>Mechkawaii San 三 v5.7</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.6 · inspirations Triple Town</div>
+  <div class="foot">Version 5.7 · départ du mode infini varié</div>
 </main>
 
 <main id="select" class="screen">
@@ -1438,9 +1438,12 @@ function startGame(mode,si,hero){
   floorC=[...Array(N)].map(()=>Array(N).fill(false));
   buildFloors();
   let n=0,tries=0;const want=Math.max(9,Math.min(15,22-S.pro));
-  while(n<want&&tries++<600){const r=rnd(N),c=rnd(N);if(grid[r][c])continue;const t=pick([1,1,1,1,1,1,2,2,2,3]);
+  const endless=mode!=='campaign',pool=endless?[1,1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,4]:[1,1,1,1,1,1,2,2,2,3];
+  while(n<want&&tries++<600){const r=rnd(N),c=rnd(N);if(grid[r][c])continue;const t=pick(pool);
     grid[r][c]=newTile(t,0,r,c,1);if(flood(r,c,t).length>=3){grid[r][c]=null;continue}n++}
-  shuffle(emptyCells()).slice(0,S.pro).forEach(([r,c])=>grid[r][c]=newTile(12,randPro(),r,c,1));
+  if(endless){ // départ façon Triple Town : un plateau déjà varié, avec une ou deux ruines
+    let k=1+rnd(2),z=0;while(k>0&&z++<200){const r=rnd(N),c=rnd(N);if(grid[r][c])continue;grid[r][c]=newTile(9,0,r,c,1);if(flood(r,c,9).length>=3){grid[r][c]=null;continue}k--}}
+  shuffle(emptyCells()).slice(0,endless?1+rnd(2):S.pro).forEach(([r,c])=>grid[r][c]=newTile(12,randPro(),r,c,1));
   G.cur=randPiece();
   show('game');resize();updateHud();
   say(S.intro);
@@ -1488,7 +1491,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v5.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
