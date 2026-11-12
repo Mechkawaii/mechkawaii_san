@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v4.1</title>
+<title>Mechkawaii San 三 v4.2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 4.1 · style Neo Industriel</div>
+  <div class="foot">Version 4.2 · planche de référence</div>
 </main>
 
 <main id="select" class="screen">
@@ -1473,7 +1473,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v4.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v4.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={on:!/[?&]hd=0/.test(location.search),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear()};im.src=src};
   ld('assets/hd/tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})();
@@ -1488,14 +1488,14 @@ function ensureHdGround(){
   const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
   const S=HD.CELL,W=S*N;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
   const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
-  const G0=40,G1=88,T0=26,T1=40; // embouchure ; bande de trottoir (prise sur les tuiles droites)
-  const hT=hdTile(3+HDS.H*3),vT=hdTile(3+HDS.V*3);
+  const G0=34,G1=94,T0=0,T1=28; // embouchure ; épaisseur de la bande de trottoir (prise sur la tuile droite)
+  const hT=hdTile(3+HDS.H*3),vT=hdTile(53),vE=hdTile(54);
   const wall=(side,x,y,mouth)=>{const run=(a,b,fn)=>{if(!mouth){fn(a,b);return}if(G0>a)fn(a,Math.min(b,G0));if(G1<b)fn(Math.max(a,G1),b)};
     const th=T1-T0;
     if(side==='N')run(0,S,(a,b)=>g.drawImage(hT,a,T0,b-a,th,x+a,y,b-a,th));
     if(side==='S')run(0,S,(a,b)=>g.drawImage(hT,a,S-T1,b-a,th,x+a,y+S-th,b-a,th));
     if(side==='W')run(0,S,(a,b)=>g.drawImage(vT,T0,a,th,b-a,x,y+a,th,b-a));
-    if(side==='E')run(0,S,(a,b)=>g.drawImage(vT,S-T1,a,th,b-a,x+S-th,y+a,th,b-a))};
+    if(side==='E')run(0,S,(a,b)=>g.drawImage(vE,S-T1,a,th,b-a,x+S-th,y+a,th,b-a))};
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){
     const x=c*S,y=r*S;
     if(!em(r,c)){{const w=rh(r,c,5)%100;g.drawImage(hdTile(w<68?52:w<84?0:w<94?1:2),x,y)}continue}
