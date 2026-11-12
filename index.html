@@ -941,13 +941,16 @@ function plazaSprite(mask,vr){
   const put=(x,y,c)=>{if(x<0||y<0||x>31||y>31)return;const i=(y*32+x)*4;d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2];d[i+3]=255};
   for(let y=0;y<32;y++)for(let x=0;x<32;x++){
     const px=x+.5,py=y+.5;let dk=99,lit=false;
-    if(mask&1){if(py<dk){dk=py;lit=false}}   // nord bloqué
-    if(mask&2){if(32-px<dk){dk=32-px;lit=true}} // est
-    if(mask&4){if(32-py<dk){dk=32-py;lit=true}} // sud
-    if(mask&8){if(px<dk){dk=px;lit=false}}   // ouest
+    if(mask&1){if(py<dk){dk=py;lit=true}}
+    if(mask&2){if(32-px<dk){dk=32-px;lit=false}}
+    if(mask&4){if(32-py<dk){dk=32-py;lit=false}}
+    if(mask&8){if(px<dk){dk=px;lit=true}}
     let c;
-    if(dk<1)c=OUT;else if(dk<3)c=lit?CM:CL;else if(dk<4)c=lit?CD:CM;
-    else{c=A0;const q=rh(x,y,vr+9);if(q<70)c=A1;else if(q<95)c=A2;if(dk<5&&!lit)c=A2}
+    if(dk<5){ // extérieur : laisse voir le sol urbain, ombre du trottoir
+      if(dk<5&&!lit&&dk>=3.6){const i=(y*32+x)*4;d[i]=0x3a;d[i+1]=0x1c;d[i+2]=0x40;d[i+3]=150}continue}
+    if(dk<6)c=OUT;
+    else if(dk<8){const e=8-dk;c=lit?CL:(e>=1?CD:CM);if(rh(x,y,vr+57)<60)c=lit?CM:CD}
+    else{c=A0;const q=rh(x,y,vr+9);if(q<70)c=A1;else if(q<95)c=A2;if(dk<9&&lit)c=A2}
     put(x,y,c)}
   if(vr){const seed=vr*13+mask;
     const asph=(x,y)=>{const i=(y*32+x)*4;return x>=0&&y>=0&&x<32&&y<32&&d[i]<=60&&d[i+1]<=52};
