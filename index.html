@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.3</title>
+<title>Mechkawaii San 三 v6.4</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.3 · capsules d’énergie à récolter</div>
+  <div class="foot">Version 6.4 · boulon refait, routes abîmées, super bâtiments</div>
 </main>
 
 <main id="select" class="screen">
@@ -1238,12 +1238,13 @@ function resolve(r,c){
     chain++;
     for(const [y,x] of g){if(y===r&&x===c)continue;G.ghosts.push({t:tl.t,v:tl.v,x:x,y:y,tx:c,ty:r,life:0});grid[y][x]=null}
     grid[r][c]=newTile(nx,0,r,c,1.7);
-    const sup=g.length>NEED(tl.t);if(sup){grid[r][c].sup=1;G.score+=(PTS[nx]||0);G.coins+=2}
+    const n=g.length,sup=n>NEED(tl.t),mult=n<4?1:(n-2)*(n-1)/2; // 3 → ×1, 4 → ×3, 5 → ×6, 6 → ×10…
+    if(sup){grid[r][c].sup=1;G.coins+=2*(n-3)}
     G.made[nx]=(G.made[nx]||0)+1;
-    G.score+=(PTS[nx]||0)*(g.length-2)*chain;G.coins+=Math.max(1,nx-1)*(g.length-2);
+    const gain=(PTS[nx]||0)*mult*chain;G.score+=gain;G.coins+=Math.max(1,nx-1)*(n-2);
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
-    if(sup)toast('SUPER '+NAMES[nx].toUpperCase()+' !',1200);
+    if(sup)toast('SUPER '+NAMES[nx].toUpperCase()+' ×'+mult+' ! +'+gain,1400);
     if(nx===6){toast('TOUR ÉRIGÉE !',2000);say('Magnifique, soldat ! Cette tour domine tout le secteur !')}
     else if(nx===5&&!G.flags.base){G.flags.base=1;toast('BASE CONSTRUITE')}
     if(chain>1)toast('COMBO x'+chain,1000);
@@ -1499,7 +1500,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.3) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.4) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1579,6 +1580,22 @@ function ensureHdGround(){
     // fissures discrètes
     if(rh(r,c,31)%100<38){g.save();g.strokeStyle='rgba(18,10,28,.55)';g.lineWidth=2;g.beginPath();let px=x+24+rh(r,c,32)%80,py=y+24+rh(r,c,33)%80;g.moveTo(px,py);
       for(let k=0;k<5;k++){px+=(rh(r,c,40+k)%40)-20;py+=(rh(r,c,50+k)%34)-6;px=Math.max(x+12,Math.min(x+S-12,px));py=Math.max(y+12,Math.min(y+S-12,py));g.lineTo(px,py)}g.stroke();g.restore()}
+    // variantes abîmées : nid-de-poule ou gravats
+    {const vq=rh(r,c,61)%100,cx0=x+S/2+((rh(r,c,62)%40)-20),cy0=y+S/2+((rh(r,c,63)%40)-20);
+      if(vq<13){ // trou
+        const n=9,pts=[];for(let k=0;k<n;k++){const a=k/n*6.283,rx=20+rh(r,c,70+k)%12,ry=11+rh(r,c,80+k)%8;pts.push([cx0+Math.cos(a)*rx,cy0+Math.sin(a)*ry])}
+        const path=(dy2)=>{g.beginPath();pts.forEach(([a,b],k)=>k?g.lineTo(a,b+dy2):g.moveTo(a,b+dy2));g.closePath()};
+        g.save();path(3);g.fillStyle='#6d5a92';g.fill();path(0);g.fillStyle='#0d0716';g.fill();g.strokeStyle='#1f1431';g.lineWidth=4;g.stroke();
+        g.save();g.clip();g.fillStyle='#1d1230';g.fillRect(cx0-40,cy0-2,80,30);g.restore();
+        g.strokeStyle='rgba(18,10,28,.7)';g.lineWidth=2;pts.forEach(([a,b],k)=>{if(k%3)return;g.beginPath();g.moveTo(a,b);g.lineTo(a+(a-cx0)*.45,b+(b-cy0)*.45);g.stroke()});g.restore();
+      }else if(vq<24){ // gravats
+        g.save();const cols=['#5a4b78','#7b6aa0','#3f3160','#948bb8'];
+        for(let k=0;k<6;k++){const bx=cx0+((rh(r,c,90+k)%46)-23),by=cy0+((rh(r,c,100+k)%24)-12),w=8+rh(r,c,110+k)%12,h=6+rh(r,c,120+k)%8;
+          g.fillStyle='rgba(10,4,18,.45)';g.beginPath();g.ellipse(bx+2,by+h*.6,w*.7,h*.35,0,0,6.3);g.fill();
+          g.beginPath();g.moveTo(bx-w/2,by+h/2);g.lineTo(bx-w/3,by-h/2);g.lineTo(bx+w/4,by-h/2-2);g.lineTo(bx+w/2,by);g.lineTo(bx+w/3,by+h/2);g.closePath();
+          g.fillStyle=cols[rh(r,c,130+k)%4];g.fill();g.strokeStyle='#1f1431';g.lineWidth=2.5;g.stroke();
+          g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1.5;g.beginPath();g.moveTo(bx-w/3,by-h/2+2);g.lineTo(bx+w/4,by-h/2);g.stroke()}
+        g.restore()}}
     // lignes jaunes discrètes (pas sur les places)
     if(!pz(r,c)){
       const n=em(r-1,c),e=em(r,c+1),s2=em(r+1,c),w2=em(r,c-1),cnt=n+e+s2+w2,cx=x+S/2,cy=y+S/2;
@@ -1614,12 +1631,28 @@ function ensureHdGround(){
     // poteaux aux angles rentrants (voisins ouverts mais diagonale pleine)
     const dg=(dy,dx)=>inb(r+dy,c+dx)&&!em(r+dy,c+dx);
     [[-1,-1,x,y],[-1,1,x+S-T,y],[1,-1,x,y+S-T],[1,1,x+S-T,y+S-T]].forEach(([dy,dx,px,py])=>{
-      if(em(r+dy,c)&&em(r,c+dx)&&dg(dy,dx)){g.fillStyle=KO;g.fillRect(px,py,T,T);g.fillStyle=KB;g.fillRect(px+2,py+2,T-4,T-4);g.fillStyle=KL;g.fillRect(px+2,py+2,T-4,3)}})
+      if(em(r+dy,c)&&em(r,c+dx)&&dg(dy,dx)){ // poteau d'angle rentrant : quart de disque centré sur l'angle de la case, arrondi côté route
+        const ox=dx>0?px+T:px,oy=dy>0?py+T:py,a0=dx>0?Math.PI:0,a1=dy>0?-Math.PI/2:Math.PI/2;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;
+        const R2=T+4,ar=(rad)=>g.arc(ox,oy,rad,a0,a0+da,da<0);
+        g.beginPath();g.moveTo(ox,oy);g.lineTo(ox+Math.cos(a0)*R2,oy+Math.sin(a0)*R2);ar(R2);g.closePath();g.fillStyle=KB;g.fill();
+        g.beginPath();ar(R2);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
+        g.beginPath();ar(R2-6);g.strokeStyle=KL;g.lineWidth=2;g.stroke()}})
   }
 }
 function hdImg(t,v){return t===12?HD.p[v|0]:(t>=30&&t<35)?HD.p[t-30]:HD.b[t]}
-function hdDrawBuilding(g,t,px,py,s,v,an){ // px,py en coordonnées logiques (32/case)
-  const im=hdImg(t,v);if(!im)return false;const S=HD.CELL,k=S/C,box=S*(t===12||t>=30&&t<35?1.28:1.2)*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
+const HDT=new Map();
+function hdTint(im){ // variante de couleur des super bâtiments : la teinte tourne (violet → or), mêmes formes
+  if(HDT.has(im))return HDT.get(im);let out=im;
+  try{const W=im.width,H=im.height,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');q.drawImage(im,0,0);const id=q.getImageData(0,0,W,H),d=id.data,sh=(105/360);
+    for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,df=mx-mn;let h=0,sa=0;
+      if(df>0){sa=l>.5?df/(2-mx-mn):df/(mx+mn);h=mx===r?((g-b)/df+(g<b?6:0)):mx===g?((b-r)/df+2):((r-g)/df+4);h/=6}
+      h=(h+sh)%1;sa=Math.min(1,sa*1.25);
+      const q2=l<.5?l*(1+sa):l+sa-l*sa,p=2*l-q2,f=t=>{t=(t+1)%1;return t<1/6?p+(q2-p)*6*t:t<.5?q2:t<2/3?p+(q2-p)*(2/3-t)*6:p};
+      if(sa===0){d[i]=d[i+1]=d[i+2]=l*255}else{d[i]=f(h+1/3)*255;d[i+1]=f(h)*255;d[i+2]=f(h-1/3)*255}}
+    q.putImageData(id,0,0);out=c}catch(e){}
+  HDT.set(im,out);return out}
+function hdDrawBuilding(g,t,px,py,s,v,an,sup){ // px,py en coordonnées logiques (32/case)
+  const im0=hdImg(t,v);if(!im0)return false;const im=sup?hdTint(im0):im0;const S=HD.CELL,k=S/C,box=S*(t===12||t>=30&&t<35?1.28:1.2)*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
   const cx=(px+C/2)*k,by=(py+C)*k-S*.03;
   g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
   g.globalAlpha=.35;g.fillStyle='#0a0412';g.beginPath();g.ellipse(cx,by-4,w*.42,S*.07,0,0,6.28);g.fill();g.globalAlpha=1;
@@ -1769,7 +1802,7 @@ function render(ts){
   bg2.imageSmoothingEnabled=false;
   if(HDR){bg2.drawImage(hdGroundCv,0,0,board.width,board.height)}
   bg2.drawImage(off,0,0,board.width,board.height);
-  if(HDR){for(const [tl,px,py,s] of hdItems){{const an=tl.t===12?{ts,ph:tl.ph}:null;hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1),tl.v,an)}bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
+  if(HDR){for(const [tl,px,py,s] of hdItems){{const an=tl.t===12?{ts,ph:tl.ph}:null;hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1),tl.v,an,tl.sup)}bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
   if(HDR&&pg.length&&G.sel&&!G.armed){const S=HD.CELL;bg2.save();pg.forEach(([yy,xx])=>{bg2.fillStyle='rgba(255,230,120,'+(.14+.12*pulse)+')';bg2.strokeStyle='rgba(255,230,120,'+(.6+.4*pulse)+')';bg2.lineWidth=4;const rx=xx*S+8,ry=yy*S+8,rw=S-16;bg2.beginPath();bg2.roundRect?bg2.roundRect(rx,ry,rw,rw,14):bg2.rect(rx,ry,rw,rw);bg2.fill();bg2.stroke()});bg2.restore()}
   if(HDR){for(const [t,gx,gy,a,gv] of hdGhosts){bg2.globalAlpha=a;hdDrawBuilding(bg2,t,Math.round(gx),Math.round(gy),1,gv);bg2.globalAlpha=1}}
   tickScore();
