@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v3.6</title>
+<title>Mechkawaii San 三 v3.7</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 3.6 · essai HD</div>
+  <div class="foot">Version 3.7 · essai HD</div>
 </main>
 
 <main id="select" class="screen">
@@ -1473,11 +1473,11 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v3.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v3.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={on:!/[?&]hd=0/.test(location.search),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear()};im.src=src};
-  ld('assets/hd/tiles.png',im=>HD.tiles=im);[2,3,4,5,6].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})();
-const hdReady=()=>HD.on&&HD.n>=6;
+  ld('assets/hd/tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6].forEach(t=>ld('assets/hd/p'+t+'.png',im=>HD.b[t]=im))})();
+const hdReady=()=>HD.on&&HD.n>=7;
 // index (0..33) des tuiles dans la planche assets/hd/tiles.png (8 colonnes, 128 px)
 const HDT={floor:[0,1,2],H:3,V:4,cSW:5,cNW:6,cNE:7,cES:8,tN:9,tE:10,tS:11,tW:12,X:13,bN:14,bE:15,bS:16,bW:17,dot:18,
   pl:[19,20,21],wall:{N:22,E:23,S:24,W:25},coin:{NE:26,SE:27,SW:28,NW:29},inn:{NE:30,SE:31,SW:32,NW:33}};
@@ -1520,12 +1520,9 @@ function ensureHdGround(){
       else if(e)L=inb(r,c-1)?HDT.bE:HDT.H;else L=inb(r,c+1)?HDT.bW:HDT.H}
     g.drawImage(T(L),x,y)}
 }
-function hdDrawBuilding(g,t,px,py,s){ // px,py en coordonnées logiques (32/case)
-  const im=HD.b[t];if(!im)return false;const S=HD.CELL,k=S/C,box=S*.94*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
-  const cx=(px+C/2)*k,by=(py+C)*k-S*.03;
-  g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
-  g.globalAlpha=.35;g.fillStyle='#0a0412';g.beginPath();g.ellipse(cx,by-4,w*.42,S*.07,0,0,6.28);g.fill();g.globalAlpha=1;
-  g.drawImage(im,cx-w/2,by-h,w,h);g.restore();return true}
+function hdDrawBuilding(g,t,px,py,s){ // px,py en coordonnées logiques (32/case) ; sprite 256 px posé en bas, marge 8 px
+  const im=HD.b[t];if(!im)return false;const S=HD.CELL,k=S/C,u=S/256*s,cx=(px+C/2)*k,by=(py+C)*k-S*.03;
+  g.save();g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(cx-128*u),Math.round(by+8*u-256*u),Math.round(256*u),Math.round(256*u));g.restore();return true}
 
 /* ---------- rendu du plateau ---------- */
 const board=$('board'),bg2=board.getContext('2d');
