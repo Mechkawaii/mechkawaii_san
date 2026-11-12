@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.0</title>
+<title>Mechkawaii San 三 v6.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.0 · routes HD sans raccords</div>
+  <div class="foot">Version 6.1 · correctifs routes</div>
 </main>
 
 <main id="select" class="screen">
@@ -1491,7 +1491,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1573,13 +1573,18 @@ function ensureHdGround(){
     // lignes jaunes discrètes (pas sur les places)
     if(!pz(r,c)){
       const n=em(r-1,c),e=em(r,c+1),s2=em(r+1,c),w2=em(r,c-1),cnt=n+e+s2+w2,cx=x+S/2,cy=y+S/2;
-      g.save();g.strokeStyle='rgba(222,190,70,.8)';g.lineWidth=5;g.lineCap='butt';g.setLineDash([16,16]);
-      const seg=(x1,y1,x2,y2)=>{g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke()};
+      g.save();g.strokeStyle='rgba(222,190,70,.8)';g.lineWidth=5;g.lineCap='butt';
+      const seg=(x1,y1,x2,y2)=>{ // du bord vers le centre : tirets de 16 px tous les 32 px
+        const L=Math.hypot(x2-x1,y2-y1),dx=(x2-x1)/L,dy=(y2-y1)/L;
+        for(let d=0;d<L;d+=32){const e=Math.min(d+16,L);g.beginPath();g.moveTo(x1+dx*d,y1+dy*d);g.lineTo(x1+dx*e,y1+dy*e);g.stroke()}};
+      const arcDash=(px,py,from,to)=>{ // depuis 'from' vers 'to' sur un cercle de rayon S/2
+        const R=S/2,L=Math.abs(to-from)*R,sg=to>from?1:-1;
+        for(let d=0;d<L;d+=32){const e=Math.min(d+16,L);g.beginPath();g.arc(px,py,R,from+sg*d/R,from+sg*e/R,sg<0);g.stroke()}};
       if(cnt===2&&!((n&&s2)||(e&&w2))){ // virage : deux demi-arcs, un depuis chaque bord, pour que les pointillés se raccordent
         const px=w2?x:x+S,py=n?y:y+S,aW=n?Math.PI/2:-Math.PI/2,aV=w2?0:Math.PI;
         let da=aV-aW;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;const mid=aW+da/2;
-        g.beginPath();g.arc(px,py,S/2,aW,mid,da<0);g.stroke();g.beginPath();g.arc(px,py,S/2,aV,mid,da>0);g.stroke()
-      }else if(cnt>0){ // droites, T, carrefours, bouts : du bord vers le centre
+        arcDash(px,py,aW,mid);arcDash(px,py,aV,mid)
+      }else if(cnt>0){ // droites, T, carrefours, bouts
         if(n)seg(cx,y,cx,cy);if(s2)seg(cx,y+S,cx,cy);if(w2)seg(x,cy,cx,cy);if(e)seg(x+S,cy,cx,cy)}
       g.restore()}
     // trottoirs
@@ -1590,10 +1595,12 @@ function ensureHdGround(){
     if(hasW)dalle(x,y+(hasN?0:0),T,S,true);
     if(hasE)dalle(x+S-T,y,T,S,true);
     // coins arrondis (virages de bordure) là où deux trottoirs se rejoignent
-    const fillet=(cx2,cy2,sx,sy)=>{g.save();g.beginPath();g.rect(Math.min(cx2,cx2+sx*rc),Math.min(cy2,cy2+sy*rc),rc,rc);g.clip();
-      g.beginPath();g.rect(cx2-rc,cy2-rc,rc*2,rc*2);g.arc(cx2+sx*rc,cy2+sy*rc,rc,0,6.2832,true);g.fillStyle=KB;g.fill('evenodd');
-      g.beginPath();g.arc(cx2+sx*rc,cy2+sy*rc,rc,0,6.2832);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
-      g.beginPath();g.arc(cx2+sx*rc,cy2+sy*rc,rc-T+6,0,6.2832);g.strokeStyle=KL;g.lineWidth=2;g.stroke();g.restore()};
+    const fillet=(cx2,cy2,sx,sy)=>{ // coin de bordure arrondi : un quart de cercle, sans découpage
+      const ox=cx2+sx*rc,oy=cy2+sy*rc,a0=sy>0?-Math.PI/2:Math.PI/2,a1=sx>0?Math.PI:0;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;
+      const arcTo2=(rad)=>g.arc(ox,oy,rad,a0,a0+da,da<0);
+      g.beginPath();g.moveTo(cx2,cy2);g.lineTo(ox,cy2);arcTo2(rc);g.closePath();g.fillStyle=KB;g.fill();
+      g.beginPath();arcTo2(rc);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
+      g.beginPath();arcTo2(rc-T+6);g.strokeStyle=KL;g.lineWidth=2;g.stroke()};
     if(hasN&&hasW)fillet(x,y,1,1);if(hasN&&hasE)fillet(x+S,y,-1,1);if(hasS&&hasW)fillet(x,y+S,1,-1);if(hasS&&hasE)fillet(x+S,y+S,-1,-1);
     // poteaux aux angles rentrants (voisins ouverts mais diagonale pleine)
     const dg=(dy,dx)=>inb(r+dy,c+dx)&&!em(r+dy,c+dx);
