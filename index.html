@@ -797,6 +797,44 @@ PAINT[6]=g=>{ // tour
   line(g,D6,24,6,24,12);disc(g,K1,24,6,1.6);P(g,'#ffffff',23,5);
 };
 }
+{ // ===== v3.3 : bâtiments très différenciés (silhouette + teinte = couleur du badge) =====
+const K1='#ff7ab8',K2='#ffc4e0',W='#f4efe4';
+const star=(cx,cy,n,r1,r2,rot=0)=>Array.from({length:n*2},(_,i)=>{const a=Math.PI/n*i+rot,r=i%2?r2:r1;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]});
+PAINT[3]=g=>{ // petit bâtiment : maisonnette turquoise, toit à deux pans
+  rbox(g,7,8,18,19,2,'#0b2428');
+  poly(g,'#37b3ab',[[8,9],[16,9],[16,26],[8,26]]);poly(g,'#1f7f7c',[[16,9],[24,9],[24,26],[16,26]]);
+  for(let y=12;y<26;y+=3){R(g,'#2a9a94',8,y,8,1);R(g,'#175f60',16,y,8,1)}
+  R(g,'#d4fffa',15,9,2,17);R(g,'#8ff0e6',8,9,8,1);
+  rbox(g,19,11,4,4,1,'#0b2428');R(g,'#5a5470',20,12,2,2);          // cheminée
+  rbox(g,10,20,4,5,1,'#0b2428');R(g,W,11,21,2,3);                    // porte
+  R(g,'#0b2428',7,27,18,1);
+};
+PAINT[4]=g=>{ // usine : bâtiment large vert, toit en dents de scie, 2 hautes cheminées
+  rbox(g,1,10,30,19,2,'#0f2410');rbox(g,2,11,28,17,1,'#2f7a3a');R(g,'#9af08a',3,12,26,1);
+  for(let i=0;i<5;i++){const x=3+i*5.2;poly(g,'#4fb95a',[[x,27],[x,14],[x+4.6,17],[x+4.6,27]]);R(g,'#9af08a',x,14,1,13);R(g,'#1d5226',x+4,17,1,10)}
+  R(g,'#f0a040',2,28,28,1);
+  [[7,4],[19,4]].forEach(([x,y],k)=>{rbox(g,x-3,y-3,7,13,1,'#0f2410');rbox(g,x-2,y-2,5,11,1,'#6f6a88');R(g,'#a8a3c4',x-2,y-2,5,2);R(g,'#c24a52',x-2,y+5,5,1);disc(g,'rgba(210,205,225,.85)',x+.5-k,y-4,2.6);disc(g,'rgba(240,238,250,.8)',x+2+k,y-6.5,1.8)});
+  rbox(g,26,14,3,3,1,'#0f2410');R(g,'#f0a040',27,15,1,1);
+};
+PAINT[5]=g=>{ // base : complexe en croix, jaune hazard, dôme et radar
+  const arm=(x,y,w,h)=>{rbox(g,x,y,w,h,2,'#2a2205');rbox(g,x+1,y+1,w-2,h-2,1,'#d8b72e')};
+  arm(11,1,10,30);arm(1,11,30,10);
+  R(g,'#fff09a',12,2,8,1);R(g,'#fff09a',2,12,28,1);
+  for(let k=0;k<4;k++){const x=12+k*2.4;R(g,'#2a2205',x,26,1.2,4);R(g,'#2a2205',x+1.2,3,1.2,3)}
+  for(let k=0;k<4;k++){R(g,'#2a2205',3+k*2.4,13,1.2,6);R(g,'#2a2205',23+k*2.4,13,1.2,6)}
+  rbox(g,9,9,14,14,3,'#2a2205');rbox(g,10,10,12,12,3,'#5a5470');disc(g,'#3d3857',16,16,5.2);
+  disc(g,'#a8328a',16,16,4.4);disc(g,K1,16,16,3.6);disc(g,K2,15,15,1.5);P(g,W,14,14);
+  [[4,4],[27,4],[4,27],[27,27]].forEach(([x,y])=>{disc(g,'#2a2205',x,y,2.6);disc(g,'#e8702a',x,y,1.7)});
+};
+PAINT[6]=g=>{ // tour : étoile orange, anneau de balises roses, noyau lumineux
+  poly(g,'#2a1205',star(16,16,8,15.5,10.5,Math.PI/8));poly(g,'#f08a30',star(16,16,8,14.2,9.8,Math.PI/8));
+  poly(g,'#ffd09a',star(16,16,8,12.2,8.6,Math.PI/8).map(([x,y])=>[x-.3,y-.5]).slice(0,0));
+  disc(g,'#2a1205',16,16,9.6);disc(g,'#b0521a',16,16,8.6);disc(g,'#ffd09a',16,16,7.4);disc(g,'#3d3857',16,16,6.2);
+  for(let i=0;i<8;i++){const a=Math.PI/4*i;disc(g,K1,16+Math.cos(a)*7.6,16+Math.sin(a)*7.6,1)}
+  disc(g,'#a8328a',16,16,4.2);disc(g,K1,16,16,3.4);disc(g,W,15,15,1.6);
+  for(let i=0;i<8;i++){const a=Math.PI/8+Math.PI/4*i;disc(g,'#2a1205',16+Math.cos(a)*13.2,16+Math.sin(a)*13.2,1.5);disc(g,'#fff09a',16+Math.cos(a)*13.2,16+Math.sin(a)*13.2,.8)}
+};
+}
 PAINT.sheep=g=>{ // portrait de Sheepard
   [[8,13],[12,10],[17,9],[22,11],[25,14],[24,20],[8,20],[16,12]].forEach(([x,y])=>disc(g,'#f2f2fa',x,y,5));
   ell(g,'#d8d8e8',16,22,8,3);
