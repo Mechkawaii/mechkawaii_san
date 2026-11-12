@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v4.8</title>
+<title>Mechkawaii San 三 v4.9</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 4.8 · record + ruines HD</div>
+  <div class="foot">Version 4.9 · Prodromes HD animés</div>
 </main>
 
 <main id="select" class="screen">
@@ -883,7 +883,7 @@ function spriteCanvas(t,v=0,f=0){
   const out=finishSprite(cv);cache.set(key,out);return out;
 }
 function drawPiece(g,t,x,y,w,h,v=0,f=0){ // sprite HD (comme sur la carte) si disponible, sinon pixel art
-  const im=hdReady()?HD.b[t]:null;
+  const im=hdReady()?hdImg(t,v):null;
   if(im){const sc=Math.min(w/im.width,h/im.height)*.96,iw=im.width*sc,ih=im.height*sc;g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(im,x+(w-iw)/2,y+h-ih,iw,ih);g.restore()}
   else{g.imageSmoothingEnabled=false;g.drawImage(spriteCanvas(t,v,f),x,y,w,h)}}
 function drawSpriteTo(cv,t,v){const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);if(t)drawPiece(g,t,0,0,cv.width,cv.height,v||0)}
@@ -1478,11 +1478,11 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v4.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
-const HD={on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
+/* ---------- essai HD (v4.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
-  ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
+  ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im));[0,1,2,3,4].forEach(v=>ld('assets/hd/p'+v+'.png',im=>HD.p[v]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
 const hdReady=()=>HD.on&&HD.n>=7;
 // planche assets/hd/tiles.png (8 colonnes de 128 px) : 0-2 sols ; 3+3*forme+état routes (normal, fissures, gravats) ; 51 asphalte de place
 const HDS={H:0,V:1,cSW:2,cNW:3,cNE:4,cES:5,tN:6,tE:7,tS:8,tW:9,X:10,bN:11,bE:12,bS:13,bW:14,dot:15};
@@ -1518,11 +1518,13 @@ function ensureHdGround(){
       else if(e)L=inb(r,c-1)?'bE':'H';else L=inb(r,c+1)?'bW':'H'}
     g.drawImage(hdTile(hdRoad(L,r,c)),x,y)}
 }
-function hdDrawBuilding(g,t,px,py,s){ // px,py en coordonnées logiques (32/case)
-  const im=HD.b[t];if(!im)return false;const S=HD.CELL,k=S/C,box=S*1.2*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
+function hdImg(t,v){return t===12?HD.p[v|0]:(t>=30&&t<35)?HD.p[t-30]:HD.b[t]}
+function hdDrawBuilding(g,t,px,py,s,v,an){ // px,py en coordonnées logiques (32/case)
+  const im=hdImg(t,v);if(!im)return false;const S=HD.CELL,k=S/C,box=S*(t===12||t>=30&&t<35?1.28:1.2)*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
   const cx=(px+C/2)*k,by=(py+C)*k-S*.03;
   g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
   g.globalAlpha=.35;g.fillStyle='#0a0412';g.beginPath();g.ellipse(cx,by-4,w*.42,S*.07,0,0,6.28);g.fill();g.globalAlpha=1;
+  if(an){g.translate(cx,by+an.dy);g.rotate(an.rot);g.scale(an.sx,an.sy);g.translate(-cx,-by)}
   g.drawImage(im,cx-w/2,by-h,w,h);g.restore();return true}
 
 /* ---------- rendu du plateau ---------- */
@@ -1610,7 +1612,7 @@ function render(ts){
     const bob=0;
     const f=tl.t===12?((Math.floor(ts/900+tl.ph)%7===0?1:0)|((Math.floor(ts/380+tl.ph)%2)<<1)):0;
     const s=tl.s,w=C*s,px=Math.round(tl.vx*C),py=Math.round(tl.vy*C);
-    const hdB=HDR&&HD.b[tl.t];
+    const hdB=HDR&&hdImg(tl.t,tl.v);
     if(hdB){hdItems.push([tl,px,py,s]);continue}
     if(tl.t!==13)drawShadow(g,tl.t,tl.v,f,px,py,s);
     if(pg.some(([y,x])=>y===r&&x===c)){g.fillStyle='rgba(255,230,120,'+(.2+.25*pulse)+')';rrect(g,px+2,py+2,C-4,C-4,5);g.fill()}
@@ -1619,14 +1621,14 @@ function render(ts){
     g.drawImage(spriteCanvas(tl.t,tl.v,f),Math.round(tl.vx*C+(C-w)/2),Math.round(tl.vy*C+(C-w)+bob),Math.round(w),Math.round(w));g.globalAlpha=1;drawBadge(g,tl.t,px,py);if(tl.sup){g.fillStyle='#1a0f2a';g.fillRect(px+1,py+1,9,9);g.fillStyle='#ffd84a';g.fillRect(px+5,py+2,1,7);g.fillRect(px+2,py+5,7,1);g.fillRect(px+3,py+3,5,5);g.fillStyle='#fff6cc';g.fillRect(px+4,py+4,3,3)}
   }
   G.ghosts=G.ghosts.filter(o=>{o.life++;const k=Math.min(1,o.life/10);if(k>=1)return false;
-    if(HDR&&HD.b[o.t]){hdGhosts.push([o.t,(o.x+(o.tx-o.x)*k)*C,(o.y+(o.ty-o.y)*k)*C,1-k*.6]);return true}g.globalAlpha=1-k*.6;g.drawImage(spriteCanvas(o.t,o.v,0),Math.round((o.x+(o.tx-o.x)*k)*C),Math.round((o.y+(o.ty-o.y)*k)*C),C,C);g.globalAlpha=1;return true});
+    if(HDR&&hdImg(o.t,o.v)){hdGhosts.push([o.t,(o.x+(o.tx-o.x)*k)*C,(o.y+(o.ty-o.y)*k)*C,1-k*.6,o.v]);return true}g.globalAlpha=1-k*.6;g.drawImage(spriteCanvas(o.t,o.v,0),Math.round((o.x+(o.tx-o.x)*k)*C),Math.round((o.y+(o.ty-o.y)*k)*C),C,C);g.globalAlpha=1;return true});
   if(G.sel&&!G.busy&&(G.cur||G.armed)){
     const [r,c]=G.sel,x=c*C,y=r*C;
     if(G.armed){
       const ok=valid(r,c),col=ok?'rgba(86,224,255,':'rgba(255,79,106,';
       (ok?pwArea(r,c):[[r,c]]).forEach(([yy,xx])=>{g.fillStyle=col+(.25+.3*pulse)+')';rrect(g,xx*C+2,yy*C+2,C-4,C-4,5);g.fill()});
     }else if(valid(r,c)){
-      if(G.cur!==20){g.globalAlpha=.62;const t=G.cur===21?(crystalBest(r,c)||1):G.cur;if(HDR&&HD.b[t]){g.globalAlpha=1;hdGhosts.push([t,x,y,.62])}else g.drawImage(spriteCanvas(t,0,0),x,y,C,C);g.globalAlpha=1}
+      if(G.cur!==20){g.globalAlpha=.62;const t=G.cur===21?(crystalBest(r,c)||1):G.cur;if(HDR&&hdImg(t,0)){g.globalAlpha=1;hdGhosts.push([t,x,y,.62,0])}else g.drawImage(spriteCanvas(t,0,0),x,y,C,C);g.globalAlpha=1}
       pg.forEach(([yy,xx])=>{g.strokeStyle='rgba(255,230,120,'+(.55+.4*pulse)+')';g.lineWidth=1;rrect(g,xx*C+3,yy*C+3,C-6,C-6,5);g.stroke()});
     }
     g.strokeStyle=(G.cur===20||G.armed)?'#ff4f6a':'#ffffff';g.lineWidth=1;g.lineCap='butt';
@@ -1637,8 +1639,8 @@ function render(ts){
   bg2.imageSmoothingEnabled=false;
   if(HDR){bg2.drawImage(hdGroundCv,0,0,board.width,board.height)}
   bg2.drawImage(off,0,0,board.width,board.height);
-  if(HDR){for(const [tl,px,py,s] of hdItems){hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1));bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
-  if(HDR){for(const [t,gx,gy,a] of hdGhosts){bg2.globalAlpha=a;hdDrawBuilding(bg2,t,Math.round(gx),Math.round(gy),1);bg2.globalAlpha=1}}
+  if(HDR){for(const [tl,px,py,s] of hdItems){{let an=null;if(tl.t===12){const q=ts/300+tl.ph*6.3,b=Math.sin(q);an={dy:-Math.max(0,Math.sin(ts/520+tl.ph*5))*1.6,sy:1+.022*b,sx:1-.014*b,rot:.018*Math.sin(ts/830+tl.ph*4)}}hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1),tl.v,an)}bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
+  if(HDR){for(const [t,gx,gy,a,gv] of hdGhosts){bg2.globalAlpha=a;hdDrawBuilding(bg2,t,Math.round(gx),Math.round(gy),1,gv);bg2.globalAlpha=1}}
   tickScore();
 }
 
