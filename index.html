@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.4</title>
+<title>Mechkawaii San 三 v6.5</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.4 · boulon refait, routes abîmées, super bâtiments</div>
+  <div class="foot">Version 6.5 · variante de couleur plus discrète</div>
 </main>
 
 <main id="select" class="screen">
@@ -1500,7 +1500,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.4) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1643,12 +1643,12 @@ function hdImg(t,v){return t===12?HD.p[v|0]:(t>=30&&t<35)?HD.p[t-30]:HD.b[t]}
 const HDT=new Map();
 function hdTint(im){ // variante de couleur des super bâtiments : la teinte tourne (violet → or), mêmes formes
   if(HDT.has(im))return HDT.get(im);let out=im;
-  try{const W=im.width,H=im.height,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');q.drawImage(im,0,0);const id=q.getImageData(0,0,W,H),d=id.data,sh=(105/360);
+  try{const W=im.width,H=im.height,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');q.drawImage(im,0,0);const id=q.getImageData(0,0,W,H),d=id.data,sh=(70/360),mx2=.4;
     for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,df=mx-mn;let h=0,sa=0;
       if(df>0){sa=l>.5?df/(2-mx-mn):df/(mx+mn);h=mx===r?((g-b)/df+(g<b?6:0)):mx===g?((b-r)/df+2):((r-g)/df+4);h/=6}
-      h=(h+sh)%1;sa=Math.min(1,sa*1.25);
+      h=(h+sh)%1;
       const q2=l<.5?l*(1+sa):l+sa-l*sa,p=2*l-q2,f=t=>{t=(t+1)%1;return t<1/6?p+(q2-p)*6*t:t<.5?q2:t<2/3?p+(q2-p)*(2/3-t)*6:p};
-      if(sa===0){d[i]=d[i+1]=d[i+2]=l*255}else{d[i]=f(h+1/3)*255;d[i+1]=f(h)*255;d[i+2]=f(h-1/3)*255}}
+      if(sa>0){d[i]+=(f(h+1/3)*255-d[i])*mx2;d[i+1]+=(f(h)*255-d[i+1])*mx2;d[i+2]+=(f(h-1/3)*255-d[i+2])*mx2}}
     q.putImageData(id,0,0);out=c}catch(e){}
   HDT.set(im,out);return out}
 function hdDrawBuilding(g,t,px,py,s,v,an,sup){ // px,py en coordonnées logiques (32/case)
