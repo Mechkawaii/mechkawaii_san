@@ -851,6 +851,7 @@ PAINT.sheep=g=>{ // portrait de Sheepard
 const cache=new Map();
 const TSZ=[17,20,23,25,27,29];
 const SHARP=new Set([1,2,3,4,5,6]);
+[0,1,2,3,4].forEach(v=>{NAMES[30+v]=PR[v].n;PAINT[30+v]=(g,a,f)=>paintProdrome2(g,v,f);TOPD.add(30+v)});
 function spriteCanvas(t,v=0,f=0){
   const key=t+'_'+v+'_'+f;if(cache.has(key))return cache.get(key);
   const sharp=SHARP.has(t),SS=sharp?8:4,H=32*SS,hi=document.createElement('canvas');hi.width=hi.height=H;const g=hi.getContext('2d');
@@ -1157,6 +1158,7 @@ function emptyCells(){const o=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!gri
 const randMech=()=>rnd(HIDS.length);const randPro=()=>rnd(PR.length);
 function randPiece(){
   const w=[[1,60],[2,20],[3,6],[4,1],[20,4],[21,5]];
+  if(G&&G.turn>=3&&!(G.shield>0)&&grid.flat().filter(t=>t&&t.t===12).length<5){const rt=G.mode==='campaign'?G.S.rate:Math.min(.03+G.turn*.0007,.11);const k=rt*100/5;for(let v=0;v<5;v++)w.push([30+v,k])}
   let tot=w.reduce((a,b)=>a+b[1],0),x=Math.random()*tot;
   for(const [t,p] of w){x-=p;if(x<0)return t}return 1;
 }
@@ -1260,6 +1262,9 @@ function place(r,c){
     grid[r][c]=null;burst(r,c,16,['#56e0ff','#ffffff','#9a55e8']);sfx.zap();
   }else{
     let t=cur;
+    if(cur>=30&&cur<35){grid[r][c]=newTile(12,cur-30,r,c,.4);burst(r,c,10,['#34c80a','#a0ff6a']);sfx.spawn();
+      if(!G.flags.breach){G.flags.breach=1;say("Un Prodrome ! Une fois posé, il se déplace après chaque tour. Encerclez-le pour le transformer en ruine.")}
+      G.turn++;G.cur=null;setTimeout(prodromePhase,380);return}
     if(cur===21){const b=crystalBest(r,c);t=b||1;if(!b)toast('Cristal instable → boulon',1100)}
     grid[r][c]=newTile(t,0,r,c,.4);
     sfx.place();
@@ -1308,7 +1313,7 @@ function trapPhase(){
   }
   const S=G.S;let rate=G.mode==='campaign'?S.rate:Math.min(.03+G.turn*.0007,.11);
   const nPro=grid.flat().filter(t=>t&&t.t===12).length;
-  if(nPro<6&&!(G.shield>0)&&Math.random()<rate){
+  if(false&&nPro<6&&!(G.shield>0)&&Math.random()<rate){
     const cand=emptyCells();
     if(cand.length){const [r,c]=pick(cand);{const v=randPro();grid[r][c]=newTile(12,v,r,c,.3);G.lastPro=v}burst(r,c,10,['#34c80a','#a0ff6a']);sfx.spawn();toast('BRÈCHE ! '+PR[G.lastPro].n.toUpperCase()+' SURGIT',1500);
       if(!G.flags.breach){G.flags.breach=1;say("Brèche détectée ! Un nouveau Prodrome vient de surgir.")}}
@@ -1578,6 +1583,7 @@ const SHOP=[
 function hintDraw(){}
 const PINFO=['PYROMANE : BRÛLE LES PETITES PIÈCES VOISINES','BLINDÉ : N\'AVANCE QU\'UN TOUR SUR DEUX','GRENADIER : PIÉGÉ, IL EXPLOSE ET DÉTRUIT LES PETITES PIÈCES VOISINES','BONDISSEUR : SAUTE JUSQU\'À 2 CASES','ÉCLAIREUR : AVANCE DE 2 CASES PAR TOUR'];
 function showRecipe(t,v){
+  if(t>=30&&t<35){v=t-30;t=12}
   const cv=$('hint'),g=cv.getContext('2d'),box=$('recipe');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);
   const nm=$('recN');
   if(t===12){cv.style.display='none';nm.textContent=PR[v||0].n.toUpperCase()+' · '+PINFO[v||0]+' · ENCERCLÉ = RUINE';box.classList.add('on');return}
@@ -1680,7 +1686,7 @@ function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
   if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else drawBg(ts);}
 requestAnimationFrame(loop);
-window.__mk={usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx};
+window.__mk={randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx};
 })();
 </script>
 <script>
