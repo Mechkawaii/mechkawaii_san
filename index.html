@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.5</title>
+<title>Mechkawaii San 三 v5.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.5 · score et destructions</div>
+  <div class="foot">Version 5.6 · inspirations Triple Town</div>
 </main>
 
 <main id="select" class="screen">
@@ -1261,7 +1261,7 @@ function previewGroup(r,c){
 }
 
 /* ---------- tour de jeu ---------- */
-const valid=(r,c)=>G.armed?pwValid(r,c):(G.cur===20?!!grid[r][c]:!grid[r][c]);
+const valid=(r,c)=>G.armed?pwValid(r,c):(G.cur===20?!!grid[r][c]&&grid[r][c].t!==16&&grid[r][c].t!==17:!grid[r][c]);
 function pwValid(r,c){
   const h=G.hero,t=grid[r][c];
   if(h==='khurt'||h==='fuyu')return !!t&&t.t===12;
@@ -1342,7 +1342,7 @@ function prodromePhase(){
   for(const [y,x] of ps){
     const v=grid[y][x].v;let p=[y,x];
     if(v===1){if(G.turn%2===0)continue;p=step(y,x)}                 // Genbu : blindé, un tour sur deux
-    else if(v===3){const o=[];for(let a=0;a<N;a++)for(let b=0;b<N;b++)if(!grid[a][b]&&Math.abs(a-y)+Math.abs(b-x)<=2&&(a!==y||b!==x))o.push([a,b]);
+    else if(v===3){const o=[];for(let a=0;a<N;a++)for(let b=0;b<N;b++)if(!grid[a][b])o.push([a,b]);
       if(o.length){const [a,b]=pick(o);grid[a][b]=grid[y][x];grid[y][x]=null;p=[a,b];burst(a,b,6,['#a0ff6a','#ffffff'])}}   // Gyuki : bondit
     else if(v===4){p=step(y,x);p=step(p[0],p[1])}                  // Gaoro : deux pas
     else p=step(y,x);                                              // Goki, Goryo : un pas
@@ -1365,10 +1365,12 @@ function trapPhase(){
       if(blast)toast('GORYO EXPLOSE !',1200);
       comp.forEach(([y,x])=>{grid[y][x]=newTile(9,0,y,x,1.5);burst(y,x,12,['#34c80a','#a0ff6a','#ffffff']);trapped++})}
   }
+  const m10=G.made[10]||0;
   if(trapped){
     sfx.trap();G.score+=trapped*50;G.coins+=trapped*2;toast('PRODROMES PIÉGÉS',1300);
     if(!G.flags.trap){G.flags.trap=1;say("Prodromes piégés ! Trois ruines côte à côte forment une balise.")}
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
+    if(trapped>=2&&(G.made[10]||0)>m10){const b=50*trapped*trapped;G.score+=b;toast('PIÈGE GROUPÉ ! +'+b,1600)}
   }
   const S=G.S;let rate=G.mode==='campaign'?S.rate:Math.min(.03+G.turn*.0007,.11);
   const nPro=grid.flat().filter(t=>t&&t.t===12).length;
@@ -1486,7 +1488,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v5.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1735,7 +1737,7 @@ const SHOP=[
  {n:'Recharge',p:50,t:0,d:'Pouvoir prêt tout de suite.'},
  {n:'Annuler',p:30,t:-1,d:'Reviens avant ton dernier coup.'}];
 function hintDraw(){}
-const PINFO=['PYROMANE : BRÛLE LES PETITES PIÈCES VOISINES','BLINDÉ : N\'AVANCE QU\'UN TOUR SUR DEUX','GRENADIER : PIÉGÉ, IL EXPLOSE ET DÉTRUIT LES PETITES PIÈCES VOISINES','BONDISSEUR : SAUTE JUSQU\'À 2 CASES','ÉCLAIREUR : AVANCE DE 2 CASES PAR TOUR'];
+const PINFO=['PYROMANE : BRÛLE LES PETITES PIÈCES VOISINES','BLINDÉ : N\'AVANCE QU\'UN TOUR SUR DEUX','GRENADIER : PIÉGÉ, IL EXPLOSE ET DÉTRUIT LES PETITES PIÈCES VOISINES','BONDISSEUR : SE TÉLÉPORTE N\'IMPORTE OÙ, MEURT SI LE PLATEAU EST PLEIN','ÉCLAIREUR : AVANCE DE 2 CASES PAR TOUR'];
 function showRecipe(t,v){
   if(t>=30&&t<35){v=t-30;t=12}
   const cv=$('hint'),g=cv.getContext('2d'),box=$('recipe');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);
