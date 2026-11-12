@@ -1264,14 +1264,14 @@ function place(r,c){
     let t=cur;
     if(cur>=30&&cur<35){grid[r][c]=newTile(12,cur-30,r,c,.4);burst(r,c,10,['#34c80a','#a0ff6a']);sfx.spawn();
       if(!G.flags.breach){G.flags.breach=1;say("Un Prodrome ! Une fois posé, il se déplace après chaque tour. Encerclez-le pour le transformer en ruine.")}
-      G.turn++;G.cur=null;setTimeout(prodromePhase,380);return}
+      G.turn++;G.cur=randPiece();updateHud();setTimeout(prodromePhase,380);return}
     if(cur===21){const b=crystalBest(r,c);t=b||1;if(!b)toast('Cristal instable → boulon',1100)}
     grid[r][c]=newTile(t,0,r,c,.4);
     sfx.place();
     resolve(r,c);
   }
   G.turn++;
-  G.cur=null;
+  G.cur=randPiece();updateHud();
   setTimeout(prodromePhase,380);
 }
 function prodromePhase(){
@@ -1342,7 +1342,7 @@ function hasMove(){
 }
 function endTurn(){
   if(G.pcd>0)G.pcd--;if(G.freeze>0)G.freeze--;if(G.shield>0)G.shield--;
-  G.cur=randPiece();
+  if(G.cur==null)G.cur=randPiece();
   if(objDone()){return finish(true)}
   if(!hasMove()){return finish(false)}
   G.busy=false;updateHud();
