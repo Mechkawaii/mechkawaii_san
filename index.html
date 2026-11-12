@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v4.9</title>
+<title>Mechkawaii San 三 v5.0</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 4.9 · Prodromes HD animés</div>
+  <div class="foot">Version 5.0 · but et barre de progression</div>
 </main>
 
 <main id="select" class="screen">
@@ -1470,7 +1470,8 @@ function updateHud(){
   if(G.mode==='campaign'){
     if(S.make){const m=Math.min(G.made[S.make[0]]||0,S.make[1]);h+=`<div class="${m>=S.make[1]?'ok':''}">Créer ${NAMES[S.make[0]]} ${m}/${S.make[1]}</div>`}
   }else{
-    h+=`<div>Tenir le plus longtemps possible</div><div>Meilleur : ${save.best.inf||0}</div>`;
+    const MS=[1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000],goal=MS.find(m=>m>G.score)||G.score+1,pct=Math.min(100,Math.floor(G.score/goal*100));
+    h+=`<div>But : ${goal.toLocaleString('fr-FR')} points</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${pct}%;background:#34c80a;transition:width .3s"></div></div><div>${pct} % · Meilleur : ${(save.best.inf||0).toLocaleString('fr-FR')}</div>`;
   }
   $('objs').innerHTML=h;
 }
@@ -1478,7 +1479,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v4.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v5.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
