@@ -800,14 +800,14 @@ PAINT[6]=g=>{ // tour
 { // ===== v3.3 : bâtiments très différenciés (silhouette + teinte = couleur du badge) =====
 const K1='#ff7ab8',K2='#ffc4e0',W='#f4efe4';
 const star=(cx,cy,n,r1,r2,rot=0)=>Array.from({length:n*2},(_,i)=>{const a=Math.PI/n*i+rot,r=i%2?r2:r1;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]});
-PAINT[3]=g=>{ // petit bâtiment : maisonnette turquoise, toit à deux pans
-  rbox(g,7,8,18,19,2,'#0b2428');
-  poly(g,'#37b3ab',[[8,9],[16,9],[16,26],[8,26]]);poly(g,'#1f7f7c',[[16,9],[24,9],[24,26],[16,26]]);
-  for(let y=12;y<26;y+=3){R(g,'#2a9a94',8,y,8,1);R(g,'#175f60',16,y,8,1)}
-  R(g,'#d4fffa',15,9,2,17);R(g,'#8ff0e6',8,9,8,1);
-  rbox(g,19,11,4,4,1,'#0b2428');R(g,'#5a5470',20,12,2,2);          // cheminée
-  rbox(g,10,20,4,5,1,'#0b2428');R(g,W,11,21,2,3);                    // porte
-  R(g,'#0b2428',7,27,18,1);
+PAINT[3]=g=>{ // petit bâtiment : module d'habitation capsule, verrière lumineuse
+  rbox(g,3,8,26,17,8,'#0b2428');rbox(g,4,9,24,15,7,'#2a9a94');
+  rbox(g,5,10,22,5,3,'#8ff0e6');R(g,'#d4fffa',8,10,16,1);                    // reflet haut
+  rbox(g,5,17,22,6,3,'#1f7f7c');for(let x=8;x<26;x+=4)R(g,'#175f60',x,17,1,6); // segments de toit
+  rbox(g,9,12,14,6,3,'#0b2428');rbox(g,10,13,12,4,2,'#56e0ff');R(g,W,11,13,6,1);P(g,W,11,14);  // verrière
+  disc(g,'#0b2428',6,16.5,2);disc(g,K1,6,16.5,1.2);disc(g,'#0b2428',26,16.5,2);disc(g,K1,26,16.5,1.2); // feux roses
+  line(g,'#8a84a8',24,8,27,3);disc(g,K1,27,3,1.2);                            // antenne
+  R(g,'#0b2428',3,25,26,1);
 };
 PAINT[4]=g=>{ // usine : bâtiment large vert, toit en dents de scie, 2 hautes cheminées
   rbox(g,1,10,30,19,2,'#0f2410');rbox(g,2,11,28,17,1,'#2f7a3a');R(g,'#9af08a',3,12,26,1);
