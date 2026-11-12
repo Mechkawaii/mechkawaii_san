@@ -816,25 +816,26 @@ PAINT[4]=g=>{ // usine : bâtiment large vert, toit en dents de scie, 2 hautes c
   [[7,4],[19,4]].forEach(([x,y],k)=>{rbox(g,x-3,y-3,7,13,1,'#0f2410');rbox(g,x-2,y-2,5,11,1,'#6f6a88');R(g,'#a8a3c4',x-2,y-2,5,2);R(g,'#c24a52',x-2,y+5,5,1);disc(g,'rgba(210,205,225,.85)',x+.5-k,y-4,2.6);disc(g,'rgba(240,238,250,.8)',x+2+k,y-6.5,1.8)});
   rbox(g,26,14,3,3,1,'#0f2410');R(g,'#f0a040',27,15,1,1);
 };
-PAINT[5]=g=>{ // base : forteresse blindée, hangar à portes ouvertes, 4 tourelles
+PAINT[5]=g=>{ // base : forteresse méca sombre, liserés néon jaunes, hangar cyan
   const oct=(x,y,w,h,c,k)=>poly(g,c,[[x+k,y],[x+w-k,y],[x+w,y+k],[x+w,y+h-k],[x+w-k,y+h],[x+k,y+h],[x,y+h-k],[x,y+k]]);
-  oct(1,4,30,24,'#2a2205',5);oct(2,5,28,22,'#a88a1a',4.5);oct(3,6,26,20,'#5a5470',4);
-  R(g,'#8a84a8',6,6,20,1);
-  for(let x=5;x<27;x+=3){R(g,'#e6c63a',x,26,1.6,1);R(g,'#e6c63a',x,5,1.6,1)}
-  rbox(g,8,10,16,12,2,'#14101c');poly(g,'#e6c63a',[[9,11],[15,11],[13,21],[9,21]]);poly(g,'#e6c63a',[[17,11],[23,11],[23,21],[19,21]]); // portes du hangar
-  for(let y=13;y<21;y+=3){R(g,'#a88a1a',9,y,5,1);R(g,'#a88a1a',18,y,5,1)}
-  R(g,'#56e0ff',15,12,2,9);R(g,'#c8f6ff',15,12,2,1);                       // lumière du hangar
-  [[4,6,-1,-1],[28,6,1,-1],[4,25,-1,1],[28,25,1,1]].forEach(([x,y,dx,dy])=>{disc(g,'#2a2205',x,y,3.4);disc(g,'#e6c63a',x,y,2.5);disc(g,'#8a6a10',x,y,1.4);line(g,'#14101c',x,y,x+dx*3,y+dy*3)});
-  disc(g,K1,16,8,1.2);disc(g,K1,16,24,1.2);
+  oct(1,4,30,24,'#0a0812',5);oct(2,5,28,22,'#ffe14a',4.5);oct(2.8,5.8,26.4,20.4,'#14101c',4.2);oct(3.6,6.6,24.8,18.8,'#3d3857',3.8);
+  R(g,'#645e82',6,7,20,1);R(g,'#2c2840',5,24,22,1);
+  for(let x=6;x<26;x+=4){R(g,'#2c2840',x,8,2,1);R(g,'#ffe14a',x,26,2,1)}
+  rbox(g,8,10,16,12,2,'#0a0812');rbox(g,9,11,14,10,1,'#1b1730');
+  poly(g,'#2c2840',[[9,11],[15,11],[14,21],[9,21]]);poly(g,'#2c2840',[[17,11],[23,11],[23,21],[18,21]]);
+  for(let y=13;y<21;y+=2.5){R(g,'#ffe14a',10,y,3,1);R(g,'#ffe14a',19,y,3,1)}
+  R(g,'#56e0ff',15,11,2,10);R(g,'#c8f6ff',15.5,11,1,10);
+  [[4.5,6.5,-1,-1],[27.5,6.5,1,-1],[4.5,24.5,-1,1],[27.5,24.5,1,1]].forEach(([x,y,dx,dy])=>{disc(g,'#0a0812',x,y,3.4);disc(g,'#3d3857',x,y,2.6);disc(g,K1,x,y,1.4);line(g,'#0a0812',x,y,x+dx*3.4,y+dy*3.4)});
+  disc(g,K1,16,8.8,.9);disc(g,K1,16,23.6,.9);
 };
-PAINT[6]=g=>{ // tour : pyramide à gradins octogonaux, pointe lumineuse
+PAINT[6]=g=>{ // tour : pyramide méca à gradins sombres, arêtes néon orange, noyau rose
   const oct=(cx,cy,r,c)=>poly(g,c,Array.from({length:8},(_,i)=>{const a=Math.PI/8+Math.PI/4*i;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]}));
-  const L=[['#2a1205','#b0521a','#f08a30'],['#2a1205','#c8641e','#ffa850'],['#2a1205','#e07a28','#ffc27a']];
-  [[17,15.5,13.5],[16,13.5,10.8],[15,11.5,8.2]].forEach(([cx,cy,r],i)=>{oct(cx+1,cy+1.2,r,'#1a0a04');oct(cx,cy,r+.8,L[i][0]);oct(cx,cy,r,L[i][1]);oct(cx-.4,cy-.5,r-1.6,L[i][2])});
-  for(let i=0;i<8;i++){const a=Math.PI/8+Math.PI/4*i;line(g,'#7a3410',15+Math.cos(a)*2.6,11.5+Math.sin(a)*2.6,15+Math.cos(a)*7.6,11.5+Math.sin(a)*7.6)}
-  oct(15,11.5,4.4,'#14101c');disc(g,'#a8328a',15,11.5,3.4);disc(g,K1,15,11.5,2.6);disc(g,W,14.3,10.8,1.1);
-  [[15,2.5],[15,20.5],[6.5,11.5],[23.5,11.5]].forEach(([x,y])=>{disc(g,'#2a1205',x,y,1.6);disc(g,'#fff09a',x,y,.9)});
-  line(g,'#fff09a',15,1,15,5);
+  const T=[['#ff7a30','#2c2840','#4f4970'],['#ffa04a','#352f4c','#5a5480'],['#ffc27a','#3d3857','#645e82']];
+  [[17,15.5,13.5],[16,13.5,10.8],[15,11.5,8.2]].forEach(([cx,cy,r],i)=>{oct(cx+1,cy+1.2,r,'#0a0812');oct(cx,cy,r+.9,'#0a0812');oct(cx,cy,r+.2,T[i][0]);oct(cx,cy,r-.8,T[i][1]);oct(cx-.4,cy-.5,r-2.2,T[i][2]);oct(cx,cy,r-3,T[i][1])});
+  for(let i=0;i<8;i++){const a=Math.PI/8+Math.PI/4*i;line(g,'#ff7a30',15+Math.cos(a)*3.4,11.5+Math.sin(a)*3.4,15+Math.cos(a)*7.4,11.5+Math.sin(a)*7.4)}
+  oct(15,11.5,4.2,'#0a0812');disc(g,'#a8328a',15,11.5,3.4);disc(g,K1,15,11.5,2.6);disc(g,W,14.3,10.8,1.1);
+  [[15,2.2],[15,20.8],[6.2,11.5],[23.8,11.5],[24.5,5],[5.5,18]].forEach(([x,y])=>{disc(g,'#0a0812',x,y,1.7);disc(g,'#56e0ff',x,y,1)});
+  line(g,'#c8f6ff',15,.8,15,4.6);
 };
 }
 PAINT.sheep=g=>{ // portrait de Sheepard
