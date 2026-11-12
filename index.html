@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.2</title>
+<title>Mechkawaii San 三 v6.3</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.2 · sol NeoPixel sous les bâtiments</div>
+  <div class="foot">Version 6.3 · capsules d’énergie à récolter</div>
 </main>
 
 <main id="select" class="screen">
@@ -191,7 +191,7 @@ const pick=a=>a[rnd(a.length)];
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 
 /* ---------- données ---------- */
-const NAMES={16:'Coffre',17:'Grand coffre',1:'Vis et boulon',2:'Panneau solaire',3:'Petit bâtiment',4:'Usine',5:'Base',6:'Tour',7:'Mechkawaii',8:'Citadelle',9:'Ruines',10:'Balise',11:'Phare',12:'Prodrome',20:'Drone EMP',21:'Cristal'};
+const NAMES={16:'Capsule d’énergie',17:'Noyau d’énergie',1:'Vis et boulon',2:'Panneau solaire',3:'Petit bâtiment',4:'Usine',5:'Base',6:'Tour',7:'Mechkawaii',8:'Citadelle',9:'Ruines',10:'Balise',11:'Phare',12:'Prodrome',20:'Drone EMP',21:'Cristal'};
 const NEXTM={1:2,2:3,3:4,4:5,5:6,9:10,10:11,11:16,16:17};
 const NEXT=t=>NEXTM[t]||0;
 const NEED=t=>3;
@@ -1451,6 +1451,14 @@ function startGame(mode,si,hero){
 const startCampaign=i=>startGame('campaign',i,save.hero);
 const startEndless=()=>startGame('endless',0,save.hero);
 
+function harvest(r,c){ // récolte une capsule/un noyau d'énergie : la pièce disparaît, bonus de points et de pièces
+  const tl=grid[r][c];if(!tl)return;snap();
+  const big=tl.t===17,pts=big?2000:500,co=big?10:3;
+  grid[r][c]=null;G.score+=pts;G.coins+=co;
+  burst(r,c,big?26:16,big?['#ff3ec8','#ffffff','#3ee0ff']:['#3ee0ff','#fff27a','#ffffff']);
+  sfx.crystal?sfx.crystal():sfx.place();toast((big?'NOYAU RÉCOLTÉ +':'CAPSULE RÉCOLTÉE +')+pts+' · +'+co+' pièces',1300);
+  G.sel=null;updateHud();
+}
 function onCell(r,c,pt){
   if(!G||G.busy||G.over)return;
   const same=G.sel&&G.sel[0]===r&&G.sel[1]===c;
@@ -1491,7 +1499,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.3) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1780,6 +1788,7 @@ function holdEnd(){clearTimeout(holdT);if(holdOn){hideRecipe();holdOn=false}}
 $('curSlot').addEventListener('pointerdown',()=>{if(G&&G.cur)holdStart(G.cur)});
 board.addEventListener('pointerdown',e=>{e.preventDefault();au();musicStart();const p=cellFromEvent(e);if(!p)return;
   const tl=grid[p[0]][p[1]];
+  if(tl&&(tl.t===16||tl.t===17)&&!G.armed&&!G.busy&&!G.over&&G.cur!==20&&!G.swapA){harvest(p[0],p[1]);return}
   if(tl&&!G.armed&&!G.busy&&G.cur!==20&&!G.swapA){holdStart(tl.t,tl.v);return}
   if(e.pointerType!=='mouse'&&G&&!G.busy&&!G.over&&valid(p[0],p[1])){ // doigt : on voit l'effet tant qu'on appuie, on pose en relâchant
     G.drag=e.pointerId;G.sel=p;try{board.setPointerCapture(e.pointerId)}catch(x){}return}
@@ -1869,7 +1878,7 @@ function helpModal(){
   <ul>
    <li>Touchez une case pour y poser la pièce.</li>
    <li>3 pièces identiques côte à côte fusionnent en la suivante. À 4, c'est un <b>SUPER</b> bonus.</li>
-   <li>Les <b style="color:#34c80a">Prodromes</b> bougent à chaque tour. Encerclés, ils deviennent des ruines (3 ruines → balise → phare → coffre).</li>
+   <li>Les <b style="color:#34c80a">Prodromes</b> bougent à chaque tour. Encerclés, ils deviennent des ruines (3 ruines → balise → phare → capsule d’énergie). Touche une capsule ou un noyau pour le récolter : points bonus !</li>
    <li><b>Drone EMP</b> : détruit une pièce. <b>Cristal</b> : devient la pièce qui fusionne le mieux.</li>
    <li><b>Maintiens ton doigt</b> sur une pièce pour voir sa recette de fusion.</li>
    <li>Ton <b>héros</b> a un pouvoir unique, gratuit mais avec temps de recharge (en tours).</li>
