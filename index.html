@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v4.7</title>
+<title>Mechkawaii San 三 v4.8</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 4.7 · bâtiments agrandis</div>
+  <div class="foot">Version 4.8 · record + ruines HD</div>
 </main>
 
 <main id="select" class="screen">
@@ -143,7 +143,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <div class="hud-mid"><div id="hSector" class="px"></div></div>
     <button class="btn sm cy" id="bSnd">♪</button>
   </div>
-  <div class="stats"><div>SCORE<b id="hScore">0</b></div><div>TOURS<b id="hTurn">0</b></div></div>
+  <div class="stats"><div>SCORE<b id="hScore">0</b></div><div>RECORD<b id="hBest" style="color:#7df0ff">0</b></div><div>TOURS<b id="hTurn">0</b></div></div>
   <div id="boardWrap"><canvas id="board"></canvas><div id="toast"></div><div id="recipe"><canvas id="hint" width="168" height="32"></canvas><div id="recN"></div></div></div>
   <div class="row2"><button class="btn pw" id="pwBtn"><canvas id="pwC" width="64" height="64"></canvas><div><div class="t" id="pwT"></div><div class="d" id="pwD"></div></div></button><button class="btn pk sm" id="shopBtn"><span class="coin"></span> <b id="coinN">0</b><br>MARCHAND</button></div>
   <div class="tray">
@@ -1458,6 +1458,7 @@ function updateHud(){
   const S=G.S;
   $('hSector').innerHTML=(G.mode==='campaign'?'SECTEUR '+(G.si+1)+'<br>':'')+S.name.toUpperCase();
   $('hTurn').textContent=G.turn;
+  {const key=G.mode==='campaign'?'s'+G.si:'inf';if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
   drawSpriteTo($('curC'),G.cur||0,0);$('curN').textContent=G.cur?NAMES[G.cur]:'';
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
   $('coinN').textContent=G.coins;hintDraw();
@@ -1477,11 +1478,11 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v4.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v4.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
-  ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
+  ld(HD.dir+'tiles.png',im=>HD.tiles=im);[1,2,3,4,5,6,9,10,11,16,17].forEach(t=>ld('assets/hd/b'+t+'.png',im=>HD.b[t]=im))})(); // bâtiments : toujours ceux de la planche (assets/hd)
 const hdReady=()=>HD.on&&HD.n>=7;
 // planche assets/hd/tiles.png (8 colonnes de 128 px) : 0-2 sols ; 3+3*forme+état routes (normal, fissures, gravats) ; 51 asphalte de place
 const HDS={H:0,V:1,cSW:2,cNW:3,cNE:4,cES:5,tN:6,tE:7,tS:8,tW:9,X:10,bN:11,bE:12,bS:13,bW:14,dot:15};
