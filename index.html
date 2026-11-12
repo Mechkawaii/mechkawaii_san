@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v5.4</title>
+<title>Mechkawaii San 三 v5.5</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 5.4 · marchand plus cher</div>
+  <div class="foot">Version 5.5 · score et destructions</div>
 </main>
 
 <main id="select" class="screen">
@@ -198,6 +198,11 @@ const NEED=t=>3;
 const CH=[1,2,3,4,5,6],RANK={1:1,2:2,3:3,4:4,5:5,6:6};
 const PTS={2:20,3:80,4:300,5:1200,6:6000,10:50,11:400,16:2500,17:8000};
 const PR=PN.map(n=>({n}));
+const tileVal=t=>t===1?5:(PTS[t]||0); // valeur d'une pièce : la détruire fait perdre ce score
+function scoreDestroy(tl){ // retourne la variation de score (négative si on détruit du positif, positive si on débarrasse des décombres)
+  if(!tl)return 0;let d=0;
+  if(tl.t===9)d=40;else if(tl.t!==12)d=-tileVal(tl.t);
+  if(d){const b=G.score;G.score=Math.max(0,G.score+d);return G.score-b}return 0}
 const POW={
  duke:{n:'Terrassement',cd:6,d:'Détruit les Prodromes en croix.'},
  khurt:{n:'Tir de précision',cd:5,d:'Un Prodrome visé devient une ruine.'},
@@ -1310,7 +1315,8 @@ function place(r,c){
   const cur=G.cur;
   if(cur===20){
     const tl=grid[r][c];
-    if(tl.t===12){G.score+=100;G.coins+=2;toast('PRODROME NEUTRALISÉ',1100)}
+    if(tl.t===12){G.score+=100;G.coins+=2;toast('PRODROME NEUTRALISÉ +100',1100)}
+    else{const d=scoreDestroy(tl);if(d)toast(d>0?'DÉCOMBRES RETIRÉS +'+d:'DÉTRUIT '+d+' pts',1200)}
     grid[r][c]=(tl.t===9)?null:newTile(9,0,r,c,1.5); // détruire laisse des décombres, sauf sur des ruines
     burst(r,c,16,['#56e0ff','#ffffff','#9a55e8']);sfx.zap();
   }else{
@@ -1342,7 +1348,7 @@ function prodromePhase(){
     else p=step(y,x);                                              // Goki, Goryo : un pas
     if(v===0&&G.turn>3&&Math.random()<.4){                         // Goki : brûle une petite pièce voisine
       const nb=D4.map(([dy,dx])=>[p[0]+dy,p[1]+dx]).filter(([a,b])=>inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3);
-      if(nb.length){const [a,b]=pick(nb);grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,12,['#ff9a3a','#ffd84a','#ff4f2a']);burned++}}
+      if(nb.length){const [a,b]=pick(nb);scoreDestroy(grid[a][b]);grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,12,['#ff9a3a','#ffd84a','#ff4f2a']);burned++}}
   }
   if(burned){toast('GOKI BRÛLE '+(burned>1?burned+' PIÈCES':'UNE PIÈCE'),1300);sfx.bad&&sfx.bad()}
   setTimeout(trapPhase,300);
@@ -1355,7 +1361,7 @@ function trapPhase(){
     const free=comp.some(([y,x])=>D4.some(([dy,dx])=>inb(y+dy,x+dx)&&!grid[y+dy][x+dx]));
     if(!free){
       const boom=[];comp.forEach(([y,x])=>{if(grid[y][x].v===2)boom.push([y,x])});               // Goryo piégé : il explose
-      let blast=0;boom.forEach(([y,x])=>D4.forEach(([dy,dx])=>{const a=y+dy,b=x+dx;if(inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3){grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,10,['#ff9a3a','#ffd84a']);blast++}}));
+      let blast=0;boom.forEach(([y,x])=>D4.forEach(([dy,dx])=>{const a=y+dy,b=x+dx;if(inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3){scoreDestroy(grid[a][b]);grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,10,['#ff9a3a','#ffd84a']);blast++}}));
       if(blast)toast('GORYO EXPLOSE !',1200);
       comp.forEach(([y,x])=>{grid[y][x]=newTile(9,0,y,x,1.5);burst(y,x,12,['#34c80a','#a0ff6a','#ffffff']);trapped++})}
   }
@@ -1480,7 +1486,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v5.4) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v5.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'np'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set!=='ref';HD.dir=HDNP?'assets/np/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
