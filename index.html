@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.8</title>
+<title>Mechkawaii San 三 v6.9</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.8 · virages de trottoir plus larges</div>
+  <div class="foot">Version 6.9 · fumée verte des Prodromes</div>
 </main>
 
 <main id="select" class="screen">
@@ -1500,7 +1500,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1734,6 +1734,7 @@ function drawShadow(g,t,v,f,px,py,s){
   // ombre de contact
   if(!RANK[t]){g.fillStyle='rgba(10,4,22,.5)';g.beginPath();g.ellipse(fx,fy+.5,C*.3*Math.min(s,1.1),C*.07,0,0,6.28);g.fill()}
 }
+const SMK=[];
 function render(ts){
   if(!G||!$('game').classList.contains('on'))return;
   const g=og;g.imageSmoothingEnabled=false;
@@ -1806,6 +1807,18 @@ function render(ts){
   if(HDR){bg2.drawImage(hdGroundCv,0,0,board.width,board.height)}
   bg2.drawImage(off,0,0,board.width,board.height);
   if(HDR){for(const [tl,px,py,s] of hdItems){{const an=tl.t===12?{ts,ph:tl.ph}:null;hdDrawBuilding(bg2,tl.t,Math.round(tl.vx*C),Math.round(tl.vy*C),Math.min(s,1.1),tl.v,an,tl.sup)}bg2.save();bg2.scale(board.width/PX,board.width/PX);bg2.imageSmoothingEnabled=false;drawBadge(bg2,tl.t,px,py);bg2.restore()}}
+  if(HDR){ // fumée verte : de temps en temps, un Prodrome laisse échapper un peu de gaz
+    const S=HD.CELL,k=S/C;
+    for(const [tl] of hdItems){if(tl.t!==12)continue;
+      if(!tl.sm)tl.sm=ts+800+Math.random()*4000;
+      if(ts>tl.sm&&SMK.length<40){const n=1+(Math.random()<.4?1:0);for(let q=0;q<n;q++)SMK.push({x:(tl.vx*C+C/2)*k+(Math.random()-.5)*S*.22,y:(tl.vy*C+C)*k-S*(.85+Math.random()*.15),t0:ts+q*220,life:2000+Math.random()*1000,dx:(Math.random()-.5)*S*.35,r:S*(.07+Math.random()*.05)});tl.sm=ts+3500+Math.random()*6500}}
+    bg2.save();
+    for(let i=SMK.length-1;i>=0;i--){const p=SMK[i],a=(ts-p.t0)/p.life;if(a>=1){SMK.splice(i,1);continue}if(a<0)continue;
+      const x=p.x+p.dx*a,y=p.y-a*S*.75,r=p.r+a*S*.3,al=.85*Math.pow(1-a,.9)*Math.min(1,a/.12);
+      const gr=bg2.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(170,255,110,'+al+')');gr.addColorStop(.6,'rgba(90,200,60,'+al*.55+')');gr.addColorStop(1,'rgba(60,160,40,0)');
+      bg2.fillStyle=gr;bg2.beginPath();bg2.arc(x,y,r,0,6.2832);bg2.fill();
+      bg2.beginPath();bg2.arc(x+r*.5,y-r*.3,r*.6,0,6.2832);bg2.fill()}
+    bg2.restore()}
   if(HDR&&pg.length&&G.sel&&!G.armed){const S=HD.CELL;bg2.save();pg.forEach(([yy,xx])=>{bg2.fillStyle='rgba(255,230,120,'+(.14+.12*pulse)+')';bg2.strokeStyle='rgba(255,230,120,'+(.6+.4*pulse)+')';bg2.lineWidth=4;const rx=xx*S+8,ry=yy*S+8,rw=S-16;bg2.beginPath();bg2.roundRect?bg2.roundRect(rx,ry,rw,rw,14):bg2.rect(rx,ry,rw,rw);bg2.fill();bg2.stroke()});bg2.restore()}
   if(HDR){for(const [t,gx,gy,a,gv] of hdGhosts){bg2.globalAlpha=a;hdDrawBuilding(bg2,t,Math.round(gx),Math.round(gy),1,gv);bg2.globalAlpha=1}}
   tickScore();
@@ -1968,7 +1981,7 @@ function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
   if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else drawBg(ts);}
 requestAnimationFrame(loop);
-window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx};
+window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK};
 })();
 </script>
 <script>
