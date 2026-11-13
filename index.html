@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.8</title>
+<title>Mechkawaii San 三 v7.9</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -144,7 +144,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.8 · ouverture de colis animée</div>
+  <div class="foot">Version 7.9 · plus de succès</div>
 </main>
 
 <main id="select" class="screen">
@@ -1317,7 +1317,7 @@ function resolve(r,c){
     grid[r][c]=newTile(nx,0,r,c,1.7);
     const n=g.length,sup=n>NEED(tl.t),mult=n<4?1:(n-2)*(n-1)/2; // 3 → ×1, 4 → ×3, 5 → ×6, 6 → ×10…
     if(sup){grid[r][c].sup=1;addCoins(2*(n-3))}
-    G.made[nx]=(G.made[nx]||0)+1;track('make',1,nx);
+    G.made[nx]=(G.made[nx]||0)+1;track('make',1,nx);if(sup)track('super');
     const gain=Math.round((PTS[nx]||0)*mult*chain*(1+.05*tal('pts')+cardBonus()));G.score+=gain;addCoins(Math.max(1,nx-1)*(n-2));
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
@@ -1408,6 +1408,7 @@ function place(r,c){
   G.busy=true;G.sel=null;
   const cur=G.cur;
   if(cur===20){
+    track('drone');
     const tl=grid[r][c];
     if(tl.t===12){G.score+=100;addCoins(2);toast('PRODROME NEUTRALISÉ +100',1100)}
     else{const d=scoreDestroy(tl);if(d)toast(d>0?'DÉCOMBRES RETIRÉS +'+d:'DÉTRUIT '+d+' pts',1200)}
@@ -1513,7 +1514,7 @@ function finish(win){
   save.frag=(save.frag||0)+frag;
   const prev=G.prevBest||0,beat=prev>0&&G.score>prev,gap=prev-G.score;
   const crate=G.score>=1500||(win&&G.mode==='campaign');if(crate){save.crates=(save.crates||0)+1}
-  track('games');track('score',G.score);if(win&&G.mode==='campaign')track('win');if(G.mode==='survival')track('turns',G.turn);
+  track('games');if(G.mode==='daily')track('daily');track('score',G.score);if(win&&G.mode==='campaign')track('win');if(G.mode==='survival')track('turns',G.turn);
   const before=PICK.filter(isOpen);
   if(win&&G.mode==='campaign')save.done[G.si]=true;persist();
   const newH=PICK.filter(id=>isOpen(id)&&!before.includes(id));
@@ -1584,7 +1585,7 @@ function updateHud(){
   const S=G.S;
   $('hSector').innerHTML=(G.mode==='campaign'?'SECTEUR '+(G.si+1)+'<br>':'')+S.name.toUpperCase();
   $('hTurn').textContent=G.turn;
-  {const key=bestKey();if(G.prevBest>0&&G.score>G.prevBest&&!G.rec){G.rec=1;toast('NOUVEAU RECORD !',2000);burst(2,2,24,['#ffd84a','#ff7ab8','#ffffff']);sfx.win&&sfx.win()}
+  {const key=bestKey();if(G.prevBest>0&&G.score>G.prevBest&&!G.rec){G.rec=1;track('record');toast('NOUVEAU RECORD !',2000);burst(2,2,24,['#ffd84a','#ff7ab8','#ffffff']);sfx.win&&sfx.win()}
   if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
   drawSpriteTo($('curC'),G.cur||0,0);$('curN').textContent=G.cur?NAMES[G.cur]:'';
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
@@ -1607,7 +1608,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2027,7 +2028,7 @@ function openShop(){
   <button class="btn" data-a="x">FERMER</button></div>`,a=>{
     if(a==='x'){hideModal();return}
     const it=SHOP[+a];if(!it||G.coins<sp(it))return;
-    G.coins-=sp(it);if(it.t>0){if(G.res==null)G.res=it.t;else G.cur=it.t}else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
+    track('buy');G.coins-=sp(it);if(it.t>0){if(G.res==null)G.res=it.t;else G.cur=it.t}else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
     sfx.place();updateHud();openShop();
   });
   $('mbox').querySelectorAll('canvas[data-t]').forEach(cv=>{const t=+cv.dataset.t;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;if(t>0)drawPiece(g,t,0,0,64,64);else if(t===0)drawHeroTo(cv,G.hero);else{g.fillStyle='#6a6a58';g.font='bold 44px sans-serif';g.textAlign='center';g.fillText('↶',32,46)}});
@@ -2076,31 +2077,83 @@ function missionsFor(d){
     if(k==='combo')return{k,n:rg()<.5?2:3};return{k,n:3}})}
 function ensureMis(){const d=dayKey();if(!save.mis||save.mis.d!==d)save.mis={d,l:missionsFor(d).map(m=>Object.assign({v:0,done:0},m)),all:0};return save.mis}
 const misText=m=>m.k==='score'?'Marque '+m.n+' points en une partie':m.k==='make'?'Crée '+m.n+' '+NAMES[m.t]:m.k==='harvest'?'Récolte '+m.n+' capsules ou noyaux':m.k==='trap'?'Piège '+m.n+' Prodromes':m.k==='combo'?'Réalise un combo ×'+m.n:'Joue '+m.n+' parties';
+const gs=(S,k)=>S[k]||0,talLv=()=>Object.values(save.tal||{}).reduce((a,b)=>a+b,0),cardsBy=r=>CARDS.filter(c=>c.r===r&&(save.cards||{})[c.id]).length;
 const ACH=[
+ // victoires et score
  {id:'win1',n:'Première victoire',d:'Reconquiers un secteur.',r:5,ok:S=>S.wins>=1},
- {id:'tour',n:'Bâtisseur',d:'Érige une Tour.',r:10,ok:S=>S.towers>=1},
+ {id:'win10',n:'Général en herbe',d:'Gagne 10 secteurs (parties gagnées).',r:12,ok:S=>gs(S,'wins')>=10},
+ {id:'camp3',n:'En route',d:'Reconquiers 3 secteurs.',r:6,ok:S=>Object.keys(save.done).length>=3},
+ {id:'camp5',n:'À mi-chemin',d:'Reconquiers 5 secteurs.',r:10,ok:S=>Object.keys(save.done).length>=5},
+ {id:'camp',n:'Erret est libre',d:'Reconquiers les 10 secteurs.',r:30,c:1,ok:S=>Object.keys(save.done).length>=10},
+ {id:'s2k',n:'Bon départ',d:'Marque 2 000 points en une partie.',r:3,ok:S=>gs(S,'maxScore')>=2000},
  {id:'s10k',n:'Dix mille',d:'Marque 10 000 points en une partie.',r:10,ok:S=>S.maxScore>=10000},
  {id:'s50k',n:'Légende',d:'Marque 50 000 points en une partie.',r:25,ok:S=>S.maxScore>=50000},
+ {id:'s100k',n:'Mythique',d:'Marque 100 000 points en une partie.',r:40,c:1,ok:S=>gs(S,'maxScore')>=100000},
+ {id:'rec5',n:'Briseur de records',d:'Bats ton record 5 fois.',r:8,ok:S=>gs(S,'record')>=5},
+ // construction
+ {id:'sol100',n:'Champ solaire',d:'Crée 100 panneaux solaires.',r:8,ok:S=>gs(S,'m2')>=100},
+ {id:'bat50',n:'Urbaniste',d:'Crée 50 petits bâtiments.',r:8,ok:S=>gs(S,'m3')>=50},
+ {id:'usi25',n:'Industriel',d:'Crée 25 usines.',r:10,ok:S=>gs(S,'m4')>=25},
+ {id:'base10',n:'Architecte militaire',d:'Crée 10 bases.',r:12,ok:S=>gs(S,'m5')>=10},
+ {id:'tour',n:'Bâtisseur',d:'Érige une Tour.',r:10,ok:S=>S.towers>=1},
+ {id:'tour10',n:'Skyline',d:'Érige 10 tours.',r:20,ok:S=>gs(S,'towers')>=10},
+ {id:'sup10',n:'Supers !',d:'Fais 10 fusions SUPER (4 pièces ou plus).',r:8,ok:S=>gs(S,'super')>=10},
+ {id:'sup50',n:'Maître des supers',d:'Fais 50 fusions SUPER.',r:18,ok:S=>gs(S,'super')>=50},
+ // combos
  {id:'cmb3',n:'Réaction en chaîne',d:'Réalise un combo ×3.',r:8,ok:S=>S.maxCombo>=3},
+ {id:'cmb4',n:'Cascade',d:'Réalise un combo ×4.',r:12,ok:S=>gs(S,'maxCombo')>=4},
  {id:'cmb5',n:'Effet domino',d:'Réalise un combo ×5.',r:20,ok:S=>S.maxCombo>=5},
- {id:'harv',n:'Récolteur',d:'Récolte 25 capsules ou noyaux.',r:8,ok:S=>S.harvest>=25},
+ {id:'cmb7',n:'Tempête',d:'Réalise un combo ×7.',r:35,c:1,ok:S=>gs(S,'maxCombo')>=7},
+ // prodromes et outils
  {id:'trap',n:'Chasseur',d:'Piège 30 Prodromes.',r:8,ok:S=>S.trap>=30},
- {id:'camp',n:'Erret est libre',d:'Reconquiers les 10 secteurs.',r:30,ok:S=>Object.keys(save.done).length>=10},
+ {id:'trap100',n:'Exterminateur',d:'Piège 100 Prodromes.',r:20,ok:S=>gs(S,'trap')>=100},
+ {id:'harv',n:'Récolteur',d:'Récolte 25 capsules ou noyaux.',r:8,ok:S=>S.harvest>=25},
+ {id:'harv100',n:'Raffineur',d:'Récolte 100 capsules ou noyaux.',r:20,ok:S=>gs(S,'harvest')>=100},
+ {id:'drone10',n:'Démolisseur',d:'Utilise 10 drones EMP.',r:6,ok:S=>gs(S,'drone')>=10},
+ {id:'buy20',n:'Bon client',d:'Fais 20 achats chez le marchand.',r:8,ok:S=>gs(S,'buy')>=20},
+ // modes
+ {id:'zen5k',n:'Esprit zen',d:'Marque 5 000 points en mode zen.',r:6,ok:S=>(save.best.zen||0)>=5000},
+ {id:'zen20k',n:'Sérénité',d:'Marque 20 000 points en mode zen.',r:15,ok:S=>(save.best.zen||0)>=20000},
+ {id:'surv30',n:'Tenir bon',d:'Tiens 30 tours en survie.',r:6,ok:S=>gs(S,'survTurns')>=30},
  {id:'surv',n:'Increvable',d:'Tiens 60 tours en survie.',r:10,ok:S=>S.survTurns>=60},
+ {id:'surv120',n:'Immortel',d:'Tiens 120 tours en survie.',r:25,c:1,ok:S=>gs(S,'survTurns')>=120},
+ {id:'daily1',n:'Défi relevé',d:'Joue un défi quotidien.',r:5,ok:S=>gs(S,'daily')>=1},
+ {id:'daily7',n:'Habitué du défi',d:'Joue 7 défis quotidiens.',r:15,ok:S=>gs(S,'daily')>=7},
+ // régularité
+ {id:'games10',n:'Recrue',d:'Joue 10 parties.',r:4,ok:S=>gs(S,'games')>=10},
+ {id:'games',n:'Vétéran',d:'Joue 50 parties.',r:10,ok:S=>S.games>=50},
+ {id:'games200',n:'Ancien',d:'Joue 200 parties.',r:25,ok:S=>gs(S,'games')>=200},
+ {id:'str3',n:'Régulier',d:'3 jours de suite.',r:5,ok:S=>(save.login&&save.login.max||0)>=3},
  {id:'str7',n:'Fidèle au poste',d:'7 jours de suite.',r:15,ok:S=>(save.login&&save.login.max||0)>=7},
- {id:'games',n:'Vétéran',d:'Joue 50 parties.',r:10,ok:S=>S.games>=50}
+ {id:'str30',n:'Irréductible',d:'30 jours de suite.',r:50,c:2,ok:S=>(save.login&&save.login.max||0)>=30},
+ {id:'mis10',n:'Bon élève',d:'Termine 10 missions.',r:8,ok:S=>gs(S,'misDone')>=10},
+ {id:'mis50',n:'Employé du mois',d:'Termine 50 missions.',r:25,ok:S=>gs(S,'misDone')>=50},
+ {id:'misall',n:'Journée parfaite',d:'Termine les 3 missions d’un jour.',r:6,ok:S=>gs(S,'misAll')>=1},
+ // collection et progression
+ {id:'tal5',n:'Apprenti',d:'Dépense 5 niveaux de talents.',r:6,ok:S=>talLv()>=5},
+ {id:'tal20',n:'Expert',d:'Dépense 20 niveaux de talents.',r:20,ok:S=>talLv()>=20},
+ {id:'open1',n:'Premier colis',d:'Ouvre un colis.',r:3,ok:S=>gs(S,'opened')>=1},
+ {id:'open20',n:'Déballeur',d:'Ouvre 20 colis.',r:12,ok:S=>gs(S,'opened')>=20},
+ {id:'card10',n:'Collectionneur',d:'Possède 10 cartes.',r:8,ok:S=>cardsOwned()>=10},
+ {id:'card20',n:'Passionné',d:'Possède 20 cartes.',r:20,ok:S=>cardsOwned()>=20},
+ {id:'cardall',n:'Collection complète',d:'Possède les 33 cartes.',r:60,c:3,ok:S=>cardsOwned()>=CARDS.length},
+ {id:'epic',n:'Éclat violet',d:'Obtiens une carte Épique.',r:8,ok:S=>cardsBy(2)>=1},
+ {id:'legend',n:'Éclat d’or',d:'Obtiens une carte Légendaire.',r:25,ok:S=>cardsBy(3)>=1},
+ {id:'star3',n:'Trois étoiles',d:'Monte une carte à ★★★.',r:15,ok:S=>CARDS.some(c=>cardLv(c.id)>=3)},
+ {id:'skin',n:'Nouveau look',d:'Équipe un skin de bâtiments.',r:5,ok:S=>save.skin&&save.skin!=='classic'}
 ];
 function reward(n,label){save.frag=(save.frag||0)+n;toast(label+' +'+n+' ✦',2400);sfx.crystal&&sfx.crystal();fragLabel()}
-function checkAch(){const S=save.stats;ACH.forEach(a=>{if(!save.ach[a.id]&&a.ok(S)){save.ach[a.id]=1;reward(a.r,'SUCCÈS : '+a.n.toUpperCase())}})}
+function checkAch(){const S=save.stats;ACH.forEach(a=>{if(!save.ach[a.id]&&a.ok(S)){save.ach[a.id]=1;reward(a.r,'SUCCÈS : '+a.n.toUpperCase());if(a.c){save.crates=(save.crates||0)+a.c;colLabel()}}})}
 function track(k,n=1,t){
   const S=save.stats=save.stats||{};save.ach=save.ach||{};
   const mx=(key,v)=>{S[key]=Math.max(S[key]||0,v)},ad=(key,v)=>{S[key]=(S[key]||0)+v};
   if(k==='harvest')ad('harvest',n);else if(k==='trap')ad('trap',n);else if(k==='games')ad('games',1);else if(k==='score')mx('maxScore',n);
-  else if(k==='combo')mx('maxCombo',n);else if(k==='win')ad('wins',1);else if(k==='turns')mx('survTurns',n);else if(k==='make'&&t===6)ad('towers',1);
+  else if(k==='combo')mx('maxCombo',n);else if(k==='win')ad('wins',1);else if(k==='turns')mx('survTurns',n);else if(k==='super'||k==='drone'||k==='buy'||k==='daily'||k==='record')ad(k,1);else if(k==='make'&&t===6)ad('towers',1);
+  if(k==='make')ad('m'+t,1);
   const M=ensureMis();
   M.l.forEach(m=>{if(m.done||m.k!==k)return;if(k==='make'){if(m.t!==t)return;m.v+=n}else if(k==='score'||k==='combo')m.v=Math.max(m.v,n);else m.v+=n;
-    if(m.v>=m.n){m.done=1;reward(4,'MISSION ACCOMPLIE')}});
-  if(!M.all&&M.l.every(m=>m.done)){M.all=1;reward(6,'TOUTES LES MISSIONS');giveCrate('')}
+    if(m.v>=m.n){m.done=1;ad('misDone',1);reward(4,'MISSION ACCOMPLIE')}});
+  if(!M.all&&M.l.every(m=>m.done)){M.all=1;ad('misAll',1);reward(6,'TOUTES LES MISSIONS');giveCrate('')}
   checkAch();persist();misLabel()}
 function misLabel(){const e=$('misN');if(!e)return;const M=ensureMis();e.textContent=M.l.filter(m=>m.done).length+'/3';chips()}
 function missionsModal(){
@@ -2109,7 +2162,7 @@ function missionsModal(){
   <div style="display:flex;flex-direction:column;gap:8px">${M.l.map(m=>`<div style="border:2px solid ${m.done?'#7be05a':'#5a3a7a'};padding:6px 8px"><div style="font-size:22px;line-height:1">${m.done?'✓ ':''}${misText(m)}</div><div style="font-size:19px;color:${m.done?'#7be05a':'#7df0ff'}">${bar(m.v,m.n,m.done)} ${Math.min(m.v,m.n)}/${m.n} · +4 ✦</div></div>`).join('')}</div>
   <p style="text-align:center;font-size:19px;color:#ffd84a">Les trois : +6 ✦ de bonus · nouvelles missions demain</p>
   <h2>SUCCÈS ${Object.keys(save.ach).length}/${ACH.length}</h2>
-  <div style="display:flex;flex-direction:column;gap:5px">${ACH.map(a=>`<div style="font-size:19px;line-height:1;opacity:${save.ach[a.id]?1:.6};color:${save.ach[a.id]?'#7be05a':'inherit'}">${save.ach[a.id]?'✓':'·'} <b>${a.n}</b> : ${a.d} (+${a.r} ✦)</div>`).join('')}</div>
+  <div style="display:flex;flex-direction:column;gap:5px">${ACH.map(a=>`<div style="font-size:19px;line-height:1;opacity:${save.ach[a.id]?1:.6};color:${save.ach[a.id]?'#7be05a':'inherit'}">${save.ach[a.id]?'✓':'·'} <b>${a.n}</b> : ${a.d} (+${a.r} ✦${a.c?' +'+a.c+' 📦':''})</div>`).join('')}</div>
   <button class="btn" data-a="ok">FERMER</button>`,()=>hideModal());
 }
 function streakLabel(){chips()}
@@ -2174,10 +2227,10 @@ function drawCard(){ // tirage d'une carte, avec garanties : épique ou mieux to
   let r;if(save.pl>=30)r=3;else if(save.pe>=8)r=Math.random()<.2?3:2;else{let x=Math.random()*100;r=0;for(let i=0;i<4;i++){x-=RAR[i].w;if(x<0){r=i;break}}}
   if(r>=2)save.pe=0;if(r===3)save.pl=0;
   const pool=CARDS.filter(c=>c.r===r),c=pool[Math.floor(Math.random()*pool.length)],had=(save.cards[c.id]||0);
-  save.cards[c.id]=had+1;let frag=0;
+  save.cards[c.id]=had+1;save.stats.opened=(save.stats.opened||0)+1;let frag=0;
   if(had){frag=RAR[r].dup;save.frag=(save.frag||0)+frag;fragLabel()}
   if(c.k==='k'&&c.s)save.skins[c.s]=1;
-  persist();colLabel();return {c,isNew:!had,frag,lvUp:had>0&&[2,4].includes(had+1)}}
+  checkAch();persist();colLabel();return {c,isNew:!had,frag,lvUp:had>0&&[2,4].includes(had+1)}}
 const CRATE_COST=20;
 /* ---------- ouverture de colis : animation plein écran ---------- */
 function crateAnim(res,done){
@@ -2296,7 +2349,7 @@ function cardModal(c){
   showModal(`<div style="text-align:center">${cardHtml(c,true,true)}</div><p style="text-align:center;font-size:20px">${cardDesc(c)}</p><p style="text-align:center;font-size:18px;opacity:.8">Exemplaires : ${save.cards[c.id]} · bonus +${((.005+.0025*(cardLv(c.id)-1))*100).toFixed(2)} %</p>
   ${isSk?`<button class="btn ${eq?'':'pk'}" data-a="eq">${eq?'SKIN ÉQUIPÉ':'ÉQUIPER CE SKIN'}</button><button class="btn cy" data-a="std">REMETTRE LE SKIN CLASSIQUE</button>`:''}
   <button class="btn" data-a="back">RETOUR</button>`,a=>{
-    if(a==='eq'){save.skin=c.s;persist();cardModal(c);return}
+    if(a==='eq'){save.skin=c.s;persist();checkAch();cardModal(c);return}
     if(a==='std'){save.skin='classic';persist();cardModal(c);return}
     collectionModal()});
   paintCards();
@@ -2320,7 +2373,7 @@ function buildTalents(){
       const l=save.tal[t.id]||0,locked=t.req&&!(save.tal[t.req]||0),cost=talCost(t),can=!locked&&cost&&(save.frag||0)>=cost;
       const b=document.createElement('button');b.className='card'+(l>=t.max?' done':'');b.style.opacity=locked?.5:1;
       b.innerHTML=`<div class="n">${l}/${t.max}</div><div><div class="t">${t.n}</div><div class="o">${locked?'🔒 Nécessite '+TAL.find(x=>x.id===t.req).n:t.d}${cost&&!locked?' · '+cost+' ✦':''}</div></div>`;
-      b.addEventListener('click',()=>{au();if(!can){sfx.bad();return}save.frag-=cost;save.tal[t.id]=l+1;persist();sfx.place();buildTalents()});
+      b.addEventListener('click',()=>{au();if(!can){sfx.bad();return}save.frag-=cost;save.tal[t.id]=l+1;persist();checkAch();sfx.place();buildTalents()});
       box.appendChild(b)})});
 }
 $('bEnd').addEventListener('click',()=>{au();musicStart();buildModes();show('modes')});
