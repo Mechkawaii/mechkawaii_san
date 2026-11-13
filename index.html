@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.14</title>
+<title>Mechkawaii San 三 v7.15</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -107,6 +107,8 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 #modal{position:fixed;inset:0;background:rgba(5,2,10,.84);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.on{display:flex}
 .mbox{width:100%;max-width:min(560px,100%);max-height:92dvh;overflow:auto;background:var(--pan);border:4px solid var(--pk);box-shadow:0 0 0 4px #0c0a14,0 0 30px rgba(255,122,184,.35);padding:16px;display:flex;flex-direction:column;gap:12px}
+.mfoot{position:sticky;bottom:-16px;z-index:3;margin:0 -16px -16px;padding:10px 16px 16px;background:var(--pan);display:flex;flex-direction:column;gap:12px}
+.mbox.cream .mfoot{background:inherit}
 .mbox h2{font-family:'Press Start 2P';font-size:13px;line-height:1.5;margin:0;color:var(--yl);text-align:center}
 .mbox p,.mbox li{margin:0;font-size:21px;line-height:1.05}
 .mbox ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
@@ -160,7 +162,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.14 · retour toujours visible</div>
+  <div class="foot">Version 7.15 · boutons fixes partout</div>
 </main>
 
 <main id="select" class="screen">
@@ -1625,7 +1627,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.14) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.15) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1997,7 +1999,7 @@ $('bMenu').addEventListener('click',()=>{
 /* ---------- écrans ---------- */
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='title'){try{menuInfo();chips()}catch(e){}}}
 function toMenu(){G=null;show('title');say('')}
-function showModal(html,cb,cream){const m=$('mbox');m.classList.toggle('cream',!!cream);m.innerHTML=html;$('modal').classList.add('on');
+function showModal(html,cb,cream){const m=$('mbox');m.classList.toggle('cream',!!cream);m.innerHTML=html;{const L=m.lastElementChild;if(L&&(L.matches('.btn')||L.matches('.mrow'))&&m.scrollHeight>m.clientHeight+2||(L&&(L.matches('.btn')||L.matches('.mrow')))){const w=document.createElement('div');w.className='mfoot';m.insertBefore(w,L);w.appendChild(L)}}$('modal').classList.add('on');
   m.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{au();cb(b.dataset.a)}))}
 function hideModal(){$('modal').classList.remove('on')}
 function buildSelect(){
