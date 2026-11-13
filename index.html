@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.9</title>
+<title>Mechkawaii San 三 v7.10</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -144,7 +144,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.9 · plus de succès</div>
+  <div class="foot">Version 7.10 · succès en check-list</div>
 </main>
 
 <main id="select" class="screen">
@@ -1608,7 +1608,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.10) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2162,7 +2162,7 @@ function missionsModal(){
   <div style="display:flex;flex-direction:column;gap:8px">${M.l.map(m=>`<div style="border:2px solid ${m.done?'#7be05a':'#5a3a7a'};padding:6px 8px"><div style="font-size:22px;line-height:1">${m.done?'✓ ':''}${misText(m)}</div><div style="font-size:19px;color:${m.done?'#7be05a':'#7df0ff'}">${bar(m.v,m.n,m.done)} ${Math.min(m.v,m.n)}/${m.n} · +4 ✦</div></div>`).join('')}</div>
   <p style="text-align:center;font-size:19px;color:#ffd84a">Les trois : +6 ✦ de bonus · nouvelles missions demain</p>
   <h2>SUCCÈS ${Object.keys(save.ach).length}/${ACH.length}</h2>
-  <div style="display:flex;flex-direction:column;gap:5px">${ACH.map(a=>`<div style="font-size:19px;line-height:1;opacity:${save.ach[a.id]?1:.6};color:${save.ach[a.id]?'#7be05a':'inherit'}">${save.ach[a.id]?'✓':'·'} <b>${a.n}</b> : ${a.d} (+${a.r} ✦${a.c?' +'+a.c+' 📦':''})</div>`).join('')}</div>
+  <div style="display:flex;flex-direction:column;gap:4px">${ACH.map(a=>{const ok=save.ach[a.id];return `<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 6px;border:2px solid ${ok?'#7be05a':'#3a2a52'};background:${ok?'rgba(123,224,90,.12)':'transparent'};opacity:${ok?1:.4};filter:${ok?'none':'grayscale(1)'}"><span style="flex:none;width:18px;height:18px;margin-top:1px;border:2px solid ${ok?'#7be05a':'#8a8a9a'};background:${ok?'#7be05a':'transparent'};position:relative">${ok?'<span style="position:absolute;left:4px;top:0;width:5px;height:10px;border:solid #12081c;border-width:0 3px 3px 0;transform:rotate(45deg)"></span>':''}</span><div style="font-size:19px;line-height:1.05;color:${ok?'#fff':'#bbb'}"><b style="color:${ok?'#7be05a':'inherit'}">${a.n}</b><br><span style="opacity:.85">${a.d}</span> <span style="color:${ok?'#ffd84a':'inherit'}">+${a.r} ✦${a.c?' +'+a.c+' 📦':''}</span></div></div>`}).join('')}</div>
   <button class="btn" data-a="ok">FERMER</button>`,()=>hideModal());
 }
 function streakLabel(){chips()}
