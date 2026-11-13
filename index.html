@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.0</title>
+<title>Mechkawaii San 三 v7.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -119,16 +119,30 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
   </div>
   <div class="menu">
     <button class="btn pk" id="bCamp">CAMPAGNE</button>
-    <button class="btn" id="bEnd">MODE INFINI</button>
+    <button class="btn" id="bEnd">MODES DE JEU</button>
+    <button class="btn" id="bTal">TALENTS <span id="fragN"></span></button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.0 · aperçu des réactions en chaîne</div>
+  <div class="foot">Version 7.1 · modes, talents, campagne étendue</div>
 </main>
 
 <main id="select" class="screen">
   <div class="h1 px">CHOISIR UN SECTEUR</div>
   <div id="cards" style="display:flex;flex-direction:column;gap:10px"></div>
   <button class="btn sm cy" id="bSelBack" style="margin-top:6px">← RETOUR</button>
+</main>
+
+<main id="modes" class="screen">
+  <div class="h1 px">MODES DE JEU</div>
+  <div id="mcards" style="display:flex;flex-direction:column;gap:10px"></div>
+  <button class="btn sm cy" id="bModesBack" style="margin-top:6px">← RETOUR</button>
+</main>
+
+<main id="talents" class="screen">
+  <div class="h1 px">TALENTS</div>
+  <div id="tfrag" style="text-align:center;font-size:22px"></div>
+  <div id="tcards" style="display:flex;flex-direction:column;gap:8px"></div>
+  <button class="btn sm cy" id="bTalBack" style="margin-top:6px">← RETOUR</button>
 </main>
 
 <main id="hero" class="screen">
@@ -229,13 +243,53 @@ const SECTORS=[
  {name:'Les Docks',pro:2,free:0,make:[5,2],rate:.05,map:["######","#....#","#....#","#....#","#....#","######"],
   intro:"Les Docks. Fusionnez des usines pour ériger deux Bases. Elle tiendra toute la zone."},
  {name:'Porte du vaisseau-mère',pro:3,free:0,make:[6,1],rate:.055,map:["######","######","##..##","##..##","######","######"],
-  intro:"Dernière offensive. Érigez une Tour, et on chasse ces saletés d'Erret. Mechkawaii, en avant !"}
+  intro:"Porte du vaisseau-mère. Érigez une Tour pour forcer le passage. Mais ce n'est que le début, soldat."},
+ {name:'Autoroute brisée',pro:2,free:0,make:[3,8],lim:34,rate:.055,map:["#....#","......","#.##.#","#.##.#","......","#....#"],
+  intro:"Autoroute brisée. Le temps presse : huit petits bâtiments en 34 tours, pas un de plus."},
+ {name:'Cité-dortoir',pro:3,free:0,make:[4,5],lim:50,rate:.06,map:["#.#..#","..#.#.","#...#.",".#...#",".#.#..","#..#.#"],
+  intro:"Cité-dortoir. Cinq usines en 50 tours. Les Prodromes se cachent dans les ruelles."},
+ {name:'Raffineries',pro:3,free:0,make:[5,3],lim:70,rate:.065,map:["##..##","#....#","..##..","..##..","#....#","##..##"],
+  intro:"Raffineries. Trois Bases en 70 tours. Chaque case compte, ne gaspillez rien."},
+ {name:"Citadelle d'Erret",pro:4,free:0,make:[6,2],lim:110,rate:.07,map:["#.##.#","......","##..##","##..##","......","#.##.#"],
+  intro:"La Citadelle d'Erret. Deux Tours, et leur défense s'effondre. Ils sont nombreux, soldat."},
+ {name:"Cœur d'Erret",pro:4,free:0,make:[6,3],lim:150,rate:.08,map:["######","#....#","#.##.#","#.##.#","#....#","######"],
+  intro:"Le cœur d'Erret. Trois Tours pour la libérer. Mechkawaii, en avant !"}
 ];
 const ENDLESS={name:'Mode infini',pro:1,free:0,make:null,rate:.03,map:null,
   intro:"Tenez le terrain aussi longtemps que possible, soldat. Les brèches se rouvriront sans cesse."};
 
+const MODES={
+  endless:ENDLESS,
+  zen:{name:'Mode zen',pro:0,free:0,make:null,rate:0,map:null,zen:1,intro:"Mode zen. Aucun Prodrome ici. Fusionnez à votre rythme et visez le plus gros bâtiment."},
+  survival:{name:'Mode survie',pro:3,free:0,make:null,rate:.1,map:null,surv:1,intro:"Survie ! Les Prodromes déferlent sans cesse et vos pouvoirs se rechargent deux fois plus lentement. Tenez !"},
+  daily:{name:'Défi quotidien',pro:1,free:0,make:null,rate:.03,map:null,daily:1,intro:"Défi du jour : même plateau et mêmes pièces pour tous. Un seul essai, pas de talents."}
+};
+const MODE_DESC={endless:'Tiens le plus longtemps possible.',zen:'Sans Prodromes. Fusionne tranquillement.',survival:'Prodromes en masse, pouvoirs lents, +10 par tour.',daily:'Même partie pour tous, un essai par jour.'};
+const MODE_KEY={endless:'inf',zen:'zen',survival:'surv',daily:'daily'};
+const bestKey=()=>G.mode==='campaign'?'s'+G.si:MODE_KEY[G.mode]||'inf';
+const mul32=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const lr=()=>G&&G.lr?G.lr():Math.random(),lm=()=>G&&G.lm?G.lm():Math.random();
+const lrnd=n=>Math.floor(lr()*n),lpick=a=>a[lrnd(a.length)],lshuf=a=>{for(let i=a.length-1;i>0;i--){const j=lrnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const mrnd=n=>Math.floor(lm()*n),mpick=a=>a[mrnd(a.length)],mshuf=a=>{for(let i=a.length-1;i>0;i--){const j=mrnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const TAL=[
+ {id:'eco',br:0,n:'Économie',d:'+10 % de pièces gagnées par niveau.',max:5,c:[3,5,8,12,16]},
+ {id:'bank',br:0,n:'Caisse de départ',d:'+4 pièces au départ par niveau.',max:4,c:[3,6,10,15],req:'eco'},
+ {id:'shop',br:0,n:'Négociateur',d:'-8 % sur les prix du marchand par niveau.',max:4,c:[5,8,12,16],req:'bank'},
+ {id:'cd',br:1,n:'Recharge rapide',d:'Ton pouvoir se recharge 1 tour plus vite par niveau.',max:3,c:[4,8,14]},
+ {id:'shield',br:1,n:'Bouclier de départ',d:'Aucun Prodrome n’arrive pendant 2 tours de plus par niveau.',max:3,c:[4,8,14],req:'cd'},
+ {id:'prod',br:1,n:'Anti-Prodromes',d:'-8 % de Prodromes tirés par niveau.',max:4,c:[6,9,13,18],req:'shield'},
+ {id:'pts',br:2,n:'Rendement',d:'+5 % de points de fusion par niveau.',max:5,c:[3,5,8,12,16]},
+ {id:'harv',br:2,n:'Récolteur',d:'+25 % de points sur les capsules et noyaux par niveau.',max:3,c:[5,9,14],req:'pts'},
+ {id:'lucky',br:2,n:'Veinard',d:'+10 % de chances de Cristal et de Drone par niveau.',max:3,c:[6,10,16],req:'harv'}
+];
+const TBR=['ÉCONOMIE','COMBAT','FUSION'];
+const tal=id=>(G&&G.noTal)?0:((save.tal||{})[id]||0);
+const pcdOf=P=>Math.max(1,P.cd*(G&&G.S&&G.S.surv?2:1)-tal('cd'));
+const sp=it=>Math.max(1,Math.round(it.p*(1-.08*tal('shop'))));
+const addCoins=n=>{G.coins+=Math.round(n*(1+.1*tal('eco')))};
 let G=null,grid=[],floorC=[],texA=null,texB=null,groundCv=null,groundKey='';
-let save={done:{},best:{}};
+let save={done:{},best:{},tal:{},frag:0,daily:null};
 let pending=null;
 try{const s=JSON.parse(localStorage.getItem('mk_reconquete')||'null');if(s)save=Object.assign(save,s)}catch(e){}
 const persist=()=>{try{localStorage.setItem('mk_reconquete',JSON.stringify(save))}catch(e){}};
@@ -1212,11 +1266,12 @@ function flood(r,c,t){
   return out;
 }
 function emptyCells(){const o=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c])o.push([r,c]);return o}
-const randMech=()=>rnd(HIDS.length);const randPro=()=>rnd(PR.length);
+const randMech=()=>rnd(HIDS.length);const randPro=()=>lrnd(PR.length);
 function randPiece(){
-  const w=[[1,60],[2,20],[3,6],[4,1],[20,2.5],[21,3]];
-  if(G&&G.turn>=3&&!(G.shield>0)&&grid.flat().filter(t=>t&&t.t===12).length<5){const rt=G.mode==='campaign'?G.S.rate*2.4:Math.min(.08+G.turn*.0015,.3);const k=rt*100/5;for(let v=0;v<5;v++)w.push([30+v,k])}
-  let tot=w.reduce((a,b)=>a+b[1],0),x=Math.random()*tot;
+  const lk=1+.1*tal('lucky'),w=[[1,60],[2,20],[3,6],[4,1],[20,2.5*lk],[21,3*lk]];
+  const zen=G&&G.S&&G.S.zen,sv=G&&G.S&&G.S.surv;
+  if(G&&!zen&&G.turn>=(sv?1:3)&&!(G.shield>0)&&grid.flat().filter(t=>t&&t.t===12).length<(sv?8:5)){const rt=(G.mode==='campaign'?G.S.rate*2.4:sv?Math.min(.2+G.turn*.004,.6):Math.min(.08+G.turn*.0015,.3))*(1-.08*tal('prod'));const k=rt*100/5;for(let v=0;v<5;v++)w.push([30+v,k])}
+  let tot=w.reduce((a,b)=>a+b[1],0),x=lr()*tot;
   for(const [t,p] of w){x-=p;if(x<0)return t}return 1;
 }
 
@@ -1239,9 +1294,9 @@ function resolve(r,c){
     for(const [y,x] of g){if(y===r&&x===c)continue;G.ghosts.push({t:tl.t,v:tl.v,x:x,y:y,tx:c,ty:r,life:0});grid[y][x]=null}
     grid[r][c]=newTile(nx,0,r,c,1.7);
     const n=g.length,sup=n>NEED(tl.t),mult=n<4?1:(n-2)*(n-1)/2; // 3 → ×1, 4 → ×3, 5 → ×6, 6 → ×10…
-    if(sup){grid[r][c].sup=1;G.coins+=2*(n-3)}
+    if(sup){grid[r][c].sup=1;addCoins(2*(n-3))}
     G.made[nx]=(G.made[nx]||0)+1;
-    const gain=(PTS[nx]||0)*mult*chain;G.score+=gain;G.coins+=Math.max(1,nx-1)*(n-2);
+    const gain=Math.round((PTS[nx]||0)*mult*chain*(1+.05*tal('pts')));G.score+=gain;addCoins(Math.max(1,nx-1)*(n-2));
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
     if(sup)toast('SUPER '+NAMES[nx].toUpperCase()+' ×'+mult+' ! +'+gain,1400);
@@ -1301,9 +1356,9 @@ function pwBtn(){
   const P=POW[G.hero];
   if(G.armed){G.armed=false;G.swapA=null;G.sel=null;updateHud();return}
   if(G.pcd>0){sfx.bad();toast('Pouvoir dans '+G.pcd+' tour'+(G.pcd>1?'s':''),900);return}
-  if(G.hero==='faline'){G.cur=21;G.pcd=P.cd;sfx.crystal&&sfx.crystal();toast('INSTINCT ! Cristal prêt',1200);updateHud();return}
-  if(G.hero==='banado'){G.shield=3;G.pcd=P.cd;toast('BOUCLIER : pas de brèche 3 tours',1400);sfx.sel();updateHud();return}
-  if(G.hero==='meimei'){G.freeze=3;G.pcd=P.cd;toast('CAMOUFLAGE : Prodromes figés',1400);sfx.sel();updateHud();return}
+  if(G.hero==='faline'){G.cur=21;G.pcd=pcdOf(P);sfx.crystal&&sfx.crystal();toast('INSTINCT ! Cristal prêt',1200);updateHud();return}
+  if(G.hero==='banado'){G.shield=3;G.pcd=pcdOf(P);toast('BOUCLIER : pas de brèche 3 tours',1400);sfx.sel();updateHud();return}
+  if(G.hero==='meimei'){G.freeze=3;G.pcd=pcdOf(P);toast('CAMOUFLAGE : Prodromes figés',1400);sfx.sel();updateHud();return}
   G.armed=true;G.sel=null;G.swapA=null;sfx.sel();toast(G.hero==='yamabato'?'Choisis la 1re case':'Choisis une cible',1100);updateHud();
 }
 function usePower(r,c){
@@ -1322,7 +1377,7 @@ function usePower(r,c){
       burst(r,c,8,['#37e0ff','#ffffff']);burst(a,b,8,['#37e0ff','#ffffff']);sfx.place();G.swapA=null;
       if(A)resolve(r,c);if(B)resolve(a,b)}
   }
-  if(done){G.armed=false;G.sel=null;G.pcd=P.cd;settle()}else updateHud();
+  if(done){G.armed=false;G.sel=null;G.pcd=pcdOf(P);settle()}else updateHud();
 }
 function place(r,c){
   if(G.busy||G.over)return;
@@ -1331,7 +1386,7 @@ function place(r,c){
   const cur=G.cur;
   if(cur===20){
     const tl=grid[r][c];
-    if(tl.t===12){G.score+=100;G.coins+=2;toast('PRODROME NEUTRALISÉ +100',1100)}
+    if(tl.t===12){G.score+=100;addCoins(2);toast('PRODROME NEUTRALISÉ +100',1100)}
     else{const d=scoreDestroy(tl);if(d)toast(d>0?'DÉCOMBRES RETIRÉS +'+d:'DÉTRUIT '+d+' pts',1200)}
     grid[r][c]=(tl.t===9)?null:newTile(9,0,r,c,1.5); // détruire laisse des décombres, sauf sur des ruines
     burst(r,c,16,['#56e0ff','#ffffff','#9a55e8']);sfx.zap();
@@ -1351,20 +1406,20 @@ function place(r,c){
 }
 function prodromePhase(){
   const ps=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(grid[r][c]&&grid[r][c].t===12)ps.push([r,c]);
-  shuffle(ps);
+  mshuf(ps);
   if(G.freeze>0)ps.length=0;
-  const step=(y,x)=>{const opts=D4.map(([dy,dx])=>[y+dy,x+dx]).filter(([a,b])=>inb(a,b)&&!grid[a][b]);if(!opts.length)return [y,x];const [a,b]=pick(opts);grid[a][b]=grid[y][x];grid[y][x]=null;return [a,b]};
+  const step=(y,x)=>{const opts=D4.map(([dy,dx])=>[y+dy,x+dx]).filter(([a,b])=>inb(a,b)&&!grid[a][b]);if(!opts.length)return [y,x];const [a,b]=mpick(opts);grid[a][b]=grid[y][x];grid[y][x]=null;return [a,b]};
   let burned=0;
   for(const [y,x] of ps){
     const v=grid[y][x].v;let p=[y,x];
     if(v===1){if(G.turn%2===0)continue;p=step(y,x)}                 // Genbu : blindé, un tour sur deux
     else if(v===3){const o=[];for(let a=0;a<N;a++)for(let b=0;b<N;b++)if(!grid[a][b])o.push([a,b]);
-      if(o.length){const [a,b]=pick(o);grid[a][b]=grid[y][x];grid[y][x]=null;p=[a,b];burst(a,b,6,['#a0ff6a','#ffffff'])}}   // Gyuki : bondit
+      if(o.length){const [a,b]=mpick(o);grid[a][b]=grid[y][x];grid[y][x]=null;p=[a,b];burst(a,b,6,['#a0ff6a','#ffffff'])}}   // Gyuki : bondit
     else if(v===4){p=step(y,x);p=step(p[0],p[1])}                  // Gaoro : deux pas
     else p=step(y,x);                                              // Goki, Goryo : un pas
-    if(v===0&&G.turn>3&&Math.random()<.4){                         // Goki : brûle une petite pièce voisine
+    if(v===0&&G.turn>3&&lm()<.4){                         // Goki : brûle une petite pièce voisine
       const nb=D4.map(([dy,dx])=>[p[0]+dy,p[1]+dx]).filter(([a,b])=>inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3);
-      if(nb.length){const [a,b]=pick(nb);scoreDestroy(grid[a][b]);grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,12,['#ff9a3a','#ffd84a','#ff4f2a']);burned++}}
+      if(nb.length){const [a,b]=mpick(nb);scoreDestroy(grid[a][b]);grid[a][b]=newTile(9,0,a,b,1.5);burst(a,b,12,['#ff9a3a','#ffd84a','#ff4f2a']);burned++}}
   }
   if(burned){toast('GOKI BRÛLE '+(burned>1?burned+' PIÈCES':'UNE PIÈCE'),1300);sfx.bad&&sfx.bad()}
   setTimeout(trapPhase,300);
@@ -1383,7 +1438,7 @@ function trapPhase(){
   }
   const m10=G.made[10]||0;
   if(trapped){
-    sfx.trap();G.score+=trapped*50;G.coins+=trapped*2;toast('PRODROMES PIÉGÉS',1300);
+    sfx.trap();G.score+=trapped*50;addCoins(trapped*2);toast('PRODROMES PIÉGÉS',1300);
     if(!G.flags.trap){G.flags.trap=1;say("Prodromes piégés ! Trois ruines côte à côte forment une balise.")}
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
     if(trapped>=2&&(G.made[10]||0)>m10){const b=50*trapped*trapped;G.score+=b;toast('PIÈGE GROUPÉ ! +'+b,1600)}
@@ -1420,14 +1475,19 @@ function hasMove(){
 function endTurn(){
   if(G.pcd>0)G.pcd--;if(G.freeze>0)G.freeze--;if(G.shield>0)G.shield--;
   if(G.cur==null)G.cur=randPiece();
+  if(G.S.surv)G.score+=10;
   if(objDone()){return finish(true)}
+  if(G.mode==='campaign'&&G.S.lim&&G.turn>=G.S.lim)return finish(false);
   if(!hasMove()){return finish(false)}
   G.busy=false;updateHud();
 }
 function finish(win){
   G.over=true;G.busy=true;updateHud();
-  const key=G.mode==='campaign'?'s'+G.si:'inf';
+  const key=bestKey();
   if(!save.best[key]||G.score>save.best[key])save.best[key]=G.score;
+  if(G.mode==='daily')save.daily={d:todayKey(),score:G.score};
+  const frag=G.mode==='zen'?Math.floor(G.score/1500):Math.floor(G.score/600)+(win&&G.mode==='campaign'&&!save.done[G.si]?4+G.si:0)+(G.mode==='survival'?Math.floor(G.turn/15):0);
+  save.frag=(save.frag||0)+frag;
   const before=PICK.filter(isOpen);
   if(win&&G.mode==='campaign')save.done[G.si]=true;persist();
   const newH=PICK.filter(id=>isOpen(id)&&!before.includes(id));
@@ -1436,40 +1496,44 @@ function finish(win){
     const last=G.mode==='campaign'&&G.si===SECTORS.length-1;
     const btns=[];
     if(win&&G.mode==='campaign'&&!last)btns.push(`<button class="btn pk" data-a="next">SECTEUR SUIVANT</button>`);
-    btns.push(`<button class="btn" data-a="again">REJOUER</button>`,`<button class="btn cy" data-a="menu">MENU</button>`);
-    showModal(`<h2>${win?(last?'ERRET EST LIBÉRÉE !':'SECTEUR RECONQUIS'):'SECTEUR PERDU'}</h2>
-      <p style="text-align:center">Score : <span class="px" style="font-size:12px;color:#ffd84a">${G.score}</span><br>Meilleur : ${save.best[key]} · ${G.turn} tours</p>
+    if(G.mode!=='daily')btns.push(`<button class="btn" data-a="again">REJOUER</button>`);btns.push(`<button class="btn cy" data-a="menu">MENU</button>`);
+    showModal(`<h2>${G.mode!=='campaign'?'PARTIE TERMINÉE':win?(last?'ERRET EST LIBÉRÉE !':'SECTEUR RECONQUIS'):(G.S.lim&&G.turn>=G.S.lim?'TEMPS ÉCOULÉ':'SECTEUR PERDU')}</h2>
+      <p style="text-align:center">Score : <span class="px" style="font-size:12px;color:#ffd84a">${G.score}</span><br>Meilleur : ${save.best[key]} · ${G.turn} tours<br><span style="color:#7df0ff">+${frag} fragments</span></p>
       ${newH.length?`<p style="text-align:center;color:#7be05a">Nouveau héros débloqué : ${newH.map(id=>HN[hIdx(id)]).join(', ')} !</p>`:''}<div class="mrow">${btns.join('')}</div>`,a=>{
         hideModal();
-        if(a==='next')startCampaign(G.si+1);else if(a==='again')(G.mode==='campaign'?startCampaign(G.si):startEndless());else toMenu();
+        if(a==='next')startCampaign(G.si+1);else if(a==='again')(G.mode==='campaign'?startCampaign(G.si):startMode(G.mode));else toMenu();
       });
   },900);
 }
 
 /* ---------- partie ---------- */
 function startGame(mode,si,hero){
-  const S=mode==='campaign'?SECTORS[si]:ENDLESS;
-  G={mode,si,S,hero:hero||(G&&G.hero)||'duke',pcd:2,freeze:0,shield:0,coins:0,armed:false,swapA:null,seed:Math.floor(Math.random()*999),score:0,shown:0,turn:0,busy:false,over:false,sel:null,cur:null,res:null,made:{},freed:0,ghosts:[],parts:[],flags:{}};
+  const S=mode==='campaign'?SECTORS[si]:(MODES[mode]||ENDLESS);
+  const daily=mode==='daily',seed=daily?+todayKey().replace(/-/g,''):0;
+  G={mode,si,S,hero:hero||(G&&G.hero)||'duke',pcd:2,freeze:0,shield:0,coins:0,armed:false,swapA:null,seed:Math.floor(Math.random()*999),score:0,shown:0,turn:0,busy:false,over:false,sel:null,cur:null,res:null,made:{},freed:0,ghosts:[],parts:[],flags:{},noTal:daily,lr:daily?mul32(seed):null,lm:daily?mul32(seed^0x9e3779b9):null};
+  G.pcd=Math.max(0,2-tal('cd'));G.coins=4*tal('bank');G.shield=2*tal('shield');
   grid=[...Array(N)].map(()=>Array(N).fill(null));
   floorC=[...Array(N)].map(()=>Array(N).fill(false));
   buildFloors();
   let n=0,tries=0;const want=Math.max(9,Math.min(15,22-S.pro));
   const endless=mode!=='campaign',pool=endless?[1,1,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,4]:[1,1,1,1,1,1,2,2,2,3];
-  while(n<want&&tries++<600){const r=rnd(N),c=rnd(N);if(grid[r][c])continue;const t=pick(pool);
+  while(n<want&&tries++<600){const r=lrnd(N),c=lrnd(N);if(grid[r][c])continue;const t=lpick(pool);
     grid[r][c]=newTile(t,0,r,c,1);if(flood(r,c,t).length>=3){grid[r][c]=null;continue}n++}
   if(endless){ // départ façon Triple Town : un plateau déjà varié, avec une ou deux ruines
-    let k=1+rnd(2),z=0;while(k>0&&z++<200){const r=rnd(N),c=rnd(N);if(grid[r][c])continue;grid[r][c]=newTile(9,0,r,c,1);if(flood(r,c,9).length>=3){grid[r][c]=null;continue}k--}}
-  shuffle(emptyCells()).slice(0,endless?1+rnd(2):S.pro).forEach(([r,c])=>grid[r][c]=newTile(12,randPro(),r,c,1));
+    let k=1+lrnd(2),z=0;while(k>0&&z++<200){const r=lrnd(N),c=lrnd(N);if(grid[r][c])continue;grid[r][c]=newTile(9,0,r,c,1);if(flood(r,c,9).length>=3){grid[r][c]=null;continue}k--}}
+  const np=S.zen?0:S.surv?3+lrnd(2):endless?1+lrnd(2):S.pro;
+  lshuf(emptyCells()).slice(0,np).forEach(([r,c])=>grid[r][c]=newTile(12,randPro(),r,c,1));
   G.cur=randPiece();
   show('game');resize();updateHud();
   say(S.intro);
 }
 const startCampaign=i=>startGame('campaign',i,save.hero);
 const startEndless=()=>startGame('endless',0,save.hero);
+const startMode=m=>startGame(m,0,save.hero);
 
 function harvest(r,c){ // récolte une capsule/un noyau d'énergie : la pièce disparaît, bonus de points et de pièces
-  const tl=grid[r][c];if(!tl)return;snap();
-  const big=tl.t===17,pts=big?2000:500,co=big?10:3;
+  const hv=grid[r][c];if(!hv)return;snap();
+  const big=hv.t===17,pts=Math.round((big?2000:500)*(1+.25*tal('harv'))),co=Math.round((big?10:3)*(1+.1*tal('eco')));
   grid[r][c]=null;G.score+=pts;G.coins+=co;
   burst(r,c,big?26:16,big?['#ff3ec8','#ffffff','#3ee0ff']:['#3ee0ff','#fff27a','#ffffff']);
   sfx.crystal?sfx.crystal():sfx.place();toast((big?'NOYAU RÉCOLTÉ +':'CAPSULE RÉCOLTÉE +')+pts+' · +'+co+' pièces',1300);
@@ -1494,7 +1558,7 @@ function updateHud(){
   const S=G.S;
   $('hSector').innerHTML=(G.mode==='campaign'?'SECTEUR '+(G.si+1)+'<br>':'')+S.name.toUpperCase();
   $('hTurn').textContent=G.turn;
-  {const key=G.mode==='campaign'?'s'+G.si:'inf';if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
+  {const key=bestKey();if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
   drawSpriteTo($('curC'),G.cur||0,0);$('curN').textContent=G.cur?NAMES[G.cur]:'';
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
   $('coinN').textContent=G.coins;hintDraw();
@@ -1505,9 +1569,10 @@ function updateHud(){
   let h='';
   if(G.mode==='campaign'){
     if(S.make){const m=Math.min(G.made[S.make[0]]||0,S.make[1]);h+=`<div class="${m>=S.make[1]?'ok':''}">Créer ${NAMES[S.make[0]]} ${m}/${S.make[1]}</div>`}
+    if(S.lim)h+=`<div class="${S.lim-G.turn<=5?'':'ok'}" style="${S.lim-G.turn<=5?'color:#ff7a8a':''}">Tours restants : ${Math.max(0,S.lim-G.turn)}</div>`
   }else{
     const MS=[1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000],goal=MS.find(m=>m>G.score)||G.score+1,pct=Math.min(100,Math.floor(G.score/goal*100));
-    h+=`<div>But : ${goal.toLocaleString('fr-FR')} points</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${pct}%;background:#34c80a;transition:width .3s"></div></div><div>${pct} % · Meilleur : ${(save.best.inf||0).toLocaleString('fr-FR')}</div>`;
+    h+=`<div>But : ${goal.toLocaleString('fr-FR')} points</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${pct}%;background:#34c80a;transition:width .3s"></div></div><div>${pct} % · Meilleur : ${(save.best[bestKey()]||0).toLocaleString('fr-FR')}</div>`;
   }
   $('objs').innerHTML=h;
 }
@@ -1515,7 +1580,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1918,11 +1983,11 @@ function openShop(){
   G.armed=false;G.swapA=null;G.sel=null;
   const res=G.res!=null;
   showModal(`<h2>LE MARCHAND</h2><p style="text-align:center">Vous avez <span class="coin"></span> <b style="color:#ffd84a">${G.coins}</b> pièces.${res?'<br><span style="color:#ff7a8a">Réserve pleine : la pièce achetée remplacera la pièce en main.</span>':'<br>Les pièces achetées vont en réserve.'}</p>
-  <div class="mrow" style="gap:6px">${SHOP.map((it,i)=>`<button class="btn cy shopi" data-a="${i}" ${G.coins<it.p||(it.t===0&&G.pcd===0)||(it.t<0&&!G.undo)?'disabled':''}><canvas width="64" height="64" data-t="${it.t}"></canvas><div><div class="t" style="font-size:10px">${it.n.toUpperCase()}</div><div style="font-family:VT323;font-size:17px;line-height:1">${it.d}</div></div><span class="p">${it.p}</span></button>`).join('')}
+  <div class="mrow" style="gap:6px">${SHOP.map((it,i)=>`<button class="btn cy shopi" data-a="${i}" ${G.coins<sp(it)||(it.t===0&&G.pcd===0)||(it.t<0&&!G.undo)?'disabled':''}><canvas width="64" height="64" data-t="${it.t}"></canvas><div><div class="t" style="font-size:10px">${it.n.toUpperCase()}</div><div style="font-family:VT323;font-size:17px;line-height:1">${it.d}</div></div><span class="p">${sp(it)}</span></button>`).join('')}
   <button class="btn" data-a="x">FERMER</button></div>`,a=>{
     if(a==='x'){hideModal();return}
-    const it=SHOP[+a];if(!it||G.coins<it.p)return;
-    G.coins-=it.p;if(it.t>0){if(G.res==null)G.res=it.t;else G.cur=it.t}else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
+    const it=SHOP[+a];if(!it||G.coins<sp(it))return;
+    G.coins-=sp(it);if(it.t>0){if(G.res==null)G.res=it.t;else G.cur=it.t}else if(it.t===0)G.pcd=0;else{undo();sfx.sel();hideModal();return}
     sfx.place();updateHud();openShop();
   });
   $('mbox').querySelectorAll('canvas[data-t]').forEach(cv=>{const t=+cv.dataset.t;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;if(t>0)drawPiece(g,t,0,0,64,64);else if(t===0)drawHeroTo(cv,G.hero);else{g.fillStyle='#6a6a58';g.font='bold 44px sans-serif';g.textAlign='center';g.fillText('↶',32,46)}});
@@ -1934,7 +1999,7 @@ function buildHeroes(){
     b.innerHTML=`<canvas width="64" height="64"></canvas><div class="n">${HN[hIdx(id)].toUpperCase()}</div><div class="p">${open?P.n.toUpperCase():'???'}</div><div class="d">${open?P.d:'🔒 Libérer le secteur '+(UNLOCK[id]+1)}</div>`;
     drawHeroTo(b.querySelector('canvas'),id);
     if(!open){b.style.opacity=.55;b.querySelector('canvas').style.filter='brightness(0)';b.querySelector('.n').textContent='???';b.addEventListener('click',()=>{au();sfx.bad()});box.appendChild(b);return}
-    b.addEventListener('click',()=>{au();musicStart();save.hero=id;persist();const p=pending;pending=null;if(p.mode==='campaign')startGame('campaign',p.si,id);else startGame('endless',0,id)});
+    b.addEventListener('click',()=>{au();musicStart();save.hero=id;persist();const p=pending;pending=null;if(p.mode==='campaign')startGame('campaign',p.si,id);else startGame(p.mode,0,id)});
     box.appendChild(b)});
 }
 function chooseHero(mode,si){pending={mode,si};buildHeroes();show('hero')}
@@ -1956,7 +2021,33 @@ function helpModal(){
   const ch=$('chain');CH.forEach(t=>{const c=document.createElement('canvas');c.width=c.height=64;drawSpriteTo(c,t,0);ch.appendChild(c)});
 }
 $('bCamp').addEventListener('click',()=>{au();musicStart();buildSelect();show('select')});
-$('bEnd').addEventListener('click',()=>{au();musicStart();chooseHero('endless',0)});
+function buildModes(){
+  const box=$('mcards');box.innerHTML='';
+  Object.keys(MODES).forEach(m=>{
+    const S=MODES[m],done=m==='daily'&&save.daily&&save.daily.d===todayKey(),b=document.createElement('button');b.className='card'+(done?' done':'');
+    const rec=save.best[MODE_KEY[m]];
+    b.innerHTML=`<div class="n">${m==='endless'?'∞':m==='zen'?'禅':m==='survival'?'!':'★'}</div><div><div class="t">${S.name}</div><div class="o">${done?'Fait aujourd’hui : '+save.daily.score+' pts':MODE_DESC[m]}${rec&&!done?' · record '+rec:''}</div></div>`;
+    b.addEventListener('click',()=>{au();musicStart();if(done){sfx.bad();toast('Défi déjà joué aujourd’hui',1200);return}chooseHero(m,0)});box.appendChild(b)});
+}
+const talCost=t=>{const l=(save.tal||{})[t.id]||0;return l>=t.max?0:t.c[l]};
+function fragLabel(){const e=$('fragN');if(e)e.textContent=(save.frag||0)?'· '+save.frag+' ✦':''}
+function buildTalents(){
+  save.tal=save.tal||{};$('tfrag').innerHTML='Fragments : <b style="color:#7df0ff">'+(save.frag||0)+' ✦</b>';
+  const box=$('tcards');box.innerHTML='';
+  TBR.forEach((bn,bi)=>{
+    const h=document.createElement('div');h.className='px';h.style.cssText='font-size:10px;color:#ffd84a;margin:8px 0 0';h.textContent=bn;box.appendChild(h);
+    TAL.filter(t=>t.br===bi).forEach(t=>{
+      const l=save.tal[t.id]||0,locked=t.req&&!(save.tal[t.req]||0),cost=talCost(t),can=!locked&&cost&&(save.frag||0)>=cost;
+      const b=document.createElement('button');b.className='card'+(l>=t.max?' done':'');b.style.opacity=locked?.5:1;
+      b.innerHTML=`<div class="n">${l}/${t.max}</div><div><div class="t">${t.n}</div><div class="o">${locked?'🔒 Nécessite '+TAL.find(x=>x.id===t.req).n:t.d}${cost&&!locked?' · '+cost+' ✦':''}</div></div>`;
+      b.addEventListener('click',()=>{au();if(!can){sfx.bad();return}save.frag-=cost;save.tal[t.id]=l+1;persist();sfx.place();buildTalents()});
+      box.appendChild(b)})});
+}
+$('bEnd').addEventListener('click',()=>{au();musicStart();buildModes();show('modes')});
+$('bModesBack').addEventListener('click',()=>show('title'));
+$('bTal').addEventListener('click',()=>{au();musicStart();buildTalents();show('talents')});
+$('bTalBack').addEventListener('click',()=>{fragLabel();show('title')});
+fragLabel();
 $('bHelp').addEventListener('click',()=>{au();helpModal()});
 $('bSelBack').addEventListener('click',()=>show('title'));
 
