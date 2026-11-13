@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.4</title>
+<title>Mechkawaii San 三 v7.5</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -100,6 +100,15 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
 .pw.off{filter:grayscale(.8) brightness(.6)}.pw.arm{animation:arm .5s infinite steps(1)}
 @keyframes arm{50%{filter:brightness(1.5)}}
 #hero{background:rgba(12,10,20,.72)}
+.tc{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px 4px;border:3px solid var(--rc,#9aa0b5);background:linear-gradient(160deg,#241a38,#120c20);color:var(--tx);text-align:center;cursor:pointer;font-family:'VT323';box-shadow:0 0 8px color-mix(in srgb,var(--rc) 35%,transparent)}
+.tc canvas{width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 70%,color-mix(in srgb,var(--rc) 28%,#1a1230),#120c20);image-rendering:auto}
+.tc .cn{font-family:'Press Start 2P';font-size:6px;line-height:1.5;color:#fff;min-height:18px;display:flex;align-items:center}
+.tc .cr{font-family:'Press Start 2P';font-size:5px;color:var(--rc)}.tc .cs{font-size:15px;color:#ffd84a;line-height:1}
+.tc.lock{opacity:.45;filter:grayscale(1)}.tc.lock canvas{filter:brightness(0)}
+.tc.r3{animation:legend 2.2s infinite ease-in-out}@keyframes legend{50%{box-shadow:0 0 18px #ffd84a,0 0 4px #fff inset}}
+.tc.big{width:210px;margin:0 auto;padding:10px 8px;cursor:default;animation:flip .6s ease-out}.tc.big.r3{animation:flip .6s ease-out,legend 2.2s .6s infinite ease-in-out}
+.tc.big .cn{font-size:10px;min-height:0;margin-top:4px}.tc.big .cr{font-size:8px}.tc.big .cs{font-size:24px}
+@keyframes flip{0%{transform:rotateY(90deg) scale(.7);opacity:0}100%{transform:none;opacity:1}}
 #hcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .hc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;background:var(--pan);border:3px solid var(--line);color:var(--tx);text-align:center;cursor:pointer;font-family:'VT323'}
 .hc canvas{width:48px;height:48px;background:#2b2740}
@@ -126,7 +135,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
   <div id="streakInfo" style="text-align:center;font-size:22px;color:#ffd84a;margin-top:8px"></div>
-  <div class="foot">Version 7.4 · colis de ravitaillement et skins</div>
+  <div class="foot">Version 7.5 · cartes à collectionner</div>
 </main>
 
 <main id="select" class="screen">
@@ -292,7 +301,7 @@ const pcdOf=P=>Math.max(1,P.cd*(G&&G.S&&G.S.surv?2:1)-tal('cd'));
 const sp=it=>Math.max(1,Math.round(it.p*(1-.08*tal('shop'))));
 const addCoins=n=>{G.coins+=Math.round(n*(1+.1*tal('eco')))};
 let G=null,grid=[],floorC=[],texA=null,texB=null,groundCv=null,groundKey='';
-let save={done:{},best:{},tal:{},frag:0,daily:null,stats:{},ach:{},mis:null,login:null,crates:0,pity:0,skin:'classic',skins:{}};
+let save={done:{},best:{},tal:{},frag:0,daily:null,stats:{},ach:{},mis:null,login:null,crates:0,pity:0,skin:'classic',skins:{},cards:{},pe:0,pl:0};
 let pending=null;
 try{const s=JSON.parse(localStorage.getItem('mk_reconquete')||'null');if(s)save=Object.assign(save,s)}catch(e){}
 const persist=()=>{try{localStorage.setItem('mk_reconquete',JSON.stringify(save))}catch(e){}};
@@ -1299,7 +1308,7 @@ function resolve(r,c){
     const n=g.length,sup=n>NEED(tl.t),mult=n<4?1:(n-2)*(n-1)/2; // 3 → ×1, 4 → ×3, 5 → ×6, 6 → ×10…
     if(sup){grid[r][c].sup=1;addCoins(2*(n-3))}
     G.made[nx]=(G.made[nx]||0)+1;track('make',1,nx);
-    const gain=Math.round((PTS[nx]||0)*mult*chain*(1+.05*tal('pts')));G.score+=gain;addCoins(Math.max(1,nx-1)*(n-2));
+    const gain=Math.round((PTS[nx]||0)*mult*chain*(1+.05*tal('pts')+cardBonus()));G.score+=gain;addCoins(Math.max(1,nx-1)*(n-2));
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
     if(sup)toast('SUPER '+NAMES[nx].toUpperCase()+' ×'+mult+' ! +'+gain,1400);
@@ -1588,7 +1597,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.4) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2099,30 +2108,87 @@ function checkLogin(){
   save.frag=(save.frag||0)+gain;if(L.streak%7===0)save.crates=(save.crates||0)+1;persist();checkAch();fragLabel();streakLabel();colLabel();
   showModal(`<h2>RETOUR AU FRONT !</h2><p style="text-align:center">Série : <b style="color:#ffd84a">${L.streak} jour${L.streak>1?'s':''}</b><br>Récompense : <b style="color:#7df0ff">+${gain} ✦</b><br>${L.streak%7===0?'<br><b style="color:#ffd84a">+1 colis de ravitaillement !</b>':''}<br><span style="font-size:19px;opacity:.85">Reviens demain pour +${nxt} ✦${L.streak<8?' (jusqu’à 10)':''}.</span></p><button class="btn pk" data-a="ok">C’EST PARTI</button>`,()=>hideModal());
 }
-/* ---------- colis de ravitaillement et collection de skins ---------- */
+/* ---------- colis de ravitaillement et cartes à collectionner ---------- */
+const RAR=[{n:'COMMUNE',c:'#9aa0b5',w:60,dup:1},{n:'RARE',c:'#3ee0ff',w:28,dup:2},{n:'ÉPIQUE',c:'#c06cff',w:10,dup:4},{n:'LÉGENDAIRE',c:'#ffd84a',w:2,dup:8}];
+const CARDS=[
+ {id:'b1',n:'Vis et boulon',r:0,k:'p',t:1,d:'Le point de départ de toute reconquête.'},
+ {id:'b2',n:'Panneau solaire',r:0,k:'p',t:2,d:'De l’énergie propre pour les premiers avant-postes.'},
+ {id:'b3',n:'Petit bâtiment',r:0,k:'p',t:3,d:'Un abri modeste, mais un vrai toit.'},
+ {id:'b4',n:'Usine',r:1,k:'p',t:4,d:'Elle fabrique tout ce dont Erret a besoin.'},
+ {id:'b5',n:'Base',r:2,k:'p',t:5,d:'Le cœur d’un secteur reconquis.'},
+ {id:'b6',n:'Tour',r:3,k:'p',t:6,d:'Elle domine l’horizon et brille de loin.'},
+ {id:'r9',n:'Ruines',r:0,k:'p',t:9,d:'Ce que laisse un Prodrome vaincu.'},
+ {id:'r10',n:'Balise',r:0,k:'p',t:10,d:'Trois ruines, un signal pour l’armée.'},
+ {id:'r11',n:'Phare',r:1,k:'p',t:11,d:'Il guide les convois dans la nuit.'},
+ {id:'r16',n:'Capsule d’énergie',r:1,k:'p',t:16,d:'Récoltable : un beau bonus de points.'},
+ {id:'r17',n:'Noyau d’énergie',r:3,k:'p',t:17,d:'Une source d’énergie presque inépuisable.'},
+ {id:'d20',n:'Drone EMP',r:0,k:'p',t:20,d:'Une impulsion, et la pièce visée disparaît.'},
+ {id:'c21',n:'Cristal',r:2,k:'p',t:21,d:'Un joker qui devient la meilleure pièce.'},
+ {id:'x0',n:'Goki',r:0,k:'x',v:0,d:'Pyromane : brûle les petites pièces voisines.'},
+ {id:'x1',n:'Genbu',r:1,k:'x',v:1,d:'Blindé : n’avance qu’un tour sur deux.'},
+ {id:'x2',n:'Goryo',r:0,k:'x',v:2,d:'Grenadier : piégé, il explose en détruisant les petites pièces.'},
+ {id:'x3',n:'Gyuki',r:2,k:'x',v:3,d:'Bondisseur : se téléporte n’importe où.'},
+ {id:'x4',n:'Gaoro',r:1,k:'x',v:4,d:'Rapide : avance de deux pas à chaque tour.'},
+ {id:'h0',n:'Johanna',r:1,k:'h',h:'johanna'},{id:'h1',n:'Banado',r:1,k:'h',h:'banado'},{id:'h2',n:'Fuyu',r:2,k:'h',h:'fuyu'},
+ {id:'h3',n:'Mei Mei',r:0,k:'h',h:'meimei'},{id:'h4',n:'Yamabato',r:0,k:'h',h:'yamabato'},{id:'h5',n:'Duke',r:1,k:'h',h:'duke'},
+ {id:'h6',n:'Khurt',r:2,k:'h',h:'khurt'},{id:'h7',n:'Faline',r:2,k:'h',h:'faline'},{id:'h8',n:'Rasmus',r:1,k:'h',h:'rasmus'},{id:'h9',n:'Rhoney',r:0,k:'h',h:'rhoney'},
+ {id:'k1',n:'Skin Doré',r:1,k:'k',s:'aurum',d:'Les bâtiments passent à l’or.'},
+ {id:'k2',n:'Skin Glace',r:1,k:'k',s:'glace',d:'Des bâtiments aux reflets glacés.'},
+ {id:'k3',n:'Skin Braise',r:2,k:'k',s:'braise',d:'Des bâtiments rougeoyants.'},
+ {id:'k4',n:'Skin Jade',r:2,k:'k',s:'jade',d:'Des bâtiments vert jade.'},
+ {id:'k5',n:'Skin Néon rose',r:3,k:'k',s:'neon',d:'Des bâtiments rose néon.'}
+];
+const cardLv=id=>{const n=(save.cards||{})[id]||0;return n>=4?3:n>=2?2:n>=1?1:0};
+const cardsOwned=()=>CARDS.filter(c=>(save.cards||{})[c.id]).length;
+const cardBonus=()=>{if(G&&G.noTal)return 0;let b=0;CARDS.forEach(c=>{const l=cardLv(c.id);if(l)b+=.005+.0025*(l-1)});return b};
+const cardDesc=c=>c.d||(c.k==='h'?POW[c.h].n+' : '+POW[c.h].d:'');
+(()=>{save.cards=save.cards||{};save.skins=save.skins||{};SKINS.forEach(k=>{if(k.id==='classic')return;const c=CARDS.find(x=>x.s===k.id);if(save.skins[k.id]&&c&&!save.cards[c.id])save.cards[c.id]=1})})();
+function cardArt(cv,c,id){
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);g.imageSmoothingEnabled=false;const W=cv.width,H=cv.height;
+  if(c.k==='p')drawPiece(g,c.t,0,0,W,H);
+  else if(c.k==='x')drawPiece(g,12,0,0,W,H,c.v);
+  else if(c.k==='h')g.drawImage(spriteCanvas(7,hIdx(c.h),0),W*.1,H*.1,W*.8,H*.8);
+  else{HD.ov=c.s;try{drawPiece(g,3,0,H*.15,W*.52,H*.7);drawPiece(g,5,W*.48,H*.15,W*.52,H*.7)}finally{HD.ov=null}}}
+function cardHtml(c,own,big){const R=RAR[c.r],l=cardLv(c.id);
+  return `<div class="tc r${c.r}${own?'':' lock'}${big?' big':''}" style="--rc:${R.c}" ${big?'':`data-a="c:${c.id}"`}><canvas width="${big?210:96}" height="${big?210:96}" data-card="${c.id}"></canvas><div class="cn">${own?c.n.toUpperCase():'???'}</div><div class="cr">${R.n}</div><div class="cs">${own?'★'.repeat(l)+'☆'.repeat(3-l):''}</div></div>`}
+function paintCards(){$('mbox').querySelectorAll('canvas[data-card]').forEach(cv=>{const c=CARDS.find(x=>x.id===cv.dataset.card);if(c&&(save.cards[c.id]||cv.closest('.big')))cardArt(cv,c)})}
 function giveCrate(why){save.crates=(save.crates||0)+1;persist();colLabel();toast('COLIS DE RAVITAILLEMENT ! '+(why||''),2200);sfx.crystal&&sfx.crystal()}
 function colLabel(){const e=$('colN');if(e)e.textContent=(save.crates||0)?'· '+save.crates+' 📦':''}
-function openCrate(){
-  save.crates--;save.skins=save.skins||{};
-  const locked=SKINS.filter(k=>k.id!=='classic'&&!save.skins[k.id]);
-  let res;
-  if(locked.length&&(Math.random()<.3||(save.pity||0)>=3)){const k=locked[Math.floor(Math.random()*locked.length)];save.skins[k.id]=1;save.pity=0;res={txt:'Nouveau skin : '+k.n+' !',skin:k.id}}
-  else{save.pity=(save.pity||0)+1;const f=[3,3,4,4,5,6,8,12][Math.floor(Math.random()*8)];save.frag=(save.frag||0)+f;fragLabel();res={txt:'+'+f+' fragments ✦'}}
-  persist();colLabel();return res}
-function collectionModal(last){
-  save.skins=save.skins||{};const n=save.crates||0;
+function drawCard(){ // tirage d'une carte, avec garanties : épique ou mieux tous les 8 colis, légendaire tous les 30
+  save.crates--;save.pe=(save.pe||0)+1;save.pl=(save.pl||0)+1;
+  let r;if(save.pl>=30)r=3;else if(save.pe>=8)r=Math.random()<.2?3:2;else{let x=Math.random()*100;r=0;for(let i=0;i<4;i++){x-=RAR[i].w;if(x<0){r=i;break}}}
+  if(r>=2)save.pe=0;if(r===3)save.pl=0;
+  const pool=CARDS.filter(c=>c.r===r),c=pool[Math.floor(Math.random()*pool.length)],had=(save.cards[c.id]||0);
+  save.cards[c.id]=had+1;let frag=0;
+  if(had){frag=RAR[r].dup;save.frag=(save.frag||0)+frag;fragLabel()}
+  if(c.k==='k'&&c.s)save.skins[c.s]=1;
+  persist();colLabel();return {c,isNew:!had,frag,lvUp:had>0&&[2,4].includes(had+1)}}
+const CRATE_COST=20;
+function collectionModal(res){
+  const n=save.crates||0,own=cardsOwned();
   showModal(`<h2>COLLECTION</h2>
-  <p style="text-align:center">Colis : <b style="color:#ffd84a">${n}</b>${last?`<br><b style="color:#ff7ab8">${last.txt}</b>`:''}<br><span style="font-size:18px;opacity:.85">Gagnés en finissant une partie à 1500 points ou plus, en terminant les missions du jour, ou en tenant 7 jours de suite.</span></p>
+  ${res?`<div style="text-align:center">${cardHtml(res.c,true,true)}<p style="margin-top:8px;font-size:21px;color:${RAR[res.c.r].c}">${res.isNew?'NOUVELLE CARTE !':'Doublon : +'+res.frag+' ✦'+(res.lvUp?' · niveau supérieur !':'')}</p></div>`:''}
+  <p style="text-align:center">Colis : <b style="color:#ffd84a">${n}</b> · Cartes : <b style="color:#7df0ff">${own}/${CARDS.length}</b><br><span style="font-size:18px;opacity:.85">Bonus de collection : +${(cardBonus()*100).toFixed(1)} % de points. Les doublons montent la carte en niveau (★).</span></p>
   <button class="btn ${n?'pk':''}" data-a="open" ${n?'':'disabled'}>OUVRIR UN COLIS</button>
-  <h2>SKINS DE BÂTIMENTS</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${SKINS.map(k=>{const own=k.id==='classic'||save.skins[k.id];return `<button class="hc${save.skin===k.id&&own?' on':''}" data-a="sk:${k.id}" style="${own?'':'opacity:.5'}"><canvas width="128" height="64" data-sk="${own?k.id:''}" style="width:96px;height:48px"></canvas><div class="n">${own?k.n.toUpperCase():'???'}</div></button>`}).join('')}</div>
-  <p style="text-align:center;font-size:18px;opacity:.8">Les skins changent la couleur des bâtiments (sprites HD).</p>
+  <button class="btn cy" data-a="buy" ${(save.frag||0)>=CRATE_COST?'':'disabled'}>ACHETER UN COLIS · ${CRATE_COST} ✦ (${save.frag||0})</button>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${CARDS.slice().sort((a,b)=>b.r-a.r).map(c=>cardHtml(c,!!save.cards[c.id])).join('')}</div>
   <button class="btn" data-a="x">FERMER</button>`,a=>{
     if(a==='x'){hideModal();return}
-    if(a==='open'){if((save.crates||0)>0){const r=openCrate();sfx.win&&sfx.win();collectionModal(r)}return}
-    if(a.startsWith('sk:')){const id=a.slice(3);if(id==='classic'||save.skins[id]){save.skin=id;persist();collectionModal(last)}return}
+    if(a==='open'){if((save.crates||0)>0){const r=drawCard();sfx.win&&sfx.win();collectionModal(r)}return}
+    if(a==='buy'){if((save.frag||0)>=CRATE_COST){save.frag-=CRATE_COST;save.crates=(save.crates||0)+1;persist();fragLabel();colLabel();collectionModal(res)}return}
+    if(a.startsWith('c:')){const c=CARDS.find(x=>x.id===a.slice(2));if(c&&save.cards[c.id])cardModal(c);return}
   });
-  $('mbox').querySelectorAll('canvas[data-sk]').forEach(cv=>{const id=cv.dataset.sk;if(!id)return;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;HD.ov=id;try{drawPiece(g,3,0,0,64,64);drawPiece(g,5,64,0,64,64)}finally{HD.ov=null}});
+  paintCards();
+}
+function cardModal(c){
+  const isSk=c.k==='k',eq=isSk&&save.skin===c.s;
+  showModal(`<div style="text-align:center">${cardHtml(c,true,true)}</div><p style="text-align:center;font-size:20px">${cardDesc(c)}</p><p style="text-align:center;font-size:18px;opacity:.8">Exemplaires : ${save.cards[c.id]} · bonus +${((.005+.0025*(cardLv(c.id)-1))*100).toFixed(2)} %</p>
+  ${isSk?`<button class="btn ${eq?'':'pk'}" data-a="eq">${eq?'SKIN ÉQUIPÉ':'ÉQUIPER CE SKIN'}</button><button class="btn cy" data-a="std">REMETTRE LE SKIN CLASSIQUE</button>`:''}
+  <button class="btn" data-a="back">RETOUR</button>`,a=>{
+    if(a==='eq'){save.skin=c.s;persist();cardModal(c);return}
+    if(a==='std'){save.skin='classic';persist();cardModal(c);return}
+    collectionModal()});
+  paintCards();
 }
 function buildModes(){
   const box=$('mcards');box.innerHTML='';
@@ -2195,7 +2261,7 @@ function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
   if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else drawBg(ts);}
 requestAnimationFrame(loop);
-window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis,collectionModal,openCrate};
+window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis,collectionModal,drawCard};
 })();
 </script>
 <script>
