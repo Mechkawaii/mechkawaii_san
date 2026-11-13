@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.7</title>
+<title>Mechkawaii San 三 v6.8</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.7 · trottoirs courbes en dalles</div>
+  <div class="foot">Version 6.8 · virages de trottoir plus larges</div>
 </main>
 
 <main id="select" class="screen">
@@ -1500,7 +1500,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1614,7 +1614,7 @@ function ensureHdGround(){
         if(n)seg(cx,y,cx,cy);if(s2)seg(cx,y+S,cx,cy);if(w2)seg(x,cy,cx,cy);if(e)seg(x+S,cy,cx,cy)}
       g.restore()}
     // trottoirs
-    const rc=46; // rayon extérieur du virage de bordure (rayon côté route : rc-T)
+    const rc=64; // rayon extérieur du virage de bordure (rayon côté route : rc-T)
     const hasN=cN,hasS=cS,hasW=cW,hasE=cE;
     const R=rc,x0=(w2)=>w2?R:0; // avec un coin arrondi, les bandes s'arrêtent là où commence l'arrondi
     if(hasN)dalle(x+(hasW?R:0),y,S-(hasW?R:0)-(hasE?R:0),T,false);
@@ -1626,8 +1626,8 @@ function ensureHdGround(){
       const ox=cx2+sx*rc,oy=cy2+sy*rc,a0=sy>0?-Math.PI/2:Math.PI/2,a1=sx>0?Math.PI:0;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;
       const arcR=(rad,from,sw)=>g.arc(ox,oy,rad,from,from+sw,sw<0);
       g.beginPath();g.moveTo(cx2,cy2);g.lineTo(ox,cy2);arcR(rc,a0,da);g.closePath();g.fillStyle=solPat;g.fill();
-      for(let k=0;k<2;k++){ // le virage est fait de 2 dalles courbes, même style que les bandes droites
-        const s0=a0+da*k/2,sw=da/2,v=rh(Math.floor(cx2/S),Math.floor(cy2/S)+k,17)%100,sh=v<30?-10:v<70?0:10;
+      for(let k=0;k<3;k++){ // le virage est fait de 3 dalles courbes, même style que les bandes droites
+        const s0=a0+da*k/3,sw=da/3,v=rh(Math.floor(cx2/S),Math.floor(cy2/S)+k,17)%100,sh=v<30?-10:v<70?0:10;
         g.beginPath();arcR(rc,s0,sw);arcR(rc-T,s0+sw,-sw);g.closePath();g.fillStyle=`rgb(${106+sh},${87+sh},${146+sh})`;g.fill();g.lineJoin='miter';g.strokeStyle=KO;g.lineWidth=4;g.stroke();
         g.beginPath();arcR(rc-5,s0+sw*.06,sw*.88);g.strokeStyle=KL;g.lineWidth=3;g.stroke();
         g.beginPath();arcR(rc-T+5,s0+sw*.06,sw*.88);g.strokeStyle=KD;g.lineWidth=3;g.stroke()}};
@@ -1636,7 +1636,7 @@ function ensureHdGround(){
     const dg=(dy,dx)=>inb(r+dy,c+dx)&&!em(r+dy,c+dx);
     [[-1,-1,x,y],[-1,1,x+S-T,y],[1,-1,x,y+S-T],[1,1,x+S-T,y+S-T]].forEach(([dy,dx,px,py])=>{
       if(em(r+dy,c)&&em(r,c+dx)&&dg(dy,dx)){ // poteau d'angle rentrant : quart de disque centré sur l'angle de la case, arrondi côté route
-        const rr=rc-T,sxi=dx>0?1:-1,syi=dy>0?1:-1,rx=dx>0?px:px+T,ry=dy>0?py:py+T,cx3=rx+sxi*rr,cy3=ry+syi*rr,b0=sxi>0?Math.PI:0,b1=syi>0?-Math.PI/2:Math.PI/2;let db=b1-b0;while(db>Math.PI)db-=2*Math.PI;while(db<=-Math.PI)db+=2*Math.PI;
+        const rr=Math.min(rc-T,T),sxi=dx>0?1:-1,syi=dy>0?1:-1,rx=dx>0?px:px+T,ry=dy>0?py:py+T,cx3=rx+sxi*rr,cy3=ry+syi*rr,b0=sxi>0?Math.PI:0,b1=syi>0?-Math.PI/2:Math.PI/2;let db=b1-b0;while(db>Math.PI)db-=2*Math.PI;while(db<=-Math.PI)db+=2*Math.PI;
         const pp=()=>{g.beginPath();g.moveTo(cx3,ry);g.lineTo(rx+sxi*T,ry);g.lineTo(rx+sxi*T,ry+syi*T);g.lineTo(rx,ry+syi*T);g.lineTo(rx,cy3);g.arc(cx3,cy3,rr,b0,b0+db,db<0);g.closePath()};
         pp();g.fillStyle=KB;g.fill();g.lineJoin='miter';g.strokeStyle=KO;g.lineWidth=4;g.stroke();
         g.beginPath();g.arc(cx3,cy3,rr-5,b0+db*.06,b0+db*.94,db<0);g.strokeStyle=KL;g.lineWidth=3;g.stroke()}})
