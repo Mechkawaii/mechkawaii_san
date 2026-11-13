@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.13</title>
+<title>Mechkawaii San 三 v7.14</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -56,6 +56,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 .tnode.can{animation:tcan 1.4s ease-in-out infinite}@keyframes tcan{50%{box-shadow:inset 0 0 0 2px #0c0a14,0 0 16px var(--tc)}}
 .tnode.sel{outline:3px solid #fff;outline-offset:3px}
 .tdp{margin-top:14px;padding:10px;border:3px solid #5a3a7a;background:rgba(21,14,36,.92);text-align:center}
+.backbar{position:sticky;bottom:0;z-index:5;margin:auto -12px 0;padding:14px 16px max(12px,env(safe-area-inset-bottom));background:linear-gradient(to top,#0c0a14 62%,rgba(12,10,20,0))}.backbar .btn{width:100%}
 #title{justify-content:space-between;padding-top:max(36px,env(safe-area-inset-top))}
 .logo{text-align:center;margin-top:6vh}
 .l1img{display:block;width:min(74vw,330px);margin:0 auto;animation:logoF 3.4s ease-in-out infinite;filter:drop-shadow(0 4px 0 rgba(0,0,0,.5))}
@@ -159,19 +160,19 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.13 · arbre de talents</div>
+  <div class="foot">Version 7.14 · retour toujours visible</div>
 </main>
 
 <main id="select" class="screen">
   <div class="h1 px">CHOISIR UN SECTEUR</div>
   <div id="cards" style="display:flex;flex-direction:column;gap:10px"></div>
-  <button class="btn sm cy" id="bSelBack" style="margin-top:6px">← RETOUR</button>
+  <div class="backbar"><button class="btn sm cy" id="bSelBack">← RETOUR</button></div>
 </main>
 
 <main id="modes" class="screen">
   <div class="h1 px">MODES DE JEU</div>
   <div id="mcards" style="display:flex;flex-direction:column;gap:10px"></div>
-  <button class="btn sm cy" id="bModesBack" style="margin-top:6px">← RETOUR</button>
+  <div class="backbar"><button class="btn sm cy" id="bModesBack">← RETOUR</button></div>
 </main>
 
 <main id="talents" class="screen">
@@ -180,13 +181,13 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
   <div style="text-align:center;font-size:19px;opacity:.85">Touche un talent pour le voir, puis améliore-le. Il faut avoir débloqué le talent du dessus. Actifs sur toutes tes parties (sauf le défi quotidien).</div>
   <div id="tcards"></div>
   <div id="tdet"></div>
-  <button class="btn sm cy" id="bTalBack" style="margin-top:6px">← RETOUR</button>
+  <div class="backbar"><button class="btn sm cy" id="bTalBack">← RETOUR</button></div>
 </main>
 
 <main id="hero" class="screen">
   <div class="h1 px">CHOISIR UN HÉROS</div>
   <div id="hcards"></div>
-  <button class="btn sm cy" id="bHeroBack" style="margin-top:6px">← RETOUR</button>
+  <div class="backbar"><button class="btn sm cy" id="bHeroBack">← RETOUR</button></div>
 </main>
 
 <main id="game" class="screen">
@@ -1624,7 +1625,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.13) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.14) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
