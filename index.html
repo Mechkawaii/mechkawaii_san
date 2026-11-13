@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.1</title>
+<title>Mechkawaii San 三 v7.2</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -123,7 +123,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bTal">TALENTS <span id="fragN"></span></button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.1 · modes, talents, campagne étendue</div>
+  <div class="foot">Version 7.2 · la route reste une route sous un Prodrome</div>
 </main>
 
 <main id="select" class="screen">
@@ -1176,13 +1176,13 @@ function drawTiles(oc,em,pz){
     oc.drawImage(tsTile(g,k),c*C,r*C)}
 }
 function ensureGround(){
-  const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+(TS.img?'T':'');
+  const key=grid.map(r=>r.map(x=>x&&x.t!==12?1:0).join('')).join('|')+(TS.img?'T':'');
   if(key===groundKey&&groundCv)return;groundKey=key;
   groundCv=cvs(PX,PX);const oc=groundCv.getContext('2d');oc.imageSmoothingEnabled=true;oc.imageSmoothingQuality='high';oc.drawImage(texA,0,0,PX,PX);
   const idd=oc.getImageData(0,0,PX,PX),d=idd.data;
   for(let i=0;i<d.length;i+=4){const c=quantG(d[i],d[i+1],d[i+2]);d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2]}
   oc.putImageData(idd,0,0);oc.imageSmoothingEnabled=false;
-  const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
+  const em=(y,x)=>inb(y,x)&&(!grid[y][x]||grid[y][x].t===12),pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
   if(TS.img)drawTiles(oc,em,pz);else drawAsphalt(oc,em,pz);
 }
 const GPAL=['#2c2838','#383247','#454056','#50496a','#5a5470','#6a647c','#7a748c','#9a94a8','#2f6b3c','#58c46a','#0e0b14','#14101c','#1b1722','#2b2733','#3a3545','#4a4458','#5a546a','#8a8498','#f4efe4','#d8b840'].map(hex2rgb);
@@ -1580,7 +1580,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1594,9 +1594,9 @@ function hdTile(i){let c=HD.cache.get(i);if(c)return c;
 const hdRoad=(shape,r,c)=>{const w=rh(r,c,77)%100;return 3+HDS[shape]*3+(w<62?0:w<84?1:2)};
 let hdGroundCv=null,hdGroundKey='';
 function ensureHdGroundTiles(){
-  const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
+  const key=grid.map(r=>r.map(x=>x&&x.t!==12?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
   const S=HD.CELL,W=S*N;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
-  const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
+  const em=(y,x)=>inb(y,x)&&(!grid[y][x]||grid[y][x].t===12),pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
   const G0=HD.G0,G1=HD.G1,T0=0,T1=HD.T1; // embouchure ; épaisseur de la bande de trottoir (prise sur la tuile droite)
   const hT=hdTile(3+HDS.H*3),vT=hdTile(53),vE=hdTile(54);
   const wall=(side,x,y,mouth)=>{const run=(a,b,fn)=>{if(!mouth){fn(a,b);return}if(G0>a)fn(a,Math.min(b,G0));if(G1<b)fn(Math.max(a,G1),b)};
@@ -1634,9 +1634,9 @@ function hdAsphalt(){ // asphalte sans couture : on mélange la tuile avec elle-
   og2.putImageData(oi,0,0);hdAsph=o;return o}
 function ensureHdGround(){
   if(HD.roads==='old')return ensureHdGroundTiles();
-  const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
+  const key=grid.map(r=>r.map(x=>x&&x.t!==12?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
   const S=HD.CELL,W=S*N,T=26;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
-  const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
+  const em=(y,x)=>inb(y,x)&&(!grid[y][x]||grid[y][x].t===12),pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
   const asph=g.createPattern(hdAsphalt(),'repeat'),solPat=g.createPattern(hdSol(52),'repeat');
   const KB='#6a5792',KL='#8d79b6',KD='#3a2a5c',KO='#1f1431';
   const dalle=(x,y,w,h,vert)=>{ // bande de trottoir : dalles de 32 px alignées sur la grille globale
