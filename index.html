@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v6.5</title>
+<title>Mechkawaii San 三 v6.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -122,7 +122,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn" id="bEnd">MODE INFINI</button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 6.5 · variante de couleur plus discrète</div>
+  <div class="foot">Version 6.6 · angles de trottoir alignés</div>
 </main>
 
 <main id="select" class="screen">
@@ -1500,7 +1500,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v6.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v6.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1557,7 +1557,7 @@ function ensureHdGround(){
   const key=grid.map(r=>r.map(x=>x?1:0).join('')).join('|')+HD.n;if(key===hdGroundKey&&hdGroundCv)return;hdGroundKey=key;
   const S=HD.CELL,W=S*N,T=26;hdGroundCv=cvs(W,W);const g=hdGroundCv.getContext('2d');g.imageSmoothingEnabled=false;
   const em=(y,x)=>inb(y,x)&&!grid[y][x],pz=(y,x)=>em(y,x)&&[[0,0],[0,-1],[-1,0],[-1,-1]].some(([a,b])=>em(y+a,x+b)&&em(y+a,x+b+1)&&em(y+a+1,x+b)&&em(y+a+1,x+b+1));
-  const asph=g.createPattern(hdAsphalt(),'repeat');
+  const asph=g.createPattern(hdAsphalt(),'repeat'),solPat=g.createPattern(hdSol(52),'repeat');
   const KB='#6a5792',KL='#8d79b6',KD='#3a2a5c',KO='#1f1431';
   const dalle=(x,y,w,h,vert)=>{ // bande de trottoir : dalles de 32 px alignées sur la grille globale
     g.save();g.beginPath();g.rect(x,y,w,h);g.clip();
@@ -1616,24 +1616,27 @@ function ensureHdGround(){
     // trottoirs
     const rc=46; // rayon du virage de bordure
     const hasN=cN,hasS=cS,hasW=cW,hasE=cE;
-    if(hasN)dalle(x+(hasW?T:0),y,S-(hasW?T:0)-(hasE?T:0),T,false);
-    if(hasS)dalle(x+(hasW?T:0),y+S-T,S-(hasW?T:0)-(hasE?T:0),T,false);
-    if(hasW)dalle(x,y+(hasN?0:0),T,S,true);
-    if(hasE)dalle(x+S-T,y,T,S,true);
-    // coins arrondis (virages de bordure) là où deux trottoirs se rejoignent
-    const fillet=(cx2,cy2,sx,sy)=>{ // coin de bordure arrondi : un quart de cercle, sans découpage
+    const R=rc,x0=(w2)=>w2?R:0; // avec un coin arrondi, les bandes s'arrêtent là où commence l'arrondi
+    if(hasN)dalle(x+(hasW?R:0),y,S-(hasW?R:0)-(hasE?R:0),T,false);
+    if(hasS)dalle(x+(hasW?R:0),y+S-T,S-(hasW?R:0)-(hasE?R:0),T,false);
+    if(hasW)dalle(x,y+(hasN?R:0),T,S-(hasN?R:0)-(hasS?R:0),true);
+    if(hasE)dalle(x+S-T,y+(hasN?R:0),T,S-(hasN?R:0)-(hasS?R:0),true);
+    // coin arrondi : le sol du bâtiment dans l'angle, puis un trottoir de même épaisseur que les bandes qui suit la courbe
+    const fillet=(cx2,cy2,sx,sy)=>{
       const ox=cx2+sx*rc,oy=cy2+sy*rc,a0=sy>0?-Math.PI/2:Math.PI/2,a1=sx>0?Math.PI:0;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;
-      const arcTo2=(rad)=>g.arc(ox,oy,rad,a0,a0+da,da<0);
-      g.beginPath();g.moveTo(cx2,cy2);g.lineTo(ox,cy2);arcTo2(rc);g.closePath();g.fillStyle=KB;g.fill();
-      g.beginPath();arcTo2(rc);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
-      g.beginPath();arcTo2(rc-T+6);g.strokeStyle=KL;g.lineWidth=2;g.stroke()};
+      const arcR=(rad,from,sw)=>g.arc(ox,oy,rad,from,from+sw,sw<0);
+      g.beginPath();g.moveTo(cx2,cy2);g.lineTo(ox,cy2);arcR(rc,a0,da);g.closePath();g.fillStyle=solPat;g.fill();
+      g.beginPath();arcR(rc,a0,da);arcR(rc-T,a0+da,-da);g.closePath();g.fillStyle=KB;g.fill();
+      g.beginPath();arcR(rc,a0,da);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
+      g.beginPath();arcR(rc-T,a0,da);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
+      g.beginPath();arcR(rc-4,a0,da);g.strokeStyle=KL;g.lineWidth=2;g.stroke()};
     if(hasN&&hasW)fillet(x,y,1,1);if(hasN&&hasE)fillet(x+S,y,-1,1);if(hasS&&hasW)fillet(x,y+S,1,-1);if(hasS&&hasE)fillet(x+S,y+S,-1,-1);
     // poteaux aux angles rentrants (voisins ouverts mais diagonale pleine)
     const dg=(dy,dx)=>inb(r+dy,c+dx)&&!em(r+dy,c+dx);
     [[-1,-1,x,y],[-1,1,x+S-T,y],[1,-1,x,y+S-T],[1,1,x+S-T,y+S-T]].forEach(([dy,dx,px,py])=>{
       if(em(r+dy,c)&&em(r,c+dx)&&dg(dy,dx)){ // poteau d'angle rentrant : quart de disque centré sur l'angle de la case, arrondi côté route
         const ox=dx>0?px+T:px,oy=dy>0?py+T:py,a0=dx>0?Math.PI:0,a1=dy>0?-Math.PI/2:Math.PI/2;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<=-Math.PI)da+=2*Math.PI;
-        const R2=T+4,ar=(rad)=>g.arc(ox,oy,rad,a0,a0+da,da<0);
+        const R2=T,ar=(rad)=>g.arc(ox,oy,rad,a0,a0+da,da<0);
         g.beginPath();g.moveTo(ox,oy);g.lineTo(ox+Math.cos(a0)*R2,oy+Math.sin(a0)*R2);ar(R2);g.closePath();g.fillStyle=KB;g.fill();
         g.beginPath();ar(R2);g.strokeStyle=KO;g.lineWidth=3;g.stroke();
         g.beginPath();ar(R2-6);g.strokeStyle=KL;g.lineWidth=2;g.stroke()}})
