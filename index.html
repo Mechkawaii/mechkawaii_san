@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.5</title>
+<title>Mechkawaii San 三 v7.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -46,8 +46,14 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
 .l1{font-size:25px;color:#fff;text-shadow:3px 3px 0 #ff7ab8,6px 6px 0 #2a0f26;letter-spacing:1px}
 .l2{font-size:17px;margin-top:16px;color:#9be07a;text-shadow:2px 2px 0 #1c3a18,4px 4px 0 #0c0a14}
 .l3{margin-top:18px;font-size:22px;color:#ffd84a;text-shadow:2px 2px 0 #0c0a14}
-.menu{display:flex;flex-direction:column;gap:18px;padding:0 14px 8px}
+.menu{display:flex;flex-direction:column;gap:14px;padding:0 14px 8px}
 .foot{text-align:center;font-size:16px;opacity:.75}
+.l1{animation:logoF 3.4s ease-in-out infinite}@keyframes logoF{50%{transform:translateY(-4px);text-shadow:3px 3px 0 #ff7ab8,6px 6px 0 #2a0f26,0 0 18px rgba(255,122,184,.7)}}
+.l2{animation:logoG 2.4s ease-in-out infinite}@keyframes logoG{50%{text-shadow:2px 2px 0 #1c3a18,4px 4px 0 #0c0a14,0 0 14px rgba(155,224,122,.8)}}
+#stage{width:100%;max-width:380px;aspect-ratio:380/190;align-self:center;image-rendering:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.chip{border:2px solid #5a3a7a;background:rgba(21,14,36,.85);padding:2px 9px;font-size:21px;line-height:1.1;color:#ffd84a}
+.menu .big{padding:18px 10px;font-size:14px}.menu .big small{display:block;margin-top:8px;font-family:'VT323';font-size:20px;color:#ffd0ec;text-shadow:none;letter-spacing:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.grid3 .btn{font-size:8px;padding:12px 4px;line-height:1.7}.grid3 .btn span{display:block;font-family:'VT323';font-size:19px;color:#e8ffd8;text-shadow:none}
 #select{background:rgba(12,10,20,.72)}
 .h1{font-size:13px;text-align:center;margin:10px 0 4px;color:var(--pk)}
 .card{display:flex;gap:10px;align-items:center;padding:10px;background:var(--pan);border:3px solid var(--line);cursor:pointer;text-align:left;color:var(--tx);font-family:'VT323',monospace;font-size:20px;width:100%}
@@ -126,16 +132,19 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <div class="l2 px">SAN <span style="font-family:'Noto Sans JP','Hiragino Sans',sans-serif;font-size:22px">三</span></div>
     <div class="l3">Trois pièces, un secteur reconquis</div>
   </div>
+  <canvas id="stage" width="760" height="380"></canvas>
+  <div id="streakInfo" class="chips"></div>
   <div class="menu">
-    <button class="btn pk" id="bCamp">CAMPAGNE</button>
+    <button class="btn pk big" id="bCamp">CAMPAGNE<small id="campSub"></small></button>
     <button class="btn" id="bEnd">MODES DE JEU</button>
-    <button class="btn" id="bTal">TALENTS <span id="fragN"></span></button>
-    <button class="btn" id="bMis">MISSIONS <span id="misN"></span></button>
-    <button class="btn" id="bCol">COLLECTION <span id="colN"></span></button>
-    <button class="btn cy" id="bHelp">COMMENT JOUER</button>
+    <div class="grid3">
+      <button class="btn" id="bTal">TALENTS<span id="fragN"></span></button>
+      <button class="btn" id="bMis">MISSIONS<span id="misN"></span></button>
+      <button class="btn" id="bCol">COLLECTION<span id="colN"></span></button>
+    </div>
+    <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div id="streakInfo" style="text-align:center;font-size:22px;color:#ffd84a;margin-top:8px"></div>
-  <div class="foot">Version 7.5 · cartes à collectionner</div>
+  <div class="foot">Version 7.6 · nouveau menu principal</div>
 </main>
 
 <main id="select" class="screen">
@@ -1597,7 +1606,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -1967,7 +1976,7 @@ $('bMenu').addEventListener('click',()=>{
 });
 
 /* ---------- écrans ---------- */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='title'){try{menuInfo();chips()}catch(e){}}}
 function toMenu(){G=null;show('title');say('')}
 function showModal(html,cb,cream){const m=$('mbox');m.classList.toggle('cream',!!cream);m.innerHTML=html;$('modal').classList.add('on');
   m.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{au();cb(b.dataset.a)}))}
@@ -2089,7 +2098,7 @@ function track(k,n=1,t){
     if(m.v>=m.n){m.done=1;reward(4,'MISSION ACCOMPLIE')}});
   if(!M.all&&M.l.every(m=>m.done)){M.all=1;reward(6,'TOUTES LES MISSIONS');giveCrate('')}
   checkAch();persist();misLabel()}
-function misLabel(){const e=$('misN');if(!e)return;const M=ensureMis();e.textContent='· '+M.l.filter(m=>m.done).length+'/3'}
+function misLabel(){const e=$('misN');if(!e)return;const M=ensureMis();e.textContent=M.l.filter(m=>m.done).length+'/3';chips()}
 function missionsModal(){
   const M=ensureMis(),bar=(v,n,d)=>`<span style="display:inline-block;width:110px;height:10px;background:#1a0f2a;border:2px solid #5a3a7a;vertical-align:-1px"><span style="display:block;height:100%;width:${Math.round(Math.min(v,n)/n*100)}%;background:${d?'#7be05a':'#34c8e8'}"></span></span>`;
   showModal(`<h2>MISSIONS DU JOUR</h2>
@@ -2099,7 +2108,9 @@ function missionsModal(){
   <div style="display:flex;flex-direction:column;gap:5px">${ACH.map(a=>`<div style="font-size:19px;line-height:1;opacity:${save.ach[a.id]?1:.6};color:${save.ach[a.id]?'#7be05a':'inherit'}">${save.ach[a.id]?'✓':'·'} <b>${a.n}</b> : ${a.d} (+${a.r} ✦)</div>`).join('')}</div>
   <button class="btn" data-a="ok">FERMER</button>`,()=>hideModal());
 }
-function streakLabel(){const e=$('streakInfo');if(!e)return;const L=save.login;e.textContent=L&&L.streak?'Série : '+L.streak+' jour'+(L.streak>1?'s':''):''}
+function streakLabel(){chips()}
+function chips(){const e=$('streakInfo');if(!e)return;const L=save.login,P=[];if(L&&L.streak)P.push('🔥 '+L.streak+' j');P.push('✦ '+(save.frag||0));if(save.crates)P.push('📦 '+save.crates);const M=ensureMis();P.push('Missions '+M.l.filter(m=>m.done).length+'/3');e.innerHTML=P.map(x=>`<span class="chip">${x}</span>`).join('')}
+function menuInfo(){const i=SECTORS.findIndex((x,k)=>!save.done[k]),e=$('campSub');if(e)e.textContent=i<0?'Erret est libérée !':'Secteur '+(i+1)+' · '+SECTORS[i].name}
 function checkLogin(){
   const t=dayKey();save.login=save.login||{d:'',streak:0,max:0};const L=save.login;
   if(L.d===t){streakLabel();return}
@@ -2153,7 +2164,7 @@ function cardHtml(c,own,big){const R=RAR[c.r],l=cardLv(c.id);
   return `<div class="tc r${c.r}${own?'':' lock'}${big?' big':''}" style="--rc:${R.c}" ${big?'':`data-a="c:${c.id}"`}><canvas width="${big?210:96}" height="${big?210:96}" data-card="${c.id}"></canvas><div class="cn">${own?c.n.toUpperCase():'???'}</div><div class="cr">${R.n}</div><div class="cs">${own?'★'.repeat(l)+'☆'.repeat(3-l):''}</div></div>`}
 function paintCards(){$('mbox').querySelectorAll('canvas[data-card]').forEach(cv=>{const c=CARDS.find(x=>x.id===cv.dataset.card);if(c&&(save.cards[c.id]||cv.closest('.big')))cardArt(cv,c)})}
 function giveCrate(why){save.crates=(save.crates||0)+1;persist();colLabel();toast('COLIS DE RAVITAILLEMENT ! '+(why||''),2200);sfx.crystal&&sfx.crystal()}
-function colLabel(){const e=$('colN');if(e)e.textContent=(save.crates||0)?'· '+save.crates+' 📦':''}
+function colLabel(){const e=$('colN');if(e)e.textContent=(save.crates||0)?(save.crates||0)+' 📦':cardsOwned()+'/'+CARDS.length;chips()}
 function drawCard(){ // tirage d'une carte, avec garanties : épique ou mieux tous les 8 colis, légendaire tous les 30
   save.crates--;save.pe=(save.pe||0)+1;save.pl=(save.pl||0)+1;
   let r;if(save.pl>=30)r=3;else if(save.pe>=8)r=Math.random()<.2?3:2;else{let x=Math.random()*100;r=0;for(let i=0;i<4;i++){x-=RAR[i].w;if(x<0){r=i;break}}}
@@ -2199,7 +2210,7 @@ function buildModes(){
     b.addEventListener('click',()=>{au();musicStart();if(done){sfx.bad();toast('Défi déjà joué aujourd’hui',1200);return}chooseHero(m,0)});box.appendChild(b)});
 }
 const talCost=t=>{const l=(save.tal||{})[t.id]||0;return l>=t.max?0:t.c[l]};
-function fragLabel(){const e=$('fragN');if(e)e.textContent=(save.frag||0)?'· '+save.frag+' ✦':''}
+function fragLabel(){const e=$('fragN');if(e)e.textContent=(save.frag||0)+' ✦';chips()}
 function buildTalents(){
   save.tal=save.tal||{};$('tfrag').innerHTML='Fragments : <b style="color:#7df0ff">'+(save.frag||0)+' ✦</b>';
   const box=$('tcards');box.innerHTML='';
@@ -2218,7 +2229,7 @@ $('bCol').addEventListener('click',()=>{au();collectionModal()});
 $('bMis').addEventListener('click',()=>{au();missionsModal()});
 $('bTal').addEventListener('click',()=>{au();musicStart();buildTalents();show('talents')});
 $('bTalBack').addEventListener('click',()=>{fragLabel();show('title')});
-fragLabel();misLabel();streakLabel();colLabel();setTimeout(checkLogin,700);
+menuInfo();fragLabel();misLabel();streakLabel();colLabel();setTimeout(checkLogin,700);
 $('bHelp').addEventListener('click',()=>{au();helpModal()});
 $('bSelBack').addEventListener('click',()=>show('title'));
 
@@ -2257,9 +2268,38 @@ drawSpriteTo($('por'),'sheep');
 $('bSnd').style.opacity=AU.on?1:.45;
 initBg();
 let last=0,fr=0;
+/* ---------- menu principal : scène animée ---------- */
+const STG={puffs:[],em:[],nx:0};
+function drawStage(ts){
+  const cv=$('stage');if(!cv)return;const g=cv.getContext('2d'),W=cv.width,H=cv.height,k=HD.CELL/C;
+  g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;
+  // sol : trottoir et route qui défile doucement
+  const gy=312;g.fillStyle='#1b1230';g.fillRect(0,gy,W,H-gy);
+  g.fillStyle='#2a1d44';g.fillRect(0,gy+22,W,H-gy-22);
+  for(let x=-64+((ts/40)%64);x<W;x+=64){g.fillStyle='rgba(222,190,70,.75)';g.fillRect(x,gy+44,32,5)}
+  for(let x=0;x<W;x+=32){g.fillStyle=((x/32)&1)?'#6a5792':'#76639f';g.fillRect(x,gy,32,18);g.fillStyle='#1f1431';g.fillRect(x,gy,2,18);g.fillRect(x,gy+16,32,2);g.fillStyle='#8d79b6';g.fillRect(x+2,gy+2,28,3)}
+  const bob=Math.sin(ts/420)*3,hid=hIdx(save.hero||'duke');
+  const hd=hdReady();
+  // bâtiment central (skin équipé)
+  if(hd){hdDrawBuilding(g,5,Math.round(W/2/k-C/2),Math.round((gy+HD.CELL*.03+6)/k-C),1.2,0,null,false)}
+  else{g.drawImage(spriteCanvas(5,0,0),W/2-90,gy-170,180,180)}
+  // héros à gauche
+  const hs=spriteCanvas(7,hid<0?5:hid,0);g.save();g.fillStyle='rgba(10,4,18,.4)';g.beginPath();g.ellipse(130,gy+4,70,11,0,0,6.3);g.fill();g.drawImage(hs,50,gy-170+bob+2,170,170);g.restore();
+  // Prodrome à droite (change de temps en temps), fumée verte
+  const pv=Math.floor(ts/6500)%5,px=Math.round(W-130+Math.sin(ts/900)*5);
+  if(hd&&HD.p[pv]){hdDrawBuilding(g,12,Math.round(px/k-C/2),Math.round((gy+HD.CELL*.03+8)/k-C),1.25,pv,{ts,ph:pv*.37},false)}
+  else{g.drawImage(spriteCanvas(12,pv,0),px-85,gy-170,170,170)}
+  if(ts>STG.nx){STG.nx=ts+1400+Math.random()*1800;STG.puffs.push({x:px+(Math.random()-.5)*30,y:gy-210,t0:ts,life:2200,dx:(Math.random()-.5)*50,r:12})}
+  for(let i=STG.puffs.length-1;i>=0;i--){const p=STG.puffs[i],a=(ts-p.t0)/p.life;if(a>=1){STG.puffs.splice(i,1);continue}
+    const x=p.x+p.dx*a,y=p.y-a*70,r=p.r+a*34,al=.8*Math.pow(1-a,.9)*Math.min(1,a/.12),gr=g.createRadialGradient(x,y,0,x,y,r);
+    gr.addColorStop(0,'rgba(170,255,110,'+al+')');gr.addColorStop(.6,'rgba(90,200,60,'+al*.55+')');gr.addColorStop(1,'rgba(60,160,40,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,6.2832);g.fill()}
+  // braises qui montent
+  while(STG.em.length<18)STG.em.push({x:Math.random()*W,y:Math.random()*H,v:.2+Math.random()*.5,c:Math.random()<.5?'#ff9ed0':'#a0ff6a',s:2+Math.floor(Math.random()*2)});
+  STG.em.forEach(e=>{e.y-=e.v;e.x+=Math.sin(ts/700+e.y/30)*.3;if(e.y<-4){e.y=H+4;e.x=Math.random()*W}g.globalAlpha=.6;g.fillStyle=e.c;g.fillRect(Math.round(e.x),Math.round(e.y),e.s,e.s)});g.globalAlpha=1;
+}
 function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
-  if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else drawBg(ts);}
+  if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else{drawBg(ts);if($('title').classList.contains('on'))drawStage(ts)}}
 requestAnimationFrame(loop);
 window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis,collectionModal,drawCard};
 })();
