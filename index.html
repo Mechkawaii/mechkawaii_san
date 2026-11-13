@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.11</title>
+<title>Mechkawaii San 三 v7.12</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -133,7 +133,6 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
   <div class="logo">
     <img class="l1img" src="assets/brand/logo.png" alt="MECHKAWAII メカワイイ">
     <div class="l2 px">SAN <span style="font-family:'Noto Sans JP','Hiragino Sans',sans-serif;font-size:22px">三</span></div>
-    <div class="l3">Trois pièces, un secteur reconquis</div>
   </div>
   <canvas id="stage" width="760" height="380"></canvas>
   <div id="streakInfo" class="chips"></div>
@@ -147,7 +146,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.11 · charte Mechkawaii</div>
+  <div class="foot">Version 7.12 · slogan retiré</div>
 </main>
 
 <main id="select" class="screen">
@@ -1611,7 +1610,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.11) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.12) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
