@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.2</title>
+<title>Mechkawaii San 三 v7.3</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -121,9 +121,11 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     <button class="btn pk" id="bCamp">CAMPAGNE</button>
     <button class="btn" id="bEnd">MODES DE JEU</button>
     <button class="btn" id="bTal">TALENTS <span id="fragN"></span></button>
+    <button class="btn" id="bMis">MISSIONS <span id="misN"></span></button>
     <button class="btn cy" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.2 · la route reste une route sous un Prodrome</div>
+  <div id="streakInfo" style="text-align:center;font-size:22px;color:#ffd84a;margin-top:8px"></div>
+  <div class="foot">Version 7.3 · missions, succès, série quotidienne</div>
 </main>
 
 <main id="select" class="screen">
@@ -289,7 +291,7 @@ const pcdOf=P=>Math.max(1,P.cd*(G&&G.S&&G.S.surv?2:1)-tal('cd'));
 const sp=it=>Math.max(1,Math.round(it.p*(1-.08*tal('shop'))));
 const addCoins=n=>{G.coins+=Math.round(n*(1+.1*tal('eco')))};
 let G=null,grid=[],floorC=[],texA=null,texB=null,groundCv=null,groundKey='';
-let save={done:{},best:{},tal:{},frag:0,daily:null};
+let save={done:{},best:{},tal:{},frag:0,daily:null,stats:{},ach:{},mis:null,login:null};
 let pending=null;
 try{const s=JSON.parse(localStorage.getItem('mk_reconquete')||'null');if(s)save=Object.assign(save,s)}catch(e){}
 const persist=()=>{try{localStorage.setItem('mk_reconquete',JSON.stringify(save))}catch(e){}};
@@ -1295,7 +1297,7 @@ function resolve(r,c){
     grid[r][c]=newTile(nx,0,r,c,1.7);
     const n=g.length,sup=n>NEED(tl.t),mult=n<4?1:(n-2)*(n-1)/2; // 3 → ×1, 4 → ×3, 5 → ×6, 6 → ×10…
     if(sup){grid[r][c].sup=1;addCoins(2*(n-3))}
-    G.made[nx]=(G.made[nx]||0)+1;
+    G.made[nx]=(G.made[nx]||0)+1;track('make',1,nx);
     const gain=Math.round((PTS[nx]||0)*mult*chain*(1+.05*tal('pts')));G.score+=gain;addCoins(Math.max(1,nx-1)*(n-2));
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
@@ -1304,6 +1306,7 @@ function resolve(r,c){
     else if(nx===5&&!G.flags.base){G.flags.base=1;toast('BASE CONSTRUITE')}
     if(chain>1)toast('COMBO x'+chain,1000);
   }
+  if(chain>=2)track('combo',chain);
   return chain;
 }
 function crystalBest(r,c){
@@ -1438,7 +1441,7 @@ function trapPhase(){
   }
   const m10=G.made[10]||0;
   if(trapped){
-    sfx.trap();G.score+=trapped*50;addCoins(trapped*2);toast('PRODROMES PIÉGÉS',1300);
+    track('trap',trapped);sfx.trap();G.score+=trapped*50;addCoins(trapped*2);toast('PRODROMES PIÉGÉS',1300);
     if(!G.flags.trap){G.flags.trap=1;say("Prodromes piégés ! Trois ruines côte à côte forment une balise.")}
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
     if(trapped>=2&&(G.made[10]||0)>m10){const b=50*trapped*trapped;G.score+=b;toast('PIÈGE GROUPÉ ! +'+b,1600)}
@@ -1488,6 +1491,8 @@ function finish(win){
   if(G.mode==='daily')save.daily={d:todayKey(),score:G.score};
   const frag=G.mode==='zen'?Math.floor(G.score/1500):Math.floor(G.score/600)+(win&&G.mode==='campaign'&&!save.done[G.si]?4+G.si:0)+(G.mode==='survival'?Math.floor(G.turn/15):0);
   save.frag=(save.frag||0)+frag;
+  const prev=G.prevBest||0,beat=prev>0&&G.score>prev,gap=prev-G.score;
+  track('games');track('score',G.score);if(win&&G.mode==='campaign')track('win');if(G.mode==='survival')track('turns',G.turn);
   const before=PICK.filter(isOpen);
   if(win&&G.mode==='campaign')save.done[G.si]=true;persist();
   const newH=PICK.filter(id=>isOpen(id)&&!before.includes(id));
@@ -1496,9 +1501,9 @@ function finish(win){
     const last=G.mode==='campaign'&&G.si===SECTORS.length-1;
     const btns=[];
     if(win&&G.mode==='campaign'&&!last)btns.push(`<button class="btn pk" data-a="next">SECTEUR SUIVANT</button>`);
-    if(G.mode!=='daily')btns.push(`<button class="btn" data-a="again">REJOUER</button>`);btns.push(`<button class="btn cy" data-a="menu">MENU</button>`);
+    if(G.mode!=='daily')btns.push(`<button class="btn ${win&&G.mode==='campaign'&&!last?'':'pk'}" data-a="again">REJOUER</button>`);btns.push(`<button class="btn cy" data-a="menu">MENU</button>`);
     showModal(`<h2>${G.mode!=='campaign'?'PARTIE TERMINÉE':win?(last?'ERRET EST LIBÉRÉE !':'SECTEUR RECONQUIS'):(G.S.lim&&G.turn>=G.S.lim?'TEMPS ÉCOULÉ':'SECTEUR PERDU')}</h2>
-      <p style="text-align:center">Score : <span class="px" style="font-size:12px;color:#ffd84a">${G.score}</span><br>Meilleur : ${save.best[key]} · ${G.turn} tours<br><span style="color:#7df0ff">+${frag} fragments</span></p>
+      <p style="text-align:center">Score : <span class="px" style="font-size:12px;color:#ffd84a">${G.score}</span><br>Meilleur : ${save.best[key]} · ${G.turn} tours<br><span style="color:#7df0ff">+${frag} fragments</span>${beat?'<br><b style="color:#ff7ab8">NOUVEAU RECORD !</b>':(prev>0&&gap>0&&gap<=prev*.35?`<br><span style="color:#ffd84a">Plus que ${gap} points pour battre ton record !</span>`:'')}</p>
       ${newH.length?`<p style="text-align:center;color:#7be05a">Nouveau héros débloqué : ${newH.map(id=>HN[hIdx(id)]).join(', ')} !</p>`:''}<div class="mrow">${btns.join('')}</div>`,a=>{
         hideModal();
         if(a==='next')startCampaign(G.si+1);else if(a==='again')(G.mode==='campaign'?startCampaign(G.si):startMode(G.mode));else toMenu();
@@ -1511,7 +1516,7 @@ function startGame(mode,si,hero){
   const S=mode==='campaign'?SECTORS[si]:(MODES[mode]||ENDLESS);
   const daily=mode==='daily',seed=daily?+todayKey().replace(/-/g,''):0;
   G={mode,si,S,hero:hero||(G&&G.hero)||'duke',pcd:2,freeze:0,shield:0,coins:0,armed:false,swapA:null,seed:Math.floor(Math.random()*999),score:0,shown:0,turn:0,busy:false,over:false,sel:null,cur:null,res:null,made:{},freed:0,ghosts:[],parts:[],flags:{},noTal:daily,lr:daily?mul32(seed):null,lm:daily?mul32(seed^0x9e3779b9):null};
-  G.pcd=Math.max(0,2-tal('cd'));G.coins=4*tal('bank');G.shield=2*tal('shield');
+  G.prevBest=save.best[bestKey()]||0;G.pcd=Math.max(0,2-tal('cd'));G.coins=4*tal('bank');G.shield=2*tal('shield');
   grid=[...Array(N)].map(()=>Array(N).fill(null));
   floorC=[...Array(N)].map(()=>Array(N).fill(false));
   buildFloors();
@@ -1536,7 +1541,7 @@ function harvest(r,c){ // récolte une capsule/un noyau d'énergie : la pièce d
   const big=hv.t===17,pts=Math.round((big?2000:500)*(1+.25*tal('harv'))),co=Math.round((big?10:3)*(1+.1*tal('eco')));
   grid[r][c]=null;G.score+=pts;G.coins+=co;
   burst(r,c,big?26:16,big?['#ff3ec8','#ffffff','#3ee0ff']:['#3ee0ff','#fff27a','#ffffff']);
-  sfx.crystal?sfx.crystal():sfx.place();toast((big?'NOYAU RÉCOLTÉ +':'CAPSULE RÉCOLTÉE +')+pts+' · +'+co+' pièces',1300);
+  track('harvest',1);sfx.crystal?sfx.crystal():sfx.place();toast((big?'NOYAU RÉCOLTÉ +':'CAPSULE RÉCOLTÉE +')+pts+' · +'+co+' pièces',1300);
   G.sel=null;updateHud();
 }
 function onCell(r,c,pt){
@@ -1558,7 +1563,8 @@ function updateHud(){
   const S=G.S;
   $('hSector').innerHTML=(G.mode==='campaign'?'SECTEUR '+(G.si+1)+'<br>':'')+S.name.toUpperCase();
   $('hTurn').textContent=G.turn;
-  {const key=bestKey();if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
+  {const key=bestKey();if(G.prevBest>0&&G.score>G.prevBest&&!G.rec){G.rec=1;toast('NOUVEAU RECORD !',2000);burst(2,2,24,['#ffd84a','#ff7ab8','#ffffff']);sfx.win&&sfx.win()}
+  if(G.score>(save.best[key]||0)){save.best[key]=G.score;persist()}$('hBest').textContent=save.best[key]||0}
   drawSpriteTo($('curC'),G.cur||0,0);$('curN').textContent=G.cur?NAMES[G.cur]:'';
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
   $('coinN').textContent=G.coins;hintDraw();
@@ -1580,7 +1586,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.2) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.3) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2021,6 +2027,63 @@ function helpModal(){
   const ch=$('chain');CH.forEach(t=>{const c=document.createElement('canvas');c.width=c.height=64;drawSpriteTo(c,t,0);ch.appendChild(c)});
 }
 $('bCamp').addEventListener('click',()=>{au();musicStart();buildSelect();show('select')});
+/* ---------- rétention : série quotidienne, missions du jour, succès ---------- */
+const dayKey=(off=0)=>{const d=new Date();d.setDate(d.getDate()+off);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const MKIND=['score','make','harvest','trap','combo','games'];
+function missionsFor(d){
+  const rg=mul32(+d.replace(/-/g,'')*7+13),ks=MKIND.slice();for(let i=ks.length-1;i>0;i--){const j=Math.floor(rg()*(i+1));[ks[i],ks[j]]=[ks[j],ks[i]]}
+  return ks.slice(0,3).map(k=>{
+    if(k==='score')return{k,n:[2000,4000,8000][Math.floor(rg()*3)]};
+    if(k==='make'){const t=[2,3,4][Math.floor(rg()*3)];return{k,t,n:{2:12,3:6,4:3}[t]}}
+    if(k==='harvest')return{k,n:2};if(k==='trap')return{k,n:3};
+    if(k==='combo')return{k,n:rg()<.5?2:3};return{k,n:3}})}
+function ensureMis(){const d=dayKey();if(!save.mis||save.mis.d!==d)save.mis={d,l:missionsFor(d).map(m=>Object.assign({v:0,done:0},m)),all:0};return save.mis}
+const misText=m=>m.k==='score'?'Marque '+m.n+' points en une partie':m.k==='make'?'Crée '+m.n+' '+NAMES[m.t]:m.k==='harvest'?'Récolte '+m.n+' capsules ou noyaux':m.k==='trap'?'Piège '+m.n+' Prodromes':m.k==='combo'?'Réalise un combo ×'+m.n:'Joue '+m.n+' parties';
+const ACH=[
+ {id:'win1',n:'Première victoire',d:'Reconquiers un secteur.',r:5,ok:S=>S.wins>=1},
+ {id:'tour',n:'Bâtisseur',d:'Érige une Tour.',r:10,ok:S=>S.towers>=1},
+ {id:'s10k',n:'Dix mille',d:'Marque 10 000 points en une partie.',r:10,ok:S=>S.maxScore>=10000},
+ {id:'s50k',n:'Légende',d:'Marque 50 000 points en une partie.',r:25,ok:S=>S.maxScore>=50000},
+ {id:'cmb3',n:'Réaction en chaîne',d:'Réalise un combo ×3.',r:8,ok:S=>S.maxCombo>=3},
+ {id:'cmb5',n:'Effet domino',d:'Réalise un combo ×5.',r:20,ok:S=>S.maxCombo>=5},
+ {id:'harv',n:'Récolteur',d:'Récolte 25 capsules ou noyaux.',r:8,ok:S=>S.harvest>=25},
+ {id:'trap',n:'Chasseur',d:'Piège 30 Prodromes.',r:8,ok:S=>S.trap>=30},
+ {id:'camp',n:'Erret est libre',d:'Reconquiers les 10 secteurs.',r:30,ok:S=>Object.keys(save.done).length>=10},
+ {id:'surv',n:'Increvable',d:'Tiens 60 tours en survie.',r:10,ok:S=>S.survTurns>=60},
+ {id:'str7',n:'Fidèle au poste',d:'7 jours de suite.',r:15,ok:S=>(save.login&&save.login.max||0)>=7},
+ {id:'games',n:'Vétéran',d:'Joue 50 parties.',r:10,ok:S=>S.games>=50}
+];
+function reward(n,label){save.frag=(save.frag||0)+n;toast(label+' +'+n+' ✦',2400);sfx.crystal&&sfx.crystal();fragLabel()}
+function checkAch(){const S=save.stats;ACH.forEach(a=>{if(!save.ach[a.id]&&a.ok(S)){save.ach[a.id]=1;reward(a.r,'SUCCÈS : '+a.n.toUpperCase())}})}
+function track(k,n=1,t){
+  const S=save.stats=save.stats||{};save.ach=save.ach||{};
+  const mx=(key,v)=>{S[key]=Math.max(S[key]||0,v)},ad=(key,v)=>{S[key]=(S[key]||0)+v};
+  if(k==='harvest')ad('harvest',n);else if(k==='trap')ad('trap',n);else if(k==='games')ad('games',1);else if(k==='score')mx('maxScore',n);
+  else if(k==='combo')mx('maxCombo',n);else if(k==='win')ad('wins',1);else if(k==='turns')mx('survTurns',n);else if(k==='make'&&t===6)ad('towers',1);
+  const M=ensureMis();
+  M.l.forEach(m=>{if(m.done||m.k!==k)return;if(k==='make'){if(m.t!==t)return;m.v+=n}else if(k==='score'||k==='combo')m.v=Math.max(m.v,n);else m.v+=n;
+    if(m.v>=m.n){m.done=1;reward(4,'MISSION ACCOMPLIE')}});
+  if(!M.all&&M.l.every(m=>m.done)){M.all=1;reward(6,'TOUTES LES MISSIONS')}
+  checkAch();persist();misLabel()}
+function misLabel(){const e=$('misN');if(!e)return;const M=ensureMis();e.textContent='· '+M.l.filter(m=>m.done).length+'/3'}
+function missionsModal(){
+  const M=ensureMis(),bar=(v,n,d)=>`<span style="display:inline-block;width:110px;height:10px;background:#1a0f2a;border:2px solid #5a3a7a;vertical-align:-1px"><span style="display:block;height:100%;width:${Math.round(Math.min(v,n)/n*100)}%;background:${d?'#7be05a':'#34c8e8'}"></span></span>`;
+  showModal(`<h2>MISSIONS DU JOUR</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">${M.l.map(m=>`<div style="border:2px solid ${m.done?'#7be05a':'#5a3a7a'};padding:6px 8px"><div style="font-size:22px;line-height:1">${m.done?'✓ ':''}${misText(m)}</div><div style="font-size:19px;color:${m.done?'#7be05a':'#7df0ff'}">${bar(m.v,m.n,m.done)} ${Math.min(m.v,m.n)}/${m.n} · +4 ✦</div></div>`).join('')}</div>
+  <p style="text-align:center;font-size:19px;color:#ffd84a">Les trois : +6 ✦ de bonus · nouvelles missions demain</p>
+  <h2>SUCCÈS ${Object.keys(save.ach).length}/${ACH.length}</h2>
+  <div style="display:flex;flex-direction:column;gap:5px">${ACH.map(a=>`<div style="font-size:19px;line-height:1;opacity:${save.ach[a.id]?1:.6};color:${save.ach[a.id]?'#7be05a':'inherit'}">${save.ach[a.id]?'✓':'·'} <b>${a.n}</b> : ${a.d} (+${a.r} ✦)</div>`).join('')}</div>
+  <button class="btn" data-a="ok">FERMER</button>`,()=>hideModal());
+}
+function streakLabel(){const e=$('streakInfo');if(!e)return;const L=save.login;e.textContent=L&&L.streak?'Série : '+L.streak+' jour'+(L.streak>1?'s':''):''}
+function checkLogin(){
+  const t=dayKey();save.login=save.login||{d:'',streak:0,max:0};const L=save.login;
+  if(L.d===t){streakLabel();return}
+  L.streak=L.d===dayKey(-1)?L.streak+1:1;L.d=t;L.max=Math.max(L.max||0,L.streak);
+  const gain=Math.min(2+L.streak,10),nxt=Math.min(3+L.streak,10);
+  save.frag=(save.frag||0)+gain;persist();checkAch();fragLabel();streakLabel();
+  showModal(`<h2>RETOUR AU FRONT !</h2><p style="text-align:center">Série : <b style="color:#ffd84a">${L.streak} jour${L.streak>1?'s':''}</b><br>Récompense : <b style="color:#7df0ff">+${gain} ✦</b><br><span style="font-size:19px;opacity:.85">Reviens demain pour +${nxt} ✦${L.streak<8?' (jusqu’à 10)':''}.</span></p><button class="btn pk" data-a="ok">C’EST PARTI</button>`,()=>hideModal());
+}
 function buildModes(){
   const box=$('mcards');box.innerHTML='';
   Object.keys(MODES).forEach(m=>{
@@ -2045,9 +2108,10 @@ function buildTalents(){
 }
 $('bEnd').addEventListener('click',()=>{au();musicStart();buildModes();show('modes')});
 $('bModesBack').addEventListener('click',()=>show('title'));
+$('bMis').addEventListener('click',()=>{au();missionsModal()});
 $('bTal').addEventListener('click',()=>{au();musicStart();buildTalents();show('talents')});
 $('bTalBack').addEventListener('click',()=>{fragLabel();show('title')});
-fragLabel();
+fragLabel();misLabel();streakLabel();setTimeout(checkLogin,700);
 $('bHelp').addEventListener('click',()=>{au();helpModal()});
 $('bSelBack').addEventListener('click',()=>show('title'));
 
@@ -2090,7 +2154,7 @@ function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
   if($('game').classList.contains('on')){render(ts);if(fr%4===0)drawBg(ts)}else drawBg(ts);}
 requestAnimationFrame(loop);
-window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain};
+window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis};
 })();
 </script>
 <script>
