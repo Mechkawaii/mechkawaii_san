@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.12</title>
+<title>Mechkawaii San 三 v7.13</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -43,6 +43,19 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
 .btn.sm{padding:9px 10px;font-size:10px}
 body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.webp) center/cover;opacity:.9;mix-blend-mode:screen;pointer-events:none;z-index:0}
 .screen{position:relative;z-index:1}
+#tcards{width:100%}.ttree{display:flex;flex-direction:column;align-items:center}
+.troot img{width:64px;display:block;filter:drop-shadow(0 0 10px rgba(255,122,184,.7))}
+.trbar{display:flex;width:66.7%;justify-content:space-between;height:18px;border-top:4px solid #5a3a7a;margin-top:2px;position:relative}.trbar i{display:block;width:4px;height:18px;background:#5a3a7a;margin-top:-4px}.trbar i:nth-child(2){margin-top:-4px}
+.tcols{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%}.tcol{display:flex;flex-direction:column;align-items:center}
+.tbn{font-size:8px;margin-bottom:8px;text-align:center}
+.tlink{width:4px;height:22px;background:#3a2a52}.tlink.on{background:var(--tc);box-shadow:0 0 8px var(--tc)}
+.tnode{width:74px;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#1b1230;border:4px solid var(--tc);color:#fff;cursor:pointer;font-family:inherit;padding:0;box-shadow:inset 0 0 0 2px #0c0a14}
+.tnode .ti{font-size:28px;line-height:1}.tp{display:flex;gap:3px}.tp b{display:block;width:8px;height:8px;background:#3a2a52}.tp b.f{background:var(--tc);box-shadow:0 0 6px var(--tc)}
+.tnode.lock{border-color:#3a3a4a;filter:grayscale(1);opacity:.55}
+.tnode.max{background:#3a2e10;box-shadow:inset 0 0 0 2px #0c0a14,0 0 14px #ffd84a}
+.tnode.can{animation:tcan 1.4s ease-in-out infinite}@keyframes tcan{50%{box-shadow:inset 0 0 0 2px #0c0a14,0 0 16px var(--tc)}}
+.tnode.sel{outline:3px solid #fff;outline-offset:3px}
+.tdp{margin-top:14px;padding:10px;border:3px solid #5a3a7a;background:rgba(21,14,36,.92);text-align:center}
 #title{justify-content:space-between;padding-top:max(36px,env(safe-area-inset-top))}
 .logo{text-align:center;margin-top:6vh}
 .l1img{display:block;width:min(74vw,330px);margin:0 auto;animation:logoF 3.4s ease-in-out infinite;filter:drop-shadow(0 4px 0 rgba(0,0,0,.5))}
@@ -146,7 +159,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.12 · slogan retiré</div>
+  <div class="foot">Version 7.13 · arbre de talents</div>
 </main>
 
 <main id="select" class="screen">
@@ -164,8 +177,9 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 <main id="talents" class="screen">
   <div class="h1 px">TALENTS</div>
   <div id="tfrag" style="text-align:center;font-size:22px"></div>
-  <div style="text-align:center;font-size:19px;opacity:.85">Gagne des fragments ✦ en jouant, puis améliore tes talents. Ils agissent sur toutes tes parties (sauf le défi quotidien).</div>
-  <div id="tcards" style="display:flex;flex-direction:column;gap:8px"></div>
+  <div style="text-align:center;font-size:19px;opacity:.85">Touche un talent pour le voir, puis améliore-le. Il faut avoir débloqué le talent du dessus. Actifs sur toutes tes parties (sauf le défi quotidien).</div>
+  <div id="tcards"></div>
+  <div id="tdet"></div>
   <button class="btn sm cy" id="bTalBack" style="margin-top:6px">← RETOUR</button>
 </main>
 
@@ -1610,7 +1624,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.12) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.13) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2366,17 +2380,30 @@ function buildModes(){
 }
 const talCost=t=>{const l=(save.tal||{})[t.id]||0;return l>=t.max?0:t.c[l]};
 function fragLabel(){const e=$('fragN');if(e)e.textContent=(save.frag||0)+' ✦';chips()}
+const TRICO={eco:'💰',bank:'🏦',shop:'🏷️',cd:'⚡',shield:'🛡️',prod:'👾',pts:'⭐',harv:'🔋',lucky:'🍀'},TBCOL=['#ffd84a','#ff7ab8','#7df0ff'];
+let talSel=null;
 function buildTalents(){
   save.tal=save.tal||{};$('tfrag').innerHTML='Fragments : <b style="color:#7df0ff">'+(save.frag||0)+' ✦</b>';
   const box=$('tcards');box.innerHTML='';
+  const tree=document.createElement('div');tree.className='ttree';
+  tree.innerHTML='<div class="troot"><img src="assets/brand/heart.png" alt=""></div><div class="trbar"><i></i><i></i><i></i></div>';
+  const cols=document.createElement('div');cols.className='tcols';
   TBR.forEach((bn,bi)=>{
-    const h=document.createElement('div');h.className='px';h.style.cssText='font-size:10px;color:#ffd84a;margin:8px 0 0';h.textContent=bn;box.appendChild(h);
-    TAL.filter(t=>t.br===bi).forEach(t=>{
+    const col=document.createElement('div');col.className='tcol';col.innerHTML='<div class="tbn px" style="color:'+TBCOL[bi]+'">'+bn+'</div>';
+    TAL.filter(t=>t.br===bi).forEach((t,k)=>{
       const l=save.tal[t.id]||0,locked=t.req&&!(save.tal[t.req]||0),cost=talCost(t),can=!locked&&cost&&(save.frag||0)>=cost;
-      const b=document.createElement('button');b.className='card'+(l>=t.max?' done':'');b.style.opacity=locked?.5:1;
-      b.innerHTML=`<div class="n">${l}/${t.max}</div><div><div class="t">${t.n}</div><div class="o">${locked?'🔒 Nécessite '+TAL.find(x=>x.id===t.req).n:t.d}${cost&&!locked?' · '+cost+' ✦':''}</div></div>`;
-      b.addEventListener('click',()=>{au();if(!can){sfx.bad();return}save.frag-=cost;save.tal[t.id]=l+1;persist();checkAch();sfx.place();buildTalents()});
-      box.appendChild(b)})});
+      if(k>0){const c=document.createElement('div');c.className='tlink'+(!locked?' on':'');c.style.setProperty('--tc',TBCOL[bi]);col.appendChild(c)}
+      const n=document.createElement('button');n.className='tnode'+(locked?' lock':'')+(l>=t.max?' max':'')+(can?' can':'')+(talSel===t.id?' sel':'');n.style.setProperty('--tc',TBCOL[bi]);
+      n.innerHTML=`<span class="ti">${locked?'🔒':TRICO[t.id]}</span><span class="tp">${Array.from({length:t.max},(_,i)=>'<b'+(i<l?' class="f"':'')+'></b>').join('')}</span>`;
+      n.addEventListener('click',()=>{au();talSel=t.id;buildTalents()});
+      col.appendChild(n)});
+    cols.appendChild(col)});
+  tree.appendChild(cols);box.appendChild(tree);
+  const d=$('tdet'),t=TAL.find(x=>x.id===talSel);
+  if(!t){d.innerHTML='<div class="tdp">Touche un talent pour voir ses détails.</div>';return}
+  const l=save.tal[t.id]||0,locked=t.req&&!(save.tal[t.req]||0),cost=talCost(t),can=!locked&&cost&&(save.frag||0)>=cost;
+  d.innerHTML=`<div class="tdp" style="border-color:${TBCOL[t.br]}"><div class="px" style="font-size:11px;color:${TBCOL[t.br]}">${TRICO[t.id]} ${t.n.toUpperCase()} · ${l}/${t.max}</div><div style="font-size:21px;margin:6px 0">${locked?'🔒 Débloque d’abord : '+TAL.find(x=>x.id===t.req).n:t.d}</div>${l>=t.max?'<div style="color:#ffd84a;font-size:21px">NIVEAU MAXIMUM</div>':locked?'':`<button class="btn sm ${can?'pk':''}" id="tBuy" style="width:100%;${can?'':'opacity:.5'}">AMÉLIORER · ${cost} ✦</button>`}</div>`;
+  const bb=$('tBuy');if(bb)bb.addEventListener('click',()=>{au();if(!can){sfx.bad();return}save.frag-=cost;save.tal[t.id]=l+1;persist();checkAch();sfx.place();buildTalents()});
 }
 $('bEnd').addEventListener('click',()=>{au();musicStart();buildModes();show('modes')});
 $('bModesBack').addEventListener('click',()=>show('title'));
