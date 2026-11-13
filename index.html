@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.7</title>
+<title>Mechkawaii San 三 v7.7.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -144,7 +144,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.7 · guide complet</div>
+  <div class="foot">Version 7.7.1 · correctif guide</div>
 </main>
 
 <main id="select" class="screen">
@@ -1607,7 +1607,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.7.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:(location.search.match(/[?&]roads=(\w+)/)||[])[1]||'new',p:{},on:!/[?&]hd=0/.test(location.search),set:((location.search.match(/[?&]set=(\w+)/)||[])[1]||'mix'),tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2048,7 +2048,7 @@ $('pwBtn').addEventListener('click',()=>{au();pwBtn()});
 const HELP=[
  {t:'LES BASES',l:['Touche une case vide pour y poser la pièce en main. Maintiens le doigt pour voir ce que ça donnerait avant de lâcher.','<b>3 pièces identiques</b> côte à côte fusionnent en la suivante. À <b>4 ou plus</b>, c’est un <b>SUPER</b> : ×3 points pour 4, ×6 pour 5, ×10 pour 6.','Les <b>réactions en chaîne</b> (combos) rapportent encore plus, et l’aperçu les montre en rose avec « COMBO ×N ».','La <b>réserve</b> garde une pièce sans coûter de tour. Le <b>marchand</b> vend drone, cristal, recharge et annulation contre des pièces.'],chain:1},
  {t:'LES PRODROMES',l:['Les <b style="color:#34c80a">Prodromes</b> bougent à chaque tour. Chacun a sa particularité : Goki brûle, Genbu est blindé, Goryo explose, Gyuki se téléporte, Gaoro avance de deux pas. Maintiens ton doigt sur l’un d’eux pour la lire.','Encerclé, un Prodrome devient des <b>ruines</b>. Trois ruines forment une balise, trois balises un phare, trois phares une <b>capsule d’énergie</b>.','Touche une <b>capsule</b> ou un <b>noyau</b> pour le récolter : la pièce disparaît et tu gagnes des points bonus.','Piéger plusieurs Prodromes d’un coup rapporte un gros bonus.']},
- {t:'OUTILS ET HÉROS',l:['<b>Drone EMP</b> : détruit une pièce (détruire des décombres rapporte des points, détruire un bâtiment en fait perdre).','<b>Cristal</b> : devient la pièce qui fusionne le mieux.','Ton <b>héros</b> a un pouvoir unique, gratuit mais avec un temps de recharge en tours. Touche le bouton du pouvoir puis une case.','Le mode HD affiche des sprites haute définition. Ajoute <code>?hd=0</code> à l’adresse pour revenir au pixel art.']},
+ {t:'OUTILS ET HÉROS',l:['<b>Drone EMP</b> : détruit une pièce (détruire des décombres rapporte des points, détruire un bâtiment en fait perdre).','<b>Cristal</b> : devient la pièce qui fusionne le mieux.','Ton <b>héros</b> a un pouvoir unique, gratuit mais avec un temps de recharge en tours. Touche le bouton du pouvoir puis une case.']},
  {t:'PROGRESSION',l:['Chaque partie rapporte des <b style="color:#7df0ff">fragments ✦</b>, à dépenser dans les <b>Talents</b> (3 branches : Économie, Combat, Fusion).','Chaque jour : <b>3 missions</b> (+4 ✦ chacune, +6 ✦ pour les trois) et une <b>série quotidienne</b> qui rapporte de plus en plus.','Les <b>succès</b> donnent des fragments une seule fois : ils sont listés dans l’écran Missions.']},
  {t:'COLLECTION',l:['Tu gagnes des <b>colis</b> en finissant une partie à 1500 points ou plus, en terminant les missions du jour, ou en tenant 7 jours de série. Tu peux aussi en acheter un pour 20 ✦.','Chaque colis donne une <b>carte</b> : Commune, Rare, Épique ou Légendaire. Un doublon rapporte des fragments et monte la carte en niveau ★.','Chaque carte donne un petit <b>bonus de points</b>. Les cartes de skin changent la couleur des bâtiments.']},
  {t:'LES MODES',l:['<b>Campagne</b> : 10 secteurs avec un objectif. À partir du secteur 6, il faut y arriver avant la limite de tours.','<b>Infini</b> : tiens le plus longtemps possible, avec des paliers de score.','<b>Zen</b> : aucun Prodrome. <b>Survie</b> : Prodromes en masse, pouvoirs lents, +10 points par tour.','<b>Défi quotidien</b> : même plateau et mêmes pièces pour tout le monde, un seul essai par jour, sans talents ni cartes.']}
@@ -2058,7 +2058,7 @@ function helpModal(p=0,after){
   showModal(`<h2>COMMENT JOUER · ${p+1}/${HELP.length}</h2><h2 style="color:#7df0ff;font-size:11px">${H.t}</h2>
   <ul>${H.l.map(x=>`<li>${x}</li>`).join('')}</ul>
   ${H.chain?'<div class="chain" id="chain"></div>':''}
-  <div class="mrow" style="flex-direction:row;gap:8px">${p?`<button class="btn cy sm" data-a="prev" style="flex:1">←</button>`:''}<button class="btn ${last?'pk':''}" data-a="${last?'ok':'next'}" style="flex:3">${last?'COMPRIS !':'SUIVANT →'}</button></div>
+  <div class="mrow" style="flex-direction:row;gap:8px">${p?`<button class="btn cy sm" data-a="prev" style="flex:2">RETOUR</button>`:''}<button class="btn ${last?'pk':''}" data-a="${last?'ok':'next'}" style="flex:3">${last?'COMPRIS !':'SUIVANT'}</button></div>
   ${last?'':'<button class="btn sm cy" data-a="ok">FERMER</button>'}`,a=>{
     if(a==='next')helpModal(p+1,after);else if(a==='prev')helpModal(p-1,after);else{hideModal();if(after)after()}});
   const ch=$('chain');if(ch)CH.forEach(t=>{const c=document.createElement('canvas');c.width=c.height=64;drawSpriteTo(c,t,0);ch.appendChild(c)});
