@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.10</title>
+<title>Mechkawaii San 三 v7.11</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -41,10 +41,13 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
 .btn.pk{background:#c02a7c;box-shadow:inset -3px -3px 0 #7a1a50,inset 3px 3px 0 #ff9ed0,0 0 0 3px #0c0a14,0 0 0 5px #ff7ab8;text-shadow:1px 1px 0 #5a0f38}
 .btn.cy{background:#1f2a3a;box-shadow:inset -3px -3px 0 #121a26,inset 3px 3px 0 #4a6288,0 0 0 3px #0c0a14,0 0 0 5px #56e0ff;text-shadow:1px 1px 0 #000}
 .btn.sm{padding:9px 10px;font-size:10px}
+body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.webp) center/cover;opacity:.9;mix-blend-mode:screen;pointer-events:none;z-index:0}
+.screen{position:relative;z-index:1}
 #title{justify-content:space-between;padding-top:max(36px,env(safe-area-inset-top))}
 .logo{text-align:center;margin-top:6vh}
+.l1img{display:block;width:min(74vw,330px);margin:0 auto;animation:logoF 3.4s ease-in-out infinite;filter:drop-shadow(0 4px 0 rgba(0,0,0,.5))}
 .l1{font-size:25px;color:#fff;text-shadow:3px 3px 0 #ff7ab8,6px 6px 0 #2a0f26;letter-spacing:1px}
-.l2{font-size:17px;margin-top:16px;color:#9be07a;text-shadow:2px 2px 0 #1c3a18,4px 4px 0 #0c0a14}
+.l2{font-size:17px;margin-top:10px;color:#9be07a;text-shadow:2px 2px 0 #1c3a18,4px 4px 0 #0c0a14}
 .l3{margin-top:18px;font-size:22px;color:#ffd84a;text-shadow:2px 2px 0 #0c0a14}
 .menu{display:flex;flex-direction:column;gap:14px;padding:0 14px 8px}
 .foot{text-align:center;font-size:16px;opacity:.75}
@@ -128,7 +131,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
 
 <main id="title" class="screen on">
   <div class="logo">
-    <div class="l1 px">MECHKAWAII</div>
+    <img class="l1img" src="assets/brand/logo.png" alt="MECHKAWAII メカワイイ">
     <div class="l2 px">SAN <span style="font-family:'Noto Sans JP','Hiragino Sans',sans-serif;font-size:22px">三</span></div>
     <div class="l3">Trois pièces, un secteur reconquis</div>
   </div>
@@ -144,7 +147,7 @@ html.sa .screen{padding-top:max(44px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.10 · succès en check-list</div>
+  <div class="foot">Version 7.11 · charte Mechkawaii</div>
 </main>
 
 <main id="select" class="screen">
@@ -1608,7 +1611,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.10) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.11) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
