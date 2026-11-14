@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.10</title>
+<title>Mechkawaii San 三 v8.11</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.10 · boss nommés</div>
+  <div class="foot">Version 8.11 · boss nommés</div>
 </main>
 
 <main id="select" class="screen">
@@ -1655,11 +1655,11 @@ const startEndless=()=>startGame('endless',0,save.hero);
 
 /* ---------- boss de la run rogue ---------- */
 const BOSSES={
- goryo:{k:'surcharge',n:'GORYO LE GRENADIER',s:'Goryo',v:0,hue:230,hp:200,rate:.18,lim:38,d:"Il bombarde des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
- genbu:{k:'carapace',n:'GENBU LE TECHNICIEN',s:'Genbu',v:4,hue:100,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
- gaoro:{k:'ruche',n:"GAORO L'ÉCLAIREUR",s:'Gaoro',v:2,hue:320,hp:100,rate:.05,lim:34,d:"Il appelle des Prodromes sans cesse. Chaque piège le blesse beaucoup."},
- goky:{k:'surcharge',n:'GOKY LE PYROTECHNICIEN',s:'Goky',v:3,hue:290,hp:150,rate:.14,lim:36,d:"Il fait sauter des cases à distance. Les Prodromes piégés lui font mal."},
- gyuki:{k:'carapace',n:'GYUKI LE VOLTIGEUR',s:'Gyuki',v:1,hue:160,hp:110,sh:15,rate:.09,lim:34,d:"Agile : il frappe des lignes entières, vite. Un petit bouclier à briser."}
+ goryo:{k:'surcharge',n:'GORYO LE GRENADIER',s:'Goryo',v:2,hue:320,hp:200,rate:.18,lim:38,d:"Il bombarde des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
+ genbu:{k:'carapace',n:'GENBU LE TECHNICIEN',s:'Genbu',v:1,hue:160,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
+ gaoro:{k:'ruche',n:"GAORO L'ÉCLAIREUR",s:'Gaoro',v:4,hue:100,hp:100,rate:.05,lim:34,d:"Il appelle des Prodromes sans cesse. Chaque piège le blesse beaucoup."},
+ goky:{k:'surcharge',n:'GOKY LE PYROTECHNICIEN',s:'Goky',v:0,hue:230,hp:150,rate:.14,lim:36,d:"Il fait sauter des cases à distance. Les Prodromes piégés lui font mal."},
+ gyuki:{k:'carapace',n:'GYUKI LE VOLTIGEUR',s:'Gyuki',v:3,hue:290,hp:110,sh:15,rate:.09,lim:34,d:"Agile : il frappe des lignes entières, vite. Un petit bouclier à briser."}
 };
 function makeBoss(id){const B=BOSSES[id],hp=Math.round(B.hp*(1+.25*((RG_RUN&&RG_RUN.dg)||0)));return {id,k:B.k,s:B.s,n:B.n,v:B.v,hue:B.hue,hp,max:hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
 function bossDmg(d){const b=G.boss;if(!b||b.hp<=0||d<=0)return;let tot=d;
@@ -1961,7 +1961,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.10) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.11) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
