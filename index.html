@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.11</title>
+<title>Mechkawaii San 三 v8.12</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -59,7 +59,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 .backbar{position:sticky;bottom:0;z-index:5;margin:auto -12px 0;padding:14px 16px max(12px,env(safe-area-inset-bottom));background:linear-gradient(to top,#0c0a14 62%,rgba(12,10,20,0))}.backbar .btn{width:100%}
 .rrow{display:flex;gap:8px;justify-content:center;margin:0 0 4px}
 .rnode{flex:1;max-width:160px;min-height:var(--rh,62px);max-height:var(--rh,62px);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 4px;border:3px solid #3a2a52;background:#1b1230;color:#fff;font-family:inherit;text-align:center;line-height:1}
-.rnode .i{font-size:22px}.rnode .n{font-family:'Press Start 2P';font-size:7px;margin-top:2px}.rnode .d{font-size:17px;color:#cfc4e8}
+.rnode .i{font-size:22px}.rnode .n{font-family:'Press Start 2P';font-size:7px;margin-top:2px}.rnode .d{font-size:15px;color:#cfc4e8;white-space:nowrap}
 .rnode.fight{border-color:#7fc46a}.rnode.elite{border-color:#ff7a8a}.rnode.shop{border-color:#ffd84a}.rnode.rest{border-color:#56e0ff}.rnode.boss{border-color:#ff4fa0;box-shadow:0 0 14px rgba(255,79,160,.6)}
 .rnode.cur{animation:tcan 1.4s ease-in-out infinite;cursor:pointer}
 .rnode.dim{opacity:.38;filter:grayscale(.6)}.rnode.done{opacity:.55;border-color:#7be05a}.rnode.skip{display:none}
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.11 · boss nommés</div>
+  <div class="foot">Version 8.12 · carte plus claire</div>
 </main>
 
 <main id="select" class="screen">
@@ -1761,7 +1761,7 @@ function rgSector(f,type){ // fabrique le secteur d'un combat
   S.intro=boss?"Goryo le grenadier ! Tout est en jeu, soldat. Fais tomber ce monstre !":el?"Poche d'élite détectée. Dur, mais la récompense sera à la hauteur.":"Nouveau front. Choisis bien ta stratégie, soldat.";
   return S}
 const RGPL={2:'solaires',3:'bâtiments',4:'usines',5:'bases',6:'tours'};
-function rgDesc(S){return S.bossId?'PV '+BOSSES[S.bossId].hp+(BOSSES[S.bossId].sh?' + bouclier':''):S.pts?S.pts+' pts':S.make?S.make[1]+' '+RGPL[S.make[0]]:S.trap+' pièges'}
+function rgDesc(S){return S.bossId?'Boss · PV '+BOSSES[S.bossId].hp+(BOSSES[S.bossId].sh?' + bouclier':''):S.pts?'Score '+S.pts:S.make?'Bâtir '+S.make[1]+' '+RGPL[S.make[0]]:'Poser '+S.trap+' pièges'}
 function rgBoss(id,f){const B=BOSSES[id];return {name:B.n,pro:2+Math.floor(RG_DG/2),free:0,rate:Math.min(.5,B.rate*(1+.1*RG_DG)),lim:Math.max(20,B.lim-RG_DG*2),map:null,rogue:1,boss:1,bossId:id,intro:B.d}}
 function rgMap(dg){RG_DG=dg||0;
   const rows=[];
@@ -1771,6 +1771,7 @@ function rgMap(dg){RG_DG=dg||0;
     const n=f===0?2:(Math.random()<.45?3:2),row=[];
     const pool=f===0?['fight']:['fight','fight','fight','elite','elite','shop','shop','rest','rest'];
     while(row.length<n){row.push({t:f===0?'fight':rgpick(pool)})}
+    ['shop','rest'].forEach(k=>{let seen=0;row.forEach(x=>{if(x.t===k&&seen++)x.t='fight'})});
     if(!row.some(x=>x.t==='fight'||x.t==='elite'))row[0].t='fight';
     if(f===RGF-2&&!row.some(x=>x.t==='rest'||x.t==='shop'))row[row.length-1].t=rgpick(['rest','shop']);
     if(f>=1&&f<=RGF-3&&row.filter(x=>x.t==='elite').length>1)row.forEach((x,i)=>{if(i>0&&x.t==='elite')x.t='fight'});
@@ -1961,7 +1962,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.11) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.12) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
