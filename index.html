@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.0</title>
+<title>Mechkawaii San 三 v8.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -167,7 +167,8 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
   <canvas id="stage" width="760" height="380"></canvas>
   <div id="streakInfo" class="chips"></div>
   <div class="menu">
-    <button class="btn pk big" id="bCamp">CAMPAGNE<small id="campSub"></small></button>
+    <button class="btn pk big" id="bRogue">ROGUE<small id="rogSub"></small></button>
+    <button class="btn big" id="bCamp">CAMPAGNE<small id="campSub"></small></button>
     <button class="btn" id="bEnd">MODES DE JEU</button>
     <div class="grid3">
       <button class="btn" id="bTal">TALENTS<span id="fragN"></span></button>
@@ -175,9 +176,8 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
       <button class="btn" id="bCol">COLLECTION<span id="colN"></span></button>
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
-    <button class="btn sm" id="bRogue">ROGUE</button>
   </div>
-  <div class="foot">Version 8.0 · mode rogue</div>
+  <div class="foot">Version 8.1 · rogue en mode principal</div>
 </main>
 
 <main id="select" class="screen">
@@ -1671,14 +1671,7 @@ function newRogueRun(){
   persist();buildRogueMap()}
 function openRogue(){
   const go=()=>{const R=rgSave();RG_RUN=R.run||null;show('rmap');buildRogueMap()};
-  if(save.rogueOk)return go();
-  showModal(`<h2>ROGUE · ACCES PRIVE</h2><p style="text-align:center">Entre le code pour jouer.</p><input id="rgpw" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="CODE" style="font-family:'Press Start 2P';font-size:18px;text-align:center;letter-spacing:6px;padding:14px;background:#1b1230;color:#fff;border:3px solid #ff7ab8;outline:0;width:100%"><div id="rgpe" class="px" style="font-size:9px;color:#ff7a8a;text-align:center;min-height:14px"></div><div class="mrow"><button class="btn pk" data-a="ok">ENTRER</button><button class="btn cy" data-a="no">ANNULER</button></div>`,async a=>{
-    if(a==='no'){hideModal();return}
-    const v=($('rgpw').value||'').trim();
-    const h=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)))].map(x=>x.toString(16).padStart(2,'0')).join('');
-    if(h==='21445af8f7acc5de30b16b435e488cca8c824c41c178fa56d4bc6fec55d98bf6'){save.rogueOk=true;persist();hideModal();go()}
-    else{$('modal').classList.add('on');$('rgpe').textContent='CODE INCORRECT';$('rgpw').value=''}
-  });
+  go();
 }
 function rgRelicHtml(){const r=RG_RUN;return `<div class="rrel">${r.relics.map(i=>`<span title="${RLC[i].n}" style="border-color:${RLCOL[RLC[i].r]}">${RLC[i].i}</span>`).join('')||'<small style="color:#9a8ab8">Aucune relique</small>'}</div>`}
 function buildRogueMap(){
@@ -1837,7 +1830,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.0) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.1) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2403,7 +2396,8 @@ function missionsModal(){
 }
 function streakLabel(){chips()}
 function chips(){const e=$('streakInfo');if(!e)return;const L=save.login,P=[];if(L&&L.streak)P.push('🔥 '+L.streak+' j');P.push('✦ '+(save.frag||0));if(save.crates)P.push('📦 '+save.crates);const M=ensureMis();P.push('Missions '+M.l.filter(m=>m.done).length+'/3');e.innerHTML=P.map(x=>`<span class="chip">${x}</span>`).join('')}
-function menuInfo(){const i=SECTORS.findIndex((x,k)=>!save.done[k]),e=$('campSub');if(e)e.textContent=i<0?'Erret est libérée !':'Secteur '+(i+1)+' · '+SECTORS[i].name}
+function menuInfo(){try{const R=save.rogue,e=$('rogSub');if(e)e.textContent=R&&R.run?'Run en cours · étage '+(R.run.f+1)+'/8':'8 étages · choisis ton chemin'}catch(e){}
+  const i=SECTORS.findIndex((x,k)=>!save.done[k]),e=$('campSub');if(e)e.textContent=i<0?'Erret est libérée !':'Secteur '+(i+1)+' · '+SECTORS[i].name}
 function checkLogin(){
   const t=dayKey();save.login=save.login||{d:'',streak:0,max:0};const L=save.login;
   if(L.d===t){streakLabel();return}
