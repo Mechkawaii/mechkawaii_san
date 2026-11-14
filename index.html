@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.6</title>
+<title>Mechkawaii San 三 v8.7</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -99,7 +99,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 .ctl .pw .d{font-size:15px;margin:0}
 .ctl .objs{grid-column:1/-1;padding:4px 8px;font-size:18px}
 .ctl .objs .lbl{margin-bottom:3px}
-html.sa #game.on{padding-top:max(8px,env(safe-area-inset-top))!important}
+html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 #game.c2 .ctl .slot,#game.c2 .ctl .pw,#game.c2 .ctl #shopBtn{height:70px}#game.c2 .ctl .slot canvas,#game.c2 .ctl .pw canvas{width:36px;height:36px}#game.c2 .ctl .slot .nm{display:none}
 #game.c3 .ctl .slot,#game.c3 .ctl .pw,#game.c3 .ctl #shopBtn{height:60px}#game.c3 .ctl .pw .d{display:block}
 #game.c4 .ctl .objs .lbl{display:none}
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(8px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.6 · interface compactée</div>
+  <div class="foot">Version 8.7 · interface compactée</div>
 </main>
 
 <main id="select" class="screen">
@@ -1955,7 +1955,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
