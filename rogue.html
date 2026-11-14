@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mechkawaii San 三 · ROGUE (proto 0.1)</title>
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0c0a14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+@font-face{font-family:'Press Start 2P';font-display:swap;src:url(fonts/press-start-2p-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'VT323';font-display:swap;src:url(fonts/vt323-latin-400-normal.woff2) format('woff2')}
+:root{--bg:#0c0a14;--pan:#15121f;--pk:#ff7ab8;--gr:#7fc46a;--cy:#56e0ff;--yl:#ffd84a;--tx:#f1e9ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:'VT323',monospace;font-size:20px;overscroll-behavior:none}
+body{min-height:100dvh;display:flex;justify-content:center}
+body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.webp) center/cover;opacity:.9;mix-blend-mode:screen;pointer-events:none}
+.px{font-family:'Press Start 2P',monospace}
+#app{position:relative;width:100%;max-width:520px;min-height:100dvh;padding:max(10px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;text-shadow:1px 1px 0 #000}
+.btn{font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.4;color:#fff;background:#3f7a38;border:0;padding:13px 10px;cursor:pointer;text-shadow:1px 1px 0 #1c3a18;box-shadow:inset -3px -3px 0 #285224,inset 3px 3px 0 #86c878,0 0 0 3px #0c0a14,0 0 0 5px #6aa85c}
+.btn:active{transform:translateY(2px)}.btn[disabled]{opacity:.45}
+.btn.pk{background:#c02a7c;box-shadow:inset -3px -3px 0 #7a1a50,inset 3px 3px 0 #ff9ed0,0 0 0 3px #0c0a14,0 0 0 5px #ff7ab8;text-shadow:1px 1px 0 #5a0f38}
+.btn.cy{background:#1f2a3a;box-shadow:inset -3px -3px 0 #121a26,inset 3px 3px 0 #4a6288,0 0 0 3px #0c0a14,0 0 0 5px #56e0ff;text-shadow:1px 1px 0 #000}
+.btn.sm{padding:9px 10px;font-size:10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hearts{display:flex;gap:4px}.hearts img{width:26px;height:26px;object-fit:contain}.hearts img.off{filter:grayscale(1) brightness(.4)}
+.coins{font-size:24px;color:var(--yl)}
+.goal{border:3px solid #5a3a7a;background:rgba(21,14,36,.9);padding:6px 8px}
+.goal .t{display:flex;justify-content:space-between;font-size:22px;line-height:1}
+.bar{height:12px;background:#2a1f3d;margin-top:5px;border:2px solid #0c0a14}.bar i{display:block;height:100%;background:var(--gr);width:0;transition:width .3s}
+#cv{width:100%;aspect-ratio:1;background:#0c0a14;border:4px solid #5a3a7a;image-rendering:pixelated;touch-action:manipulation;display:block}
+.hand{display:flex;gap:8px;align-items:stretch}
+.slot{flex:1;border:3px solid #3a2a52;background:rgba(21,14,36,.9);display:flex;align-items:center;justify-content:center;gap:6px;padding:4px;min-height:84px;position:relative}
+.slot.cur{border-color:var(--pk);flex:1.4}.slot small{position:absolute;top:2px;left:4px;font-family:'Press Start 2P';font-size:7px;color:#9a8ab8}
+.slot canvas{width:64px;height:64px}
+.relics{display:flex;gap:6px;flex-wrap:wrap;min-height:30px}
+.rel{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--c);background:#1b1230}
+#ov{position:fixed;inset:0;background:rgba(5,2,10,.88);display:none;align-items:center;justify-content:center;padding:14px;z-index:10}
+#ov.on{display:flex}
+.box{width:100%;max-width:480px;max-height:94dvh;overflow:auto;background:var(--pan);border:4px solid var(--pk);box-shadow:0 0 0 4px #0c0a14;padding:14px;display:flex;flex-direction:column;gap:10px}
+.box h2{font-family:'Press Start 2P';font-size:13px;line-height:1.5;margin:0;color:var(--yl);text-align:center}
+.box p{margin:0;font-size:22px;line-height:1.05;text-align:center}
+.rc{display:flex;gap:10px;align-items:center;padding:8px;border:3px solid var(--c);background:#1b1230;cursor:pointer;text-align:left;color:#fff;font-family:inherit;width:100%}
+.rc .ic{font-size:30px;width:38px;text-align:center}.rc b{font-family:'Press Start 2P';font-size:9px;color:var(--c);display:block;margin-bottom:4px}.rc span{font-size:20px;line-height:1}
+.rc:active{transform:translateY(2px)}.rc[disabled]{opacity:.4}
+.foot{position:sticky;bottom:-14px;margin:0 -14px -14px;padding:10px 14px 14px;background:var(--pan);display:flex;flex-direction:column;gap:8px}
+.logo{display:block;width:min(70vw,300px);margin:6px auto}
+.toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);font-family:'Press Start 2P';font-size:11px;background:#1b1230;border:3px solid var(--yl);color:var(--yl);padding:8px 12px;display:none;z-index:20;text-align:center}
+.toast.on{display:block}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov"><div class="box" id="box"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const N=6,C=64,$=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n),pick=a=>a[rnd(a.length)];
+const D4=[[1,0],[-1,0],[0,1],[0,-1]];
+const inb=(r,c)=>r>=0&&c>=0&&r<N&&c>=0&&c<N;
+/* ---------- données ---------- */
+const NEXT={1:2,2:3,3:4,4:5,5:6,9:16};
+const PTS={2:20,3:80,4:300,5:1200,6:6000,16:150};
+const NAMES={1:'Vis et boulon',2:'Panneau solaire',3:'Petit bâtiment',4:'Usine',5:'Base',6:'Tour',9:'Ruines',16:'Capsule'};
+const PNAME=['Goki','Genbu','Goryo','Gyuki','Gaoro'];
+const SECT=[
+ {n:'Périphérie',g:'score',v:400,turns:24,rate:.05},
+ {n:'Zone industrielle',g:'build',t:4,v:2,turns:26,rate:.10},
+ {n:'Quartier nord',g:'score',v:1300,turns:28,rate:.14},
+ {n:'Poche ennemie',g:'trap',v:3,turns:28,rate:.22},
+ {n:'Centre-ville',g:'score',v:2800,turns:30,rate:.20},
+ {n:'Forteresse',g:'build',t:5,v:2,turns:32,rate:.22},
+ {n:'Nid de Prodromes',g:'trap',v:6,turns:32,rate:.30},
+ {n:'BOSS · Le Surchargé',g:'score',v:7000,turns:36,rate:.30,boss:1}
+];
+const RC={c:'#9aa0b4',r:'#56e0ff',l:'#ffd84a'},RP={c:8,r:14,l:22};
+const RELICS=[
+ {id:'pioche',i:'🎒',n:'Pioche généreuse',r:'c',d:'+3 tours à chaque secteur.'},
+ {id:'aimant',i:'🧲',n:'Aimant à boulons',r:'c',d:'Beaucoup plus de boulons dans la pioche.'},
+ {id:'solaire',i:'☀️',n:'Panneaux dorés',r:'c',d:'Chaque panneau solaire créé rapporte +1 pièce.'},
+ {id:'armure',i:'🛡️',n:'Armure',r:'c',d:'Le premier incendie de Goki de chaque secteur est ignoré.'},
+ {id:'radar',i:'📡',n:'Radar',r:'c',d:'Tu vois les 2 prochaines pièces.'},
+ {id:'combo',i:'🔗',n:'Cascade rentable',r:'c',d:'Chaque combo ×2 ou plus rapporte +2 pièces.'},
+ {id:'tireur',i:'🎯',n:'Brouilleur',r:'c',d:'30 % de Prodromes en moins dans la pioche.'},
+ {id:'surcharge',i:'💥',n:'Surcharge',r:'r',d:'Les fusions de 4 pièces ou plus rapportent ×2.'},
+ {id:'collecteur',i:'🧰',n:'Collecteur',r:'r',d:'Chaque Prodrome piégé rapporte +3 pièces.'},
+ {id:'fertile',i:'🌱',n:'Ruines fertiles',r:'r',d:'Il suffit de 2 ruines pour faire une capsule.'},
+ {id:'chaine',i:'⛓️',n:'Chaîne explosive',r:'r',d:'+0,5 de multiplicateur par étape de combo.'},
+ {id:'givre',i:'❄️',n:'Givre',r:'r',d:'Les Prodromes ne bougent pas les 3 premiers tours.'},
+ {id:'recolte',i:'🌾',n:'Grosse récolte',r:'r',d:'+50 % de pièces à la fin de chaque secteur.'},
+ {id:'piegeur',i:'🪤',n:'Piégeur',r:'r',d:'Chaque Prodrome piégé donne +300 points.'},
+ {id:'ouverture',i:'🏗️',n:'Terrain préparé',r:'r',d:'Chaque secteur commence avec 3 boulons posés.'},
+ {id:'marchand',i:'🏷️',n:'Remise pro',r:'r',d:'Prix du marchand −30 %.'},
+ {id:'reserve',i:'📦',n:'Double réserve',r:'r',d:'La réserve contient 2 pièces.'},
+ {id:'grand',i:'⭐',n:'Grand écart',r:'l',d:'Tous les points ×1,25.'},
+ {id:'bati',i:'🗼',n:'Bâtisseur de tours',r:'l',d:'Chaque Tour construite donne +4 tours.'},
+ {id:'souffle',i:'💗',n:'Dernier souffle',r:'l',d:'+1 cœur immédiatement (max 5).'},
+ {id:'chance',i:'🍀',n:'Chance du pilote',r:'l',d:'20 % des pièces arrivent déjà en panneau solaire.'}
+];
+const RID=Object.fromEntries(RELICS.map(r=>[r.id,r]));
+/* ---------- images ---------- */
+const IMG={};
+[1,2,3,4,5,6,9,16].forEach(t=>{const i=new Image();i.src='assets/hd/b'+t+'.png';IMG['b'+t]=i});
+[0,1,2,3,4].forEach(v=>{const i=new Image();i.src='assets/hd/p'+v+'.png';IMG['p'+v]=i});
+const HEART=new Image();HEART.src='assets/brand/heart.png';
+function sprite(t,v){return t===12?IMG['p'+(v|0)]:IMG['b'+t]}
+function drawSprite(g,t,v,x,y,s,bob){const im=sprite(t,v);if(!im||!im.complete||!im.naturalWidth)return;const box=s*(t===12?1.25:1.18),k=Math.min(box/im.naturalWidth,box/im.naturalHeight),w=im.naturalWidth*k,h=im.naturalHeight*k;g.drawImage(im,x+(s-w)/2,y+(s-h)/2-s*.04+(bob||0),w,h)}
+/* ---------- état ---------- */
+const META_KEY='mk_rogue';
+let meta=JSON.parse(localStorage.getItem(META_KEY)||'{"best":0,"wins":0,"runs":0,"bestScore":0}');
+const saveMeta=()=>{try{localStorage.setItem(META_KEY,JSON.stringify(meta))}catch(e){}};
+let R=null,grid=[],hand={cur:null,next:[],res:[]},busy=false,parts=[],anim=[],cv,g,hover=null;
+const has=id=>R&&R.relics.includes(id);
+/* ---------- run ---------- */
+function newRun(){
+  hide();
+  R={sector:0,hearts:3,coins:0,relics:[],score:0,total:0,runScore:0,trapT:0,builtT:0,kills:0,merges:0,
+     turns:0,secScore:0,secTrap:0,secBuilt:0,burnSkip:false,chainMax:0,shop:null,bonusTurns:0};
+  startSector();
+}
+function sec(){return SECT[R.sector]}
+function startSector(){
+  const S=sec();
+  grid=Array.from({length:N},()=>Array(N).fill(null));
+  R.turns=S.turns+(has('pioche')?3:0)+R.bonusTurns;R.bonusTurns=0;
+  R.secScore=0;R.secTrap=0;R.secBuilt=0;R.burnSkip=has('armure');R.t=0;
+  if(has('ouverture')){let k=0;while(k<3){const r=rnd(N),c=rnd(N);if(!grid[r][c]){grid[r][c]=mk(1);k++}}}
+  hand={cur:null,next:[],res:[]};
+  hand.cur=draw();fillNext();
+  parts=[];busy=false;renderGame();
+  if(S.boss)toast('BOSS : '+S.n.replace('BOSS · ',''),1800);
+}
+const mk=(t,v)=>({t,v:v||0,ph:Math.random()*6,pop:1});
+function resMax(){return has('reserve')?2:1}
+function nNext(){return has('radar')?2:1}
+function fillNext(){while(hand.next.length<nNext())hand.next.push(draw())}
+function draw(){
+  const S=sec(),w=[[1,has('aimant')?130:60],[2,20+(has('chance')?15:0)],[3,6],[4,1]];
+  const nPro=grid.flat().filter(t=>t&&t.t===12).length;
+  if(R.t>=2&&nPro<5){const rt=S.rate*(has('tireur')?.7:1)*(S.boss?1:1);const k=rt*100/5;for(let v=0;v<5;v++)w.push([100+v,k])}
+  let tot=w.reduce((a,b)=>a+b[1],0),x=Math.random()*tot;
+  for(const [t,p] of w){x-=p;if(x<0)return t>=100?{t:12,v:t-100}:{t,v:0}}
+  return {t:1,v:0};
+}
+/* ---------- plateau ---------- */
+function flood(r,c,t){const seen=new Set([r*N+c]),q=[[r,c]],out=[];
+  while(q.length){const [y,x]=q.pop();out.push([y,x]);for(const [dy,dx] of D4){const a=y+dy,b=x+dx;if(inb(a,b)&&!seen.has(a*N+b)&&grid[a][b]&&grid[a][b].t===t){seen.add(a*N+b);q.push([a,b])}}}return out}
+const need=t=>t===9&&has('fertile')?2:3;
+function gainFor(nt,n,chain){
+  let m=(1+(n-3)*.5)*(has('chaine')?chain+.5*(chain-1):chain);
+  if(n>=4&&has('surcharge'))m*=2;
+  if(has('grand'))m*=1.25;
+  return Math.round((PTS[nt]||0)*m)}
+function addScore(n){R.secScore+=n;R.runScore+=n}
+function addCoins(n){R.coins+=n}
+function resolve(r,c){
+  let t=grid[r][c].t,chain=0;
+  while(NEXT[t]){
+    const grp=flood(r,c,t);
+    if(grp.length<need(t))break;
+    chain++;
+    grp.forEach(([y,x])=>{boom(y,x,t===9?['#8a8a9a']:['#ffd84a','#ff7ab8','#fff'],6);grid[y][x]=null});
+    const nt=NEXT[t];grid[r][c]=mk(nt);
+    const gn=gainFor(nt,grp.length,chain);addScore(gn);R.merges++;
+    pop(r,c,'+'+gn);
+    if(nt===2&&has('solaire'))addCoins(1);
+    if(nt>=3)addCoins(1);
+    if(nt>=4)R.secBuilt+=(sec().g==='build'&&nt>=sec().t)?1:0;
+    if(nt===6){R.builtT++;if(has('bati')){R.turns+=4;toast('TOUR : +4 TOURS',1200)}}
+    t=nt;
+  }
+  if(chain>R.chainMax)R.chainMax=chain;
+  if(chain>=2){toast('COMBO ×'+chain,900);if(has('combo'))addCoins(2)}
+  return chain;
+}
+function fx(){}
+function boom(y,x,cols,n){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=.4+Math.random()*1.4;parts.push({x:x*C+C/2,y:y*C+C/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,l:22+rnd(14),c:pick(cols)})}}
+function pop(r,c,txt){anim.push({x:c*C+C/2,y:r*C+8,txt,l:46})}
+/* ---------- tour ---------- */
+function place(r,c){
+  if(busy||!R||grid[r][c])return;
+  const p=hand.cur;grid[r][c]=mk(p.t,p.v);
+  busy=true;R.t++;
+  let chain=0;if(p.t!==12)chain=resolve(r,c);
+  hand.cur=hand.next.shift();fillNext();
+  R.turns--;
+  renderGame();
+  if(checkGoal())return;
+  setTimeout(prodromePhase,260);
+}
+function harvest(r,c){
+  if(busy||!R)return;const tl=grid[r][c];if(!tl||tl.t!==16)return;
+  grid[r][c]=null;const gn=Math.round(150*(has('grand')?1.25:1));addScore(gn);addCoins(3);boom(r,c,['#7df0ff','#fff'],10);pop(r,c,'+'+gn);renderGame();checkGoal()}
+function swap(){
+  if(busy||!R)return;
+  if(hand.res.length<resMax()){hand.res.push(hand.cur);hand.cur=hand.next.shift();fillNext()}
+  else{const x=hand.res.shift();hand.res.push(hand.cur);hand.cur=x}
+  renderGame()}
+function prodromePhase(){
+  const ps=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(grid[r][c]&&grid[r][c].t===12)ps.push([r,c]);
+  ps.sort(()=>Math.random()-.5);
+  const frozen=has('givre')&&R.t<=3;
+  const step=(y,x)=>{const o=D4.map(([dy,dx])=>[y+dy,x+dx]).filter(([a,b])=>inb(a,b)&&!grid[a][b]);if(!o.length)return [y,x];const [a,b]=pick(o);grid[a][b]=grid[y][x];grid[y][x]=null;return [a,b]};
+  let burned=0;
+  if(!frozen)for(const [y,x] of ps){
+    const v=grid[y][x].v;let p=[y,x];
+    if(v===1){if(R.t%2===0)continue;p=step(y,x)}
+    else if(v===3){const o=[];for(let a=0;a<N;a++)for(let b=0;b<N;b++)if(!grid[a][b])o.push([a,b]);if(o.length){const [a,b]=pick(o);grid[a][b]=grid[y][x];grid[y][x]=null;p=[a,b];boom(a,b,['#a0ff6a','#fff'],6)}}
+    else if(v===4){p=step(y,x);p=step(p[0],p[1])}
+    else p=step(y,x);
+    if(v===0&&R.t>3&&Math.random()<.4){
+      const nb=D4.map(([dy,dx])=>[p[0]+dy,p[1]+dx]).filter(([a,b])=>inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3);
+      if(nb.length){if(R.burnSkip){R.burnSkip=false;toast('ARMURE !',900)}else{const [a,b]=pick(nb);grid[a][b]=mk(9);boom(a,b,['#ff9a3a','#ffd84a'],12);burned++}}}
+  }
+  if(burned)toast('GOKI BRÛLE '+burned+' PIÈCE'+(burned>1?'S':''),1100);
+  trapPhase();
+}
+function trapPhase(){
+  const seen=new Set();let trapped=0;
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    const tl=grid[r][c];if(!tl||tl.t!==12||seen.has(r*N+c))continue;
+    const comp=flood(r,c,12);comp.forEach(([y,x])=>seen.add(y*N+x));
+    const free=comp.some(([y,x])=>D4.some(([dy,dx])=>inb(y+dy,x+dx)&&!grid[y+dy][x+dx]));
+    if(!free){
+      comp.forEach(([y,x])=>{if(grid[y][x].v===2)D4.forEach(([dy,dx])=>{const a=y+dy,b=x+dx;if(inb(a,b)&&grid[a][b]&&grid[a][b].t>=1&&grid[a][b].t<=3){grid[a][b]=mk(9);boom(a,b,['#ff9a3a','#ffd84a'],8)}})});
+      comp.forEach(([y,x])=>{grid[y][x]=mk(9);boom(y,x,['#34c80a','#a0ff6a','#fff'],12);trapped++})}}
+  if(trapped){
+    R.kills+=trapped;R.secTrap+=trapped;
+    const gn=Math.round(100*trapped*(has('grand')?1.25:1))+(has('piegeur')?300*trapped:0);addScore(gn);
+    addCoins(2*trapped+(has('collecteur')?3*trapped:0));
+    toast('PRODROME PIÉGÉ +'+gn,1100)}
+  // les ruines nouvellement créées peuvent fusionner
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(grid[r][c]&&grid[r][c].t===9&&flood(r,c,9).length>=need(9)){resolve(r,c)}
+  busy=false;renderGame();
+  if(checkGoal())return;
+  if(R.turns<=0)return failSector('PLUS DE TOURS');
+  if(!grid.flat().some(t=>!t))return failSector('PLATEAU PLEIN');
+}
+function goalProg(){const S=sec();return S.g==='score'?R.secScore:S.g==='trap'?R.secTrap:R.secBuilt}
+function goalMet(){return goalProg()>=sec().v}
+function checkGoal(){if(goalMet()){busy=true;setTimeout(clearSector,500);return true}return false}
+/* ---------- fin de secteur ---------- */
+function clearSector(){
+  const S=sec();
+  let bonus=6+R.sector+Math.max(0,R.turns);if(has('recolte'))bonus=Math.round(bonus*1.5);
+  addCoins(bonus);
+  const last=R.sector>=SECT.length-1;
+  meta.best=Math.max(meta.best,R.sector+1);
+  if(last){meta.wins++;meta.runs++;meta.bestScore=Math.max(meta.bestScore,R.runScore);saveMeta();return victory(bonus)}
+  saveMeta();
+  offerRelic(bonus);
+}
+function rollRelics(n,rarW){
+  const own=new Set(R.relics),pool=RELICS.filter(r=>!own.has(r.id)&&!(r.id==='souffle'&&R.hearts>=5));
+  const out=[];
+  while(out.length<n&&pool.length){
+    const tot=pool.reduce((a,r)=>a+rarW[r.r],0);let x=Math.random()*tot,ch=pool[0];
+    for(const r of pool){x-=rarW[r.r];if(x<0){ch=r;break}}
+    out.push(ch);pool.splice(pool.indexOf(ch),1)}
+  return out}
+function takeRelic(rl){R.relics.push(rl.id);if(rl.id==='souffle')R.hearts=Math.min(5,R.hearts+1)}
+function offerRelic(bonus){
+  const S=sec(),offs=rollRelics(3,{c:6,r:3,l:1+R.sector*.4});
+  show(`<h2>SECTEUR LIBÉRÉ</h2><p>${S.n}<br><span style="color:var(--yl)">+${bonus} pièces</span> · ${R.turns>0?R.turns+' tours restants':'juste à temps'}</p>
+   <p style="color:var(--cy)">Choisis une relique :</p>
+   ${offs.map((r,i)=>relCard(r,i,'pick')).join('')}`,a=>{
+    const r=offs[+a.slice(4)];if(!r)return;takeRelic(r);openShop()});
+}
+function relCard(r,i,a,price){return `<button class="rc" style="--c:${RC[r.r]}" data-a="${a}${i}"${price!=null&&R.coins<price?' disabled':''}><span class="ic">${r.i}</span><div><b>${r.n.toUpperCase()}${price!=null?' · '+price+' 🪙':''}</b><span>${r.d}</span></div></button>`}
+function openShop(){
+  if(!R.shop)R.shop={offs:rollRelics(3,{c:5,r:4,l:1.5}),sold:{}};
+  const disc=has('marchand')?.7:1,pr=r=>Math.round(RP[r.r]*disc),sh=R.shop;
+  const heal=Math.round(12*disc),turns=Math.round(6*disc);
+  show(`<h2>LE MARCHAND</h2><p>Tu as <span class="coins">${R.coins} 🪙</span></p>
+   ${sh.offs.map((r,i)=>sh.sold['r'+i]?'':relCard(r,i,'buy',pr(r))).join('')}
+   <button class="rc" style="--c:#ff7ab8" data-a="heal"${sh.sold.heal||R.coins<heal||R.hearts>=5?' disabled':''}><span class="ic">💗</span><div><b>RÉPARATION · ${heal} 🪙</b><span>+1 cœur (max 5).</span></div></button>
+   <button class="rc" style="--c:#56e0ff" data-a="turns"${sh.sold.turns||R.coins<turns?' disabled':''}><span class="ic">⏱️</span><div><b>CARBURANT · ${turns} 🪙</b><span>+5 tours au prochain secteur.</span></div></button>
+   <div class="foot"><button class="btn pk" data-a="go">SECTEUR SUIVANT →</button></div>`,a=>{
+    if(a==='go'){R.shop=null;R.sector++;hide();startSector();return}
+    if(a==='heal'){if(R.coins>=heal&&R.hearts<5&&!sh.sold.heal){R.coins-=heal;R.hearts++;sh.sold.heal=1}}
+    else if(a==='turns'){if(R.coins>=turns&&!sh.sold.turns){R.coins-=turns;R.bonusTurns+=5;sh.sold.turns=1}}
+    else if(a.startsWith('buy')){const i=+a.slice(3),r=sh.offs[i];if(r&&!sh.sold['r'+i]&&R.coins>=pr(r)){R.coins-=pr(r);takeRelic(r);sh.sold['r'+i]=1}}
+    openShop()});
+}
+function failSector(why){
+  busy=true;R.hearts--;
+  if(R.hearts<=0){meta.runs++;meta.bestScore=Math.max(meta.bestScore,R.runScore);saveMeta();return defeat(why)}
+  show(`<h2>SECTEUR PERDU</h2><p>${why}</p><p>Il te reste <b style="color:var(--pk)">${R.hearts} ♥</b>. Tu retentes le secteur.</p>
+   <div class="foot"><button class="btn pk" data-a="go">RETENTER</button></div>`,()=>{hide();startSector()})}
+function defeat(why){
+  show(`<h2>FIN DE LA RUN</h2><p>${why}</p><p>Secteurs libérés : <b>${R.sector}</b> / ${SECT.length}<br>Score : <b>${R.runScore}</b><br>Prodromes piégés : ${R.kills}<br>Reliques : ${R.relics.map(i=>RID[i].i).join(' ')||'aucune'}</p>
+   <div class="foot"><button class="btn pk" data-a="again">NOUVELLE RUN</button><button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hide();a==='again'?newRun():menu()})}
+function victory(bonus){
+  show(`<h2>ERRET EST LIBRE !</h2><p>Le Surchargé est tombé.<br>Score : <b>${R.runScore}</b><br>Cœurs restants : ${R.hearts}<br>Reliques : ${R.relics.map(i=>RID[i].i).join(' ')}</p>
+   <div class="foot"><button class="btn pk" data-a="again">NOUVELLE RUN</button><button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hide();a==='again'?newRun():menu()})}
+/* ---------- UI ---------- */
+const ua=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function strip(root){root.querySelectorAll('.px,.btn,h2,.rc b,.slot small,#sn,.toast').forEach(el=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())n.nodeValue=ua(n.nodeValue)})}
+function show(html,cb){const b=$('box');b.innerHTML=html;strip(b);$('ov').classList.add('on');b.onclick=e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;cb(el.dataset.a)};b.scrollTop=0}
+function hide(){$('ov').classList.remove('on')}
+let tT=null;function toast(m,ms=1200){const t=$('toast');t.textContent=ua(m);t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),ms)}
+function menu(){
+  hide();R=null;
+  $('app').innerHTML=`<img class="logo" src="assets/brand/logo.png" alt="">
+   <div class="px" style="text-align:center;color:var(--pk);font-size:14px;margin-top:4px">ROGUE</div>
+   <p style="text-align:center;font-size:22px;margin:6px 0">Libère 8 secteurs d'affilée.<br>Entre chaque secteur, choisis une relique et dépense tes pièces.<br>3 cœurs : 0 = fin de la run.</p>
+   <div class="goal"><div class="t"><span>Meilleur secteur</span><b>${meta.best}/8</b></div><div class="t"><span>Victoires / runs</span><b>${meta.wins}/${meta.runs}</b></div><div class="t"><span>Meilleur score</span><b>${meta.bestScore}</b></div></div>
+   <button class="btn pk" id="bGo" style="margin-top:8px">NOUVELLE RUN</button>
+   <button class="btn cy" id="bHow">COMMENT JOUER</button>
+   <a class="btn sm" href="index.html" style="text-align:center;text-decoration:none;margin-top:6px">← JEU PRINCIPAL</a>`;
+  strip($('app'));$('bGo').onclick=newRun;
+  $('bHow').onclick=()=>show(`<h2>COMMENT JOUER</h2><p style="text-align:left">• Touche une case vide pour poser la pièce.<br>• 3 pièces identiques côte à côte fusionnent en un palier au-dessus (boulon → solaire → bâtiment → usine → base → tour).<br>• Les Prodromes bougent. Encercle-les pour les piéger : ils deviennent des ruines.<br>• 3 ruines = une capsule, touche-la pour la récolter.<br>• Chaque secteur a un objectif et un nombre de tours.<br>• Si tu échoues, tu perds un cœur.</p><div class="foot"><button class="btn" data-a="x">OK</button></div>`,hide)}
+function renderGame(){
+  const S=sec();let a=$('app');
+  if(!$('cv')){
+    a.innerHTML=`<div class="top"><div class="hearts" id="hrt"></div><div class="px" style="font-size:9px;text-align:center;line-height:1.4" id="sn"></div><div class="coins" id="cn"></div></div>
+     <div class="goal"><div class="t"><span id="gt"></span><b id="gp"></b></div><div class="bar"><i id="gb"></i></div></div>
+     <canvas id="cv" width="${N*C}" height="${N*C}"></canvas>
+     <div class="hand"><div class="slot" id="sr"><small>RÉSERVE</small></div><div class="slot cur" id="sc"><small>PIÈCE</small><canvas width="64" height="64"></canvas></div><div class="slot" id="sx"><small>SUIVANTE</small></div></div>
+     <div style="display:flex;gap:8px"><button class="btn cy sm" id="bSw" style="flex:1">ÉCHANGER</button><button class="btn sm" id="bQ" style="flex:0 0 auto">MENU</button></div>
+     <div class="relics" id="rl"></div>`;
+    cv=$('cv');g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+    cv.addEventListener('pointerdown',e=>{const rc=cv.getBoundingClientRect(),c=Math.floor((e.clientX-rc.left)/rc.width*N),r=Math.floor((e.clientY-rc.top)/rc.height*N);if(!inb(r,c))return;
+      if(grid[r][c]&&grid[r][c].t===16)harvest(r,c);else place(r,c)});
+    cv.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const rc=cv.getBoundingClientRect();hover=[Math.floor((e.clientY-rc.top)/rc.height*N),Math.floor((e.clientX-rc.left)/rc.width*N)]});
+    cv.addEventListener('pointerleave',()=>hover=null);
+    $('bSw').onclick=swap;
+    $('bQ').onclick=()=>show('<h2>QUITTER LA RUN ?</h2><p>La run en cours sera perdue.</p><div class="foot"><button class="btn pk" data-a="y">QUITTER</button><button class="btn cy" data-a="n">REPRENDRE</button></div>',x=>{hide();if(x==='y'){meta.runs++;saveMeta();menu()}})
+  }
+  $('hrt').innerHTML=Array.from({length:Math.max(3,R.hearts)},(_,i)=>`<img src="assets/brand/heart.png" class="${i<R.hearts?'':'off'}">`).join('');
+  $('sn').innerHTML=`SECTEUR ${R.sector+1}/${SECT.length}<br><span style="color:${S.boss?'#ff7a8a':'#ffd84a'}">${S.n.replace('BOSS · ','').toUpperCase()}</span>`;
+  $('cn').textContent=R.coins+' 🪙';
+  const gl=S.g==='score'?'Marque '+S.v+' points':S.g==='trap'?'Piège '+S.v+' Prodromes':'Crée '+S.v+' '+(S.t===4?'usines':'bases');
+  $('gt').textContent=gl;$('gp').textContent=Math.min(goalProg(),S.v)+'/'+S.v+' · '+Math.max(0,R.turns)+' tours';
+  $('gb').style.width=Math.min(100,goalProg()/S.v*100)+'%';
+  const dr=(el,t,v)=>{if(!t)return;const c=document.createElement('canvas');c.width=c.height=64;c.getContext('2d').imageSmoothingEnabled=false;c._p=[t.t,t.v];el.appendChild(c);return c};
+  const fillSlot=(id,list)=>{const el=$(id),sm=el.querySelector('small');el.innerHTML='';el.appendChild(sm);list.forEach(p=>{const c=dr(el,p)})};
+  fillSlot('sr',hand.res);fillSlot('sx',hand.next);
+  const sc=$('sc'),scv=sc.querySelector('canvas');scv._p=[hand.cur.t,hand.cur.v];
+  strip($('app'));
+  $('rl').innerHTML=R.relics.map(i=>`<div class="rel" style="--c:${RC[RID[i].r]}" title="${RID[i].n}">${RID[i].i}</div>`).join('');
+}
+function paintSlots(ts){
+  document.querySelectorAll('.slot canvas').forEach(c=>{if(!c._p)return;const x=c.getContext('2d');x.clearRect(0,0,64,64);drawSprite(x,c._p[0],c._p[1],4,4,56,c._p[0]===12?Math.sin(ts/300)*1.5:0)})}
+/* ---------- rendu plateau ---------- */
+function draw2(ts){
+  requestAnimationFrame(draw2);
+  if(!R||!g||!$('cv'))return;
+  g.fillStyle='#0f0c1a';g.fillRect(0,0,N*C,N*C);
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    g.fillStyle=(r+c)%2?'#171229':'#1b1530';g.fillRect(c*C,r*C,C,C);
+    g.strokeStyle='#2a2145';g.lineWidth=1;g.strokeRect(c*C+.5,r*C+.5,C-1,C-1)}
+  // aperçu de fusion au survol
+  if(hover&&inb(hover[0],hover[1])&&!grid[hover[0]][hover[1]]&&hand.cur&&hand.cur.t!==12&&!busy){
+    const [hr,hc]=hover,t=hand.cur.t;grid[hr][hc]={t,v:0};const grp=flood(hr,hc,t);grid[hr][hc]=null;
+    g.fillStyle=grp.length>=need(t)&&NEXT[t]?'rgba(123,224,90,.35)':'rgba(255,255,255,.08)';
+    (grp.length>=need(t)&&NEXT[t]?grp:[[hr,hc]]).forEach(([y,x])=>g.fillRect(x*C,y*C,C,C));
+    g.globalAlpha=.55;drawSprite(g,t,0,hc*C,hr*C,C);g.globalAlpha=1}
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const tl=grid[r][c];if(!tl)continue;
+    if(tl.pop>.01)tl.pop*=.86;
+    const sc=1+tl.pop*.35,bob=tl.t===12?Math.sin(ts/260+tl.ph)*2:0;
+    g.save();g.translate(c*C+C/2,r*C+C/2);g.scale(sc,sc);g.translate(-C/2,-C/2);drawSprite(g,tl.t,tl.v,0,0,C,bob);g.restore();
+    if(tl.t===16){g.fillStyle='rgba(125,240,255,'+(.4+.3*Math.sin(ts/200))+')';g.fillRect(c*C+4,r*C+4,8,8)}}
+  parts=parts.filter(p=>p.l-->0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.06;g.globalAlpha=Math.min(1,p.l/14);g.fillStyle=p.c;g.fillRect(p.x,p.y,4,4)});g.globalAlpha=1;
+  anim=anim.filter(a=>a.l-->0);g.font='14px "Press Start 2P"';g.textAlign='center';
+  anim.forEach(a=>{g.globalAlpha=Math.min(1,a.l/20);g.fillStyle='#000';g.fillText(a.txt,a.x+1,a.y-(46-a.l)*.7+1);g.fillStyle='#ffd84a';g.fillText(a.txt,a.x,a.y-(46-a.l)*.7)});g.globalAlpha=1;
+  paintSlots(ts);
+}
+requestAnimationFrame(draw2);
+window.__rg={get R(){return R},get grid(){return grid},get hand(){return hand},place,swap,newRun,menu,flood,N,has,SECT,RELICS,get busy(){return busy},harvest};
+menu();
+</script>
+</body>
+</html>
