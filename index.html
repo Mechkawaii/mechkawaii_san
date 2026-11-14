@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.8</title>
+<title>Mechkawaii San 三 v8.9</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -80,9 +80,9 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 #game.c1 .radio{display:none}
 #game.c2 .slot .nm{display:none}#game.c2 .slot canvas{width:46px;height:46px}#game.c2 .slot{padding:4px;width:84px}#game.c2 .objs{font-size:17px;padding:4px 6px}
 #game.c3 .pw .d{display:none}#game.c3 .row2 .btn{padding-top:6px;padding-bottom:6px}#game.c3 .stats{font-size:19px}
-#game.c4 #bossT,#game.c4 #bossHT{display:none}#game.c4 .hud .btn{padding:5px 9px}#game.c4 .objs .lbl{display:none}
+#game.c4 #bossHT{display:none}#game.c4 .hud .btn{padding:5px 9px}#game.c4 .objs .lbl{display:none}
 #game.c5 #bossBox canvas{width:70px;height:70px}#game.c5 .tray .objs{font-size:15px}#game.c5 .slot{width:70px}#game.c5 .slot .lbl{display:none}
-#game.c6 .stats{display:none}#game.c6 #hSector{font-size:8px}#game.c6 #bossBox{padding:3px 6px}#game.c6 #bossBox canvas{width:58px;height:58px}#game.c6 .row2 .btn{padding-top:3px;padding-bottom:3px}#game.c6 #shopBtn{font-size:8px}
+#game.c6 .stats{display:none}#game.c6 #bossBox .bi #bossT{font-size:14px}#game.c6 #hSector{font-size:8px}#game.c6 #bossBox{padding:3px 6px}#game.c6 #bossBox canvas{width:58px;height:58px}#game.c6 .row2 .btn{padding-top:3px;padding-bottom:3px}#game.c6 #shopBtn{font-size:8px}
 #bBonus{flex:none;font-size:8px;padding:6px 8px;align-self:center}
 .ob{display:flex;gap:6px;align-items:center}.ol{flex:1;min-width:0}
 .ctl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
@@ -106,7 +106,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 #game.c5 .ctl .slot,#game.c5 .ctl .pw,#game.c5 .ctl #shopBtn{height:52px}#game.c5 .ctl .slot canvas,#game.c5 .ctl .pw canvas{width:28px;height:28px}#game.c5 .ctl .slot .lbl{display:none}
 #game.c6 .ctl .objs{font-size:15px;padding:2px 6px}
 #game .radio{min-height:0}
-#bossBox .bi #bossT{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#bossBox .bi #bossT{font-size:16px;line-height:1.05}
 #title{justify-content:space-between;padding-top:max(16px,env(safe-area-inset-top))}
 #title.on{height:100dvh;min-height:0;overflow:hidden;gap:6px}
 .logo{text-align:center;margin-top:1vh;flex:none}
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.8 · modes de danger</div>
+  <div class="foot">Version 8.9 · boss variés</div>
 </main>
 
 <main id="select" class="screen">
@@ -1655,9 +1655,9 @@ const startEndless=()=>startGame('endless',0,save.hero);
 
 /* ---------- boss de la run rogue ---------- */
 const BOSSES={
- surcharge:{n:'LE SURCHARGÉ',v:0,hue:160,hp:200,rate:.18,lim:38,d:"Il frappe des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
- carapace:{n:'LA CARAPACE',v:1,hue:210,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
- ruche:{n:'LA RUCHE',v:3,hue:80,hp:100,rate:.05,lim:34,d:"Elle pond des Prodromes sans cesse. Chaque piège la blesse beaucoup."}
+ surcharge:{n:'LE SURCHARGÉ',v:0,hue:230,hp:200,rate:.18,lim:38,d:"Il frappe des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
+ carapace:{n:'LA CARAPACE',v:4,hue:100,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
+ ruche:{n:'LA RUCHE',v:2,hue:320,hp:100,rate:.05,lim:34,d:"Elle pond des Prodromes sans cesse. Chaque piège la blesse beaucoup."}
 };
 function makeBoss(id){const B=BOSSES[id],hp=Math.round(B.hp*(1+.25*((RG_RUN&&RG_RUN.dg)||0)));return {id,n:B.n,v:B.v,hue:B.hue,hp,max:hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
 function bossDmg(d){const b=G.boss;if(!b||b.hp<=0||d<=0)return;let tot=d;
@@ -1699,10 +1699,10 @@ function bossHud(){
   if(!t)$('bossT').style.color='#cfc4e8',$('bossT').textContent=b.d;else $('bossT').style.color='#ffd84a'}
 function bossDraw(ts){
   const b=G&&G.boss;if(!b)return;const cv=$('bossC'),g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,176,176);
-  const src=HD.p&&HD.p[b.v];if(!src)return;if(!b.img)b.img=tintImg(src,b.hue,.8);
+  const src=HD.p&&HD.p[b.v];if(!src)return;if(!b.img)b.img=tintImg(src,b.hue,.95);
   const bob=Math.sin(ts/300)*4,sh=b.flash>0?(Math.random()-.5)*8:0;
-  const t=document.createElement('canvas');t.width=t.height=176;const q=t.getContext('2d');const k=Math.min(168/b.img.width,168/b.img.height),w=b.img.width*k,h=b.img.height*k;
-  q.drawImage(b.img,(176-w)/2+sh,(176-h)/2+bob,w,h);
+  const t=document.createElement('canvas');t.width=t.height=176;const q=t.getContext('2d');const CX=30,CY=14,CW=180,CH=128,k=Math.min(168/CW,168/CH),w=CW*k,h=CH*k;
+  q.drawImage(b.img,CX,CY,CW,CH,(176-w)/2+sh,(176-h)/2+bob,w,h);
   if(b.flash>0){q.globalCompositeOperation='source-atop';q.fillStyle='rgba(255,60,80,'+Math.min(.7,b.flash/16)+')';q.fillRect(0,0,176,176);b.flash--}
   else if(b.phase===2){q.globalCompositeOperation='source-atop';q.fillStyle='rgba(255,60,80,'+(.18+.1*Math.sin(ts/150))+')';q.fillRect(0,0,176,176)}
   g.drawImage(t,0,0);
@@ -1959,7 +1959,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
