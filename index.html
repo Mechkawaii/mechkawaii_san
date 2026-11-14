@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.9</title>
+<title>Mechkawaii San 三 v8.10</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.9 · boss variés</div>
+  <div class="foot">Version 8.10 · boss nommés</div>
 </main>
 
 <main id="select" class="screen">
@@ -1655,21 +1655,23 @@ const startEndless=()=>startGame('endless',0,save.hero);
 
 /* ---------- boss de la run rogue ---------- */
 const BOSSES={
- surcharge:{n:'LE SURCHARGÉ',v:0,hue:230,hp:200,rate:.18,lim:38,d:"Il frappe des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
- carapace:{n:'LA CARAPACE',v:4,hue:100,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
- ruche:{n:'LA RUCHE',v:2,hue:320,hp:100,rate:.05,lim:34,d:"Elle pond des Prodromes sans cesse. Chaque piège la blesse beaucoup."}
+ goryo:{k:'surcharge',n:'GORYO LE GRENADIER',s:'Goryo',v:0,hue:230,hp:200,rate:.18,lim:38,d:"Il bombarde des cases à distance et invoque des Prodromes. Piège-les pour le blesser."},
+ genbu:{k:'carapace',n:'GENBU LE TECHNICIEN',s:'Genbu',v:4,hue:100,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
+ gaoro:{k:'ruche',n:"GAORO L'ÉCLAIREUR",s:'Gaoro',v:2,hue:320,hp:100,rate:.05,lim:34,d:"Il appelle des Prodromes sans cesse. Chaque piège le blesse beaucoup."},
+ goky:{k:'surcharge',n:'GOKY LE PYROTECHNICIEN',s:'Goky',v:3,hue:290,hp:150,rate:.14,lim:36,d:"Il fait sauter des cases à distance. Les Prodromes piégés lui font mal."},
+ gyuki:{k:'carapace',n:'GYUKI LE VOLTIGEUR',s:'Gyuki',v:1,hue:160,hp:110,sh:15,rate:.09,lim:34,d:"Agile : il frappe des lignes entières, vite. Un petit bouclier à briser."}
 };
-function makeBoss(id){const B=BOSSES[id],hp=Math.round(B.hp*(1+.25*((RG_RUN&&RG_RUN.dg)||0)));return {id,n:B.n,v:B.v,hue:B.hue,hp,max:hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
+function makeBoss(id){const B=BOSSES[id],hp=Math.round(B.hp*(1+.25*((RG_RUN&&RG_RUN.dg)||0)));return {id,k:B.k,s:B.s,n:B.n,v:B.v,hue:B.hue,hp,max:hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
 function bossDmg(d){const b=G.boss;if(!b||b.hp<=0||d<=0)return;let tot=d;
   if(b.sh>0){const a=Math.min(b.sh,d);b.sh-=a;d-=a;if(b.sh<=0)toast('BOUCLIER BRISÉ !',1200)}
   if(d>0)b.hp=Math.max(0,b.hp-d);b.flash=12;b.fx.push({t:0,txt:'-'+tot});
   const bx=$('bossBox');bx.classList.remove('hit');void bx.offsetWidth;bx.classList.add('hit');
-  if(b.phase===1&&b.hp>0&&b.hp<=b.max/2){b.phase=2;toast('PHASE 2 : '+b.n+' SE DÉCHAÎNE !',1800);say(b.n+" s'énerve ! Attention, soldat !")}}
-function bossHit(gain){const b=G.boss;if(!b)return;let d=Math.max(1,Math.round(gain/12));if(b.id==='ruche')d=Math.max(1,Math.round(d*.6));bossDmg(d)}
+  if(b.phase===1&&b.hp>0&&b.hp<=b.max/2){b.phase=2;toast('PHASE 2 : '+b.s.toUpperCase()+' SE DÉCHAÎNE !',1800);say(b.s+" s'énerve ! Attention, soldat !")}}
+function bossHit(gain){const b=G.boss;if(!b)return;let d=Math.max(1,Math.round(gain/12));if(b.k==='ruche')d=Math.max(1,Math.round(d*.6));bossDmg(d)}
 function bossTrap(n){const b=G.boss;if(!b||b.hp<=0)return;b.lastTrap=G.turn;
-  if(b.id==='surcharge')bossDmg(15*n);else if(b.id==='ruche')bossDmg(18*n);
+  if(b.k==='surcharge')bossDmg(15*n);else if(b.k==='ruche')bossDmg(18*n);
   else{b.sh=Math.max(0,b.sh-20*n);b.flash=12;if(b.sh<=0)bossDmg(10*n);else toast('BOUCLIER ENTAMÉ',900)}
-  toast(b.n+' ENCAISSE LE PIÈGE !',1100)}
+  toast(b.s.toUpperCase()+' ENCAISSE LE PIÈGE !',1100)}
 function bossTele(kind,k){const b=G.boss;let cells=[];
   if(kind==='row'){const r=lrnd(N);for(let c=0;c<N;c++)cells.push([r,c])}
   else if(kind==='col'){const c=lrnd(N);for(let r=0;r<N;r++)cells.push([r,c])}
@@ -1686,13 +1688,13 @@ function bossSummon(k){const b=G.boss;let c=lshuf(emptyCells()),pro=grid.flat().
   toast(b.n+' INVOQUE DES PRODROMES',1100)}
 function bossTurn(){const b=G.boss;if(!b||b.hp<=0)return;const T=G.turn,p2=b.phase===2;
   if(b.tele&&T>=b.tele.due){bossStrike(b.tele);b.tele=null}
-  if(b.id==='surcharge'){if(!b.tele&&T%(p2?2:3)===0)bossTele('cells',p2?5:3);if(T%(p2?3:5)===0)bossSummon(p2?2:1)}
-  else if(b.id==='carapace'){if(!b.tele&&T%(p2?3:4)===0)bossTele(lr()<.5?'row':'col');
-    if(T%3===0&&b.sh<b.smax&&b.lastTrap<T-2){b.sh=Math.min(b.smax,b.sh+10);toast('LA CARAPACE SE RÉPARE',900)}}
-  else if(b.id==='ruche'){if(T%2===0)bossSummon(p2?2:1);if(p2&&!b.tele&&T%4===0)bossTele('cells',3)}}
+  if(b.k==='surcharge'){if(!b.tele&&T%(p2?2:3)===0)bossTele('cells',p2?5:3);if(T%(p2?3:5)===0)bossSummon(p2?2:1)}
+  else if(b.k==='carapace'){if(!b.tele&&T%(p2?3:4)===0)bossTele(lr()<.5?'row':'col');
+    if(T%3===0&&b.sh<b.smax&&b.lastTrap<T-2){b.sh=Math.min(b.smax,b.sh+10);toast(b.s.toUpperCase()+' RÉPARE SON BOUCLIER',900)}}
+  else if(b.k==='ruche'){if(T%2===0)bossSummon(p2?2:1);if(p2&&!b.tele&&T%4===0)bossTele('cells',3)}}
 function bossHud(){
   const b=G.boss,bx=$('bossBox');bx.style.display=b?'flex':'none';if(!b)return;
-  $('bossN').textContent=b.n+(b.phase===2?' · PHASE 2':'');
+  $('bossN').textContent=b.n.normalize('NFD').replace(/[\u0300-\u036f]/g,'')+(b.phase===2?' · PHASE 2':'');
   $('bossHp').style.width=Math.max(0,b.hp/b.max*100)+'%';$('bossSh').parentNode.style.display=b.smax?'':'none';$('bossSh').style.width=(b.smax?Math.max(0,b.sh/b.smax*100):0)+'%';
   $('bossHT').textContent='PV '+b.hp+'/'+b.max+(b.smax?' · bouclier '+b.sh:'');
   const t=b.tele;$('bossT').textContent=t?'⚠ '+(t.kind==='cells'?'Décharge':'Écrasement')+' dans '+Math.max(0,t.due-G.turn)+' tour(s)':'';
@@ -1750,13 +1752,13 @@ function rgSector(f,type){ // fabrique le secteur d'un combat
   const rate=Math.min(.38,.04+.034*k+(el?.06:0)),pro=1+Math.floor(k/2)+(el?1:0);
   const lim=boss?36:Math.round(24+f*1.4-(el?2:0));
   const kind=boss?'pts':rgpick(f<1?['pts','pts','make']:['pts','make','trap']);
-  const S={name:boss?'LE SURCHARGÉ':rgpick(RG_NAMES),pro,free:0,rate,lim,map:null,rogue:1,boss:boss?1:0};
+  const S={name:boss?'GORYO LE GRENADIER':rgpick(RG_NAMES),pro,free:0,rate,lim,map:null,rogue:1,boss:boss?1:0};
   if(kind==='pts')S.pts=Math.round(400*(1+k*.95)*(el?1.45:1)*(boss?1.15:1)/50)*50;
   else if(kind==='make'){const t=f<3?3:f<5?4:5;S.make=[t,el?(t>=5?3:3):(t>=5?2:t===3?5:2)]; if(t===3&&!el)S.make[1]=4+Math.floor(f/2)}
   else S.trap=2+Math.floor(f/1.5)+(el?2:0);
   if(RG_DG>0){const d=RG_DG;S.rate=Math.min(.5,S.rate*(1+.12*d));S.pro+=Math.floor((d+1)/2);S.lim=Math.max(14,S.lim-d);
     if(S.pts)S.pts=Math.round(S.pts*(1+.15*d)/50)*50;if(S.make&&!boss)S.make[1]+=Math.floor((d+1)/2);if(S.trap)S.trap+=d}
-  S.intro=boss?"Le Surchargé ! Tout est en jeu, soldat. Fais tomber ce monstre !":el?"Poche d'élite détectée. Dur, mais la récompense sera à la hauteur.":"Nouveau front. Choisis bien ta stratégie, soldat.";
+  S.intro=boss?"Goryo le grenadier ! Tout est en jeu, soldat. Fais tomber ce monstre !":el?"Poche d'élite détectée. Dur, mais la récompense sera à la hauteur.":"Nouveau front. Choisis bien ta stratégie, soldat.";
   return S}
 const RGPL={2:'solaires',3:'bâtiments',4:'usines',5:'bases',6:'tours'};
 function rgDesc(S){return S.bossId?'PV '+BOSSES[S.bossId].hp+(BOSSES[S.bossId].sh?' + bouclier':''):S.pts?S.pts+' pts':S.make?S.make[1]+' '+RGPL[S.make[0]]:S.trap+' pièges'}
@@ -1773,7 +1775,7 @@ function rgMap(dg){RG_DG=dg||0;
     if(f===RGF-2&&!row.some(x=>x.t==='rest'||x.t==='shop'))row[row.length-1].t=rgpick(['rest','shop']);
     if(f>=1&&f<=RGF-3&&row.filter(x=>x.t==='elite').length>1)row.forEach((x,i)=>{if(i>0&&x.t==='elite')x.t='fight'});
     rows.push(row)}
-  rows.forEach((row,f)=>row.forEach(nd=>{if(nd.t==='fight'||nd.t==='elite')nd.S=rgSector(f,nd.t);else if(nd.t==='mini')nd.S=rgBoss(rgpick(['carapace','ruche']),f);else if(nd.t==='boss')nd.S=rgBoss('surcharge',f)}));
+  rows.forEach((row,f)=>row.forEach(nd=>{if(nd.t==='fight'||nd.t==='elite')nd.S=rgSector(f,nd.t);else if(nd.t==='mini')nd.S=rgBoss(rgpick(['genbu','gaoro','gyuki','goky']),f);else if(nd.t==='boss')nd.S=rgBoss('goryo',f)}));
   return rows}
 function rgSave(){save.rogue=save.rogue||{best:0,wins:0,runs:0,bestScore:0,run:null};return save.rogue}
 function newRogueRun(dg){
@@ -1885,7 +1887,7 @@ function rogueFinish(win){
     setTimeout(()=>{
       if(nd.t==='boss'){
         const wdg=r.dg||0;R.wins++;R.dg=Math.min(5,Math.max(R.dg||0,wdg+1));R.dgSel=R.dg;R.run=null;RG_RUN=null;save.frag=(save.frag||0)+20;save.crates=(save.crates||0)+2;track('win');persist();
-        showModal(`<h2>ERRET EST LIBRE !</h2><p style="text-align:center">Le Surchargé est tombé.<br>Score de la run : <span class="px" style="font-size:12px;color:#ffd84a">${r.score}</span><br>Cœurs restants : ${r.hearts}<br><span style="color:#7df0ff">+20 fragments · +2 colis</span>${wdg<5?`<br><span style="color:#ff7a8a">DANGER ${wdg+1} débloqué !</span>`:''}</p><div class="mrow">${wdg<5?`<button class="btn pk" data-a="next">RUN PLUS DURE · DANGER ${wdg+1}</button>`:''}<button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='next'){show('rmap');newRogueRun(wdg+1)}else toMenu()});return}
+        showModal(`<h2>ERRET EST LIBRE !</h2><p style="text-align:center">Goryo le grenadier est tombé.<br>Score de la run : <span class="px" style="font-size:12px;color:#ffd84a">${r.score}</span><br>Cœurs restants : ${r.hearts}<br><span style="color:#7df0ff">+20 fragments · +2 colis</span>${wdg<5?`<br><span style="color:#ff7a8a">DANGER ${wdg+1} débloqué !</span>`:''}</p><div class="mrow">${wdg<5?`<button class="btn pk" data-a="next">RUN PLUS DURE · DANGER ${wdg+1}</button>`:''}<button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='next'){show('rmap');newRogueRun(wdg+1)}else toMenu()});return}
       rgPickRelic(nd,`+${bonus} pièces · ${fr?'+'+fr+' fragments · ':''}${Math.max(0,limOf()-G.turn)} tours d'avance`)},900);
   }else{
     sfx.lose();say("Plus de place... Repli !");
@@ -1959,7 +1961,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.9) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.10) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
