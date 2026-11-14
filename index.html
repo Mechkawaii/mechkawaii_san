@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.5</title>
+<title>Mechkawaii San 三 v8.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -83,7 +83,28 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 #game.c4 #bossT,#game.c4 #bossHT{display:none}#game.c4 .hud .btn{padding:5px 9px}#game.c4 .objs .lbl{display:none}
 #game.c5 #bossBox canvas{width:70px;height:70px}#game.c5 .tray .objs{font-size:15px}#game.c5 .slot{width:70px}#game.c5 .slot .lbl{display:none}
 #game.c6 .stats{display:none}#game.c6 #hSector{font-size:8px}#game.c6 #bossBox{padding:3px 6px}#game.c6 #bossBox canvas{width:58px;height:58px}#game.c6 .row2 .btn{padding-top:3px;padding-bottom:3px}#game.c6 #shopBtn{font-size:8px}
-#bBonus{width:100%;margin-top:5px;font-size:8px;padding:6px 4px}
+#bBonus{flex:none;font-size:8px;padding:6px 8px;align-self:center}
+.ob{display:flex;gap:6px;align-items:center}.ol{flex:1;min-width:0}
+.ctl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#curSlot{order:1}#resSlot{order:2}#pwBtn{order:3}#shopBtn{order:4}.ctl .objs{order:5}
+.ctl .pw>.pt{min-width:0;width:100%}
+.ctl .row2,.ctl .tray{display:contents}
+.ctl .slot,.ctl .pw,.ctl #shopBtn{width:auto;min-width:0;height:84px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.ctl .slot .lbl,.ctl #shopBtn{font-size:7px;line-height:1.3}.ctl .pw .t{font-size:6px;line-height:1.3}
+.ctl .slot .lbl{margin:0}
+.ctl .slot canvas,.ctl .pw canvas{width:44px;height:44px;margin:0}
+.ctl .slot .nm{font-size:15px;min-height:0;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ctl .pw .pt{display:flex;flex-direction:column;align-items:center;max-width:100%}
+.ctl .pw .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ctl .pw .d{font-size:15px;margin:0}
+.ctl .objs{grid-column:1/-1;padding:4px 8px;font-size:18px}
+.ctl .objs .lbl{margin-bottom:3px}
+html.sa #game.on{padding-top:max(8px,env(safe-area-inset-top))!important}
+#game.c2 .ctl .slot,#game.c2 .ctl .pw,#game.c2 .ctl #shopBtn{height:70px}#game.c2 .ctl .slot canvas,#game.c2 .ctl .pw canvas{width:36px;height:36px}#game.c2 .ctl .slot .nm{display:none}
+#game.c3 .ctl .slot,#game.c3 .ctl .pw,#game.c3 .ctl #shopBtn{height:60px}#game.c3 .ctl .pw .d{display:block}
+#game.c4 .ctl .objs .lbl{display:none}
+#game.c5 .ctl .slot,#game.c5 .ctl .pw,#game.c5 .ctl #shopBtn{height:52px}#game.c5 .ctl .slot canvas,#game.c5 .ctl .pw canvas{width:28px;height:28px}#game.c5 .ctl .slot .lbl{display:none}
+#game.c6 .ctl .objs{font-size:15px;padding:2px 6px}
 #game .radio{min-height:0}
 #bossBox .bi #bossT{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #title{justify-content:space-between;padding-top:max(16px,env(safe-area-inset-top))}
@@ -137,7 +158,8 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 @keyframes flick{0%{opacity:1}92%{opacity:.85}94%{opacity:1}96%{opacity:.7}100%{opacity:1}}
 .rt{flex:1}
 .rn{font-family:'Press Start 2P';font-size:8px;color:var(--cy);margin-bottom:4px}
-#radioTxt{font-size:20px;line-height:1;color:#c8f4ff;min-height:40px}
+#radioTxt{font-size:19px;line-height:1.05;color:#c8f4ff;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.radio{align-items:center}.radio .por{width:48px;height:48px}
 #modal{position:fixed;inset:0;background:rgba(5,2,10,.84);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.on{display:flex}
 .mbox{width:100%;max-width:min(560px,100%);max-height:92dvh;overflow:auto;background:var(--pan);border:4px solid var(--pk);box-shadow:0 0 0 4px #0c0a14,0 0 30px rgba(255,122,184,.35);padding:16px;display:flex;flex-direction:column;gap:12px}
@@ -198,7 +220,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.5 · plateau pleine largeur</div>
+  <div class="foot">Version 8.6 · interface compactée</div>
 </main>
 
 <main id="select" class="screen">
@@ -244,12 +266,12 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
   <div class="stats"><div>SCORE<b id="hScore">0</b></div><div>RECORD<b id="hBest" style="color:#7df0ff">0</b></div><div>TOURS<b id="hTurn">0</b></div></div>
   <div id="bossBox"><canvas id="bossC" width="176" height="176"></canvas><div class="bi"><div class="px" id="bossN"></div><div class="bhp"><i id="bossHp"></i></div><div class="bhp bsh"><i id="bossSh"></i></div><div id="bossHT"></div><div id="bossT"></div></div></div>
   <div id="boardWrap"><canvas id="board"></canvas><div id="toast"></div><div id="recipe"><canvas id="hint" width="168" height="32"></canvas><div id="recN"></div></div></div>
-  <div class="row2"><button class="btn pw" id="pwBtn"><canvas id="pwC" width="64" height="64"></canvas><div><div class="t" id="pwT"></div><div class="d" id="pwD"></div></div></button><button class="btn pk sm" id="shopBtn"><span class="coin"></span> <b id="coinN">0</b><br>MARCHAND</button></div>
+  <div class="ctl"><div class="row2"><button class="btn pw" id="pwBtn"><canvas id="pwC" width="64" height="64"></canvas><div class="pt"><div class="t" id="pwT"></div><div class="d" id="pwD"></div></div></button><button class="btn pk sm" id="shopBtn"><span class="coin"></span> <b id="coinN">0</b><br>MARCHAND</button></div>
   <div class="tray">
     <div class="slot" id="curSlot"><div class="lbl px">PIÈCE</div><canvas id="curC" width="64" height="64"></canvas><div class="nm" id="curN"></div></div>
     <div class="slot" id="resSlot"><div class="lbl px">RÉSERVE</div><canvas id="resC" width="64" height="64"></canvas><div class="nm" id="resN">toucher</div></div>
     <div class="objs"><div class="lbl">OBJECTIF</div><div id="objs"></div></div>
-  </div>
+  </div></div>
   <div class="radio">
     <div class="por"><canvas id="por" width="32" height="32"></canvas></div>
     <div class="rt"><div class="rn">GÉN. SHEEPARD · RADIO</div><div id="radioTxt"></div></div>
@@ -1909,16 +1931,16 @@ function updateHud(){
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
   $('coinN').textContent=G.coins;hintDraw();
   const P=POW[G.hero],pb=$('pwBtn');
-  drawHeroTo($('pwC'),G.hero);$('pwT').textContent=HN[hIdx(G.hero)].toUpperCase()+' · '+P.n.toUpperCase();
-  $('pwD').textContent=G.armed?'Touche une case (re-touche le pouvoir pour annuler)':(G.pcd>0?'Prêt dans '+G.pcd+' tour'+(G.pcd>1?'s':''):(G.freeze>0?'Prodromes figés '+G.freeze+' tours':P.d));
+  drawHeroTo($('pwC'),G.hero);$('pwT').textContent=P.n.toUpperCase();pb.title=HN[hIdx(G.hero)]+' · '+P.n+' : '+P.d;
+  $('pwD').textContent=G.armed?'Touche une case':(G.pcd>0?'dans '+G.pcd+' t':(G.freeze>0?'figé '+G.freeze+' t':'PRÊT'));
   pb.classList.toggle('off',G.pcd>0&&!G.armed);pb.classList.toggle('arm',!!G.armed);
   let h='';
   bossHud();
-  if(G.mode==='rogue'&&G.boss){const b=G.boss,left=Math.max(0,limOf()-G.turn);h+=`<div class="ok">Vaincre ${b.n}</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${Math.floor((b.max-b.hp)/b.max*100)}%;background:#e0344a;transition:width .3s"></div></div><div style="${left<=5?'color:#ff7a8a':''}">${left} tours · ♥ ${G.rg.hearts}</div>${rgBonusBtn()}`}
+  if(G.mode==='rogue'&&G.boss){const b=G.boss,left=Math.max(0,limOf()-G.turn);h+=`<div class="ob"><div class="ol"><div class="ok">Vaincre ${b.n}</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${Math.floor((b.max-b.hp)/b.max*100)}%;background:#e0344a;transition:width .3s"></div></div><div style="${left<=5?'color:#ff7a8a':''}">${left} tours · ♥ ${G.rg.hearts}</div></div>${rgBonusBtn()}</div>`}
   else if(G.mode==='rogue'){
     const prog=S.make?Math.min(G.made[S.make[0]]||0,S.make[1]):S.pts?Math.min(G.score,S.pts):Math.min(G.trap||0,S.trap),tot=S.make?S.make[1]:S.pts||S.trap,pct=Math.min(100,Math.floor(prog/tot*100));
     const gl=S.make?'Créer '+S.make[1]+' '+RGPL[S.make[0]]:S.pts?'Marquer '+S.pts+' points':'Piéger '+S.trap+' Prodromes',left=Math.max(0,limOf()-G.turn);
-    h+=`<div class="ok">${gl}</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${pct}%;background:#34c80a;transition:width .3s"></div></div><div style="${left<=5?'color:#ff7a8a':''}">${prog}/${tot} · ${left} tours · ♥ ${G.rg.hearts}</div>${rgBonusBtn()}`;
+    h+=`<div class="ob"><div class="ol"><div class="ok">${gl}</div><div style="height:14px;margin:6px 0 4px;background:#1a0f2a;border:2px solid #5a3a7a"><div style="height:100%;width:${pct}%;background:#34c80a;transition:width .3s"></div></div><div style="${left<=5?'color:#ff7a8a':''}">${prog}/${tot} · ${left} tours · ♥ ${G.rg.hearts}</div></div>${rgBonusBtn()}</div>`;
   }else if(G.mode==='campaign'){
     if(S.make){const m=Math.min(G.made[S.make[0]]||0,S.make[1]);h+=`<div class="${m>=S.make[1]?'ok':''}">Créer ${NAMES[S.make[0]]} ${m}/${S.make[1]}</div>`}
     if(S.lim)h+=`<div class="${S.lim-G.turn<=5?'':'ok'}" style="${S.lim-G.turn<=5?'color:#ff7a8a':''}">Tours restants : ${Math.max(0,S.lim-G.turn)}</div>`
@@ -1933,7 +1955,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.5) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.6) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
