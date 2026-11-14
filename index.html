@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.12</title>
+<title>Mechkawaii San 三 v8.13</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.12 · carte plus claire</div>
+  <div class="foot">Version 8.13 · équilibrage</div>
 </main>
 
 <main id="select" class="screen">
@@ -1754,10 +1754,11 @@ function rgSector(f,type){ // fabrique le secteur d'un combat
   const kind=boss?'pts':rgpick(f<1?['pts','pts','make']:['pts','make','trap']);
   const S={name:boss?'GORYO LE GRENADIER':rgpick(RG_NAMES),pro,free:0,rate,lim,map:null,rogue:1,boss:boss?1:0};
   if(kind==='pts')S.pts=Math.round(400*(1+k*.95)*(el?1.45:1)*(boss?1.15:1)/50)*50;
-  else if(kind==='make'){const t=f<3?3:f<5?4:5;S.make=[t,el?(t>=5?3:3):(t>=5?2:t===3?5:2)]; if(t===3&&!el)S.make[1]=4+Math.floor(f/2)}
+  else if(kind==='make'){const t=rgpick(f<2?[2]:f<4?[2,3]:f<6?[3]:[3,4]);
+    S.make=[t,t===2?3+Math.floor(f/2)+(el?1:0):t===3?(f<4?1:2):1];S.lim+=t>=3?5:2}
   else S.trap=2+Math.floor(f/1.5)+(el?2:0);
   if(RG_DG>0){const d=RG_DG;S.rate=Math.min(.5,S.rate*(1+.12*d));S.pro+=Math.floor((d+1)/2);S.lim=Math.max(14,S.lim-d);
-    if(S.pts)S.pts=Math.round(S.pts*(1+.15*d)/50)*50;if(S.make&&!boss)S.make[1]+=Math.floor((d+1)/2);if(S.trap)S.trap+=d}
+    if(S.pts)S.pts=Math.round(S.pts*(1+.15*d)/50)*50;if(S.make&&S.make[0]<=3)S.make[1]+=Math.floor(d/2);if(S.trap)S.trap+=d}
   S.intro=boss?"Goryo le grenadier ! Tout est en jeu, soldat. Fais tomber ce monstre !":el?"Poche d'élite détectée. Dur, mais la récompense sera à la hauteur.":"Nouveau front. Choisis bien ta stratégie, soldat.";
   return S}
 const RGPL={2:'solaires',3:'bâtiments',4:'usines',5:'bases',6:'tours'};
@@ -1962,7 +1963,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.12) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.13) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
