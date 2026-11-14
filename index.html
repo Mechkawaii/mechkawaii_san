@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.16</title>
+<title>Mechkawaii San 三 v7.17</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -88,6 +88,9 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 #board{display:block;width:100%;aspect-ratio:1/1;touch-action:none}
 #toast{position:absolute;left:0;right:0;top:42%;text-align:center;font-family:'Press Start 2P';font-size:11px;color:#fff;text-shadow:2px 2px 0 #000,0 0 8px #ff4fa0;opacity:0;transition:opacity .25s;pointer-events:none;padding:0 10px;line-height:1.6}
 #toast.on{opacity:1}
+#achpop{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-140%);width:min(92vw,420px);z-index:60;display:flex;gap:10px;align-items:center;padding:10px 12px;background:#1b1230;border:4px solid #ffd84a;box-shadow:0 0 0 3px #0c0a14,0 0 22px rgba(255,216,74,.55);transition:transform .45s cubic-bezier(.2,1.4,.4,1);pointer-events:none;text-shadow:1px 1px 0 #000}
+#achpop.on{transform:translate(-50%,0)}
+#achpop .tr{font-size:32px;flex:none}#achpop .k{font-family:'Press Start 2P';font-size:8px;color:#ffd84a}#achpop .n{font-family:'Press Start 2P';font-size:11px;color:#fff;margin:5px 0 3px;line-height:1.4}#achpop .d{font-size:19px;line-height:1;color:#cfc4e8}#achpop .r{font-size:19px;color:#7df0ff}
 .tray{display:flex;gap:8px}
 .slot{background:var(--pan);border:3px solid var(--line);padding:6px;text-align:center;width:104px;flex:none;cursor:pointer}
 .slot .lbl{font-size:8px;color:var(--pk);margin-bottom:4px}
@@ -145,6 +148,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 <body>
 <canvas id="bg"></canvas>
 
+<div id="achpop"></div>
 <main id="title" class="screen on">
   <div class="logo">
     <img class="l1img" src="assets/brand/logo.png" alt="MECHKAWAII メカワイイ">
@@ -162,7 +166,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 7.16 · un achat à la fois</div>
+  <div class="foot">Version 7.17 · popup de succès</div>
 </main>
 
 <main id="select" class="screen">
@@ -1627,7 +1631,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.16) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.17) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2161,8 +2165,14 @@ const ACH=[
  {id:'star3',n:'Trois étoiles',d:'Monte une carte à ★★★.',r:15,ok:S=>CARDS.some(c=>cardLv(c.id)>=3)},
  {id:'skin',n:'Nouveau look',d:'Équipe un skin de bâtiments.',r:5,ok:S=>save.skin&&save.skin!=='classic'}
 ];
+const achQ=[];let achBusy=false;
+function achPopup(a){achQ.push(a);if(!achBusy)achNext()}
+function achNext(){const a=achQ.shift();if(!a){achBusy=false;return}achBusy=true;
+  const el=$('achpop');el.innerHTML=`<div class="tr">🏆</div><div><div class="k">SUCCES DEBLOQUE</div><div class="n">${a.n.toUpperCase()}</div><div class="d">${a.d}</div><div class="r">+${a.r} ✦${a.c?' +'+a.c+' 📦':''}</div></div>`;
+  el.classList.add('on');sfx.crystal&&sfx.crystal();
+  setTimeout(()=>{el.classList.remove('on');setTimeout(achNext,500)},3200)}
 function reward(n,label){save.frag=(save.frag||0)+n;toast(label+' +'+n+' ✦',2400);sfx.crystal&&sfx.crystal();fragLabel()}
-function checkAch(){const S=save.stats;ACH.forEach(a=>{if(!save.ach[a.id]&&a.ok(S)){save.ach[a.id]=1;reward(a.r,'SUCCÈS : '+a.n.toUpperCase());if(a.c){save.crates=(save.crates||0)+a.c;colLabel()}}})}
+function checkAch(){const S=save.stats;ACH.forEach(a=>{if(!save.ach[a.id]&&a.ok(S)){save.ach[a.id]=1;save.frag=(save.frag||0)+a.r;fragLabel();achPopup(a);if(a.c){save.crates=(save.crates||0)+a.c;colLabel()}}})}
 function track(k,n=1,t){
   const S=save.stats=save.stats||{};save.ach=save.ach||{};
   const mx=(key,v)=>{S[key]=Math.max(S[key]||0,v)},ad=(key,v)=>{S[key]=(S[key]||0)+v};
