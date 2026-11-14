@@ -386,6 +386,7 @@ function draw2(ts){
 }
 requestAnimationFrame(draw2);
 window.__rg={get R(){return R},get grid(){return grid},get hand(){return hand},place,swap,newRun,menu,flood,N,has,SECT,RELICS,get busy(){return busy},harvest};
+document.addEventListener('click',e=>{const a=e.target.closest('a[href="index.html"]');if(a&&window.parent!==window){e.preventDefault();parent.postMessage('rogue-close','*')}});
 menu();
 </script>
 </body>

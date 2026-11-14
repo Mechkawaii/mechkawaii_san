@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v7.17</title>
+<title>Mechkawaii San 三 v7.18</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -149,6 +149,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 <canvas id="bg"></canvas>
 
 <div id="achpop"></div>
+<div id="rogueWrap" style="display:none;position:fixed;inset:0;z-index:90;background:#0c0a14"><iframe id="rogueFr" style="width:100%;height:100%;border:0" title="Rogue"></iframe></div>
 <main id="title" class="screen on">
   <div class="logo">
     <img class="l1img" src="assets/brand/logo.png" alt="MECHKAWAII メカワイイ">
@@ -165,8 +166,9 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
       <button class="btn" id="bCol">COLLECTION<span id="colN"></span></button>
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
+    <button class="btn sm" id="bRogue">ROGUE · ACCES PRIVE</button>
   </div>
-  <div class="foot">Version 7.17 · popup de succès</div>
+  <div class="foot">Version 7.18 · rogue intégré</div>
 </main>
 
 <main id="select" class="screen">
@@ -1631,7 +1633,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v7.17) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v7.18) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2056,6 +2058,8 @@ function openShop(){
   });
   $('mbox').querySelectorAll('canvas[data-t]').forEach(cv=>{const t=+cv.dataset.t;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;if(t>0)drawPiece(g,t,0,0,64,64);else if(t===0)drawHeroTo(cv,G.hero);else{g.fillStyle='#6a6a58';g.font='bold 44px sans-serif';g.textAlign='center';g.fillText('↶',32,46)}});
 }
+$('bRogue').addEventListener('click',()=>{au();const w=$('rogueWrap'),f=$('rogueFr');if(!f.getAttribute('src'))f.src='rogue.html';w.style.display='block'});
+addEventListener('message',e=>{if(e.data==='rogue-close')$('rogueWrap').style.display='none'});
 $('shopBtn').addEventListener('click',()=>{au();openShop()});
 function buildHeroes(){
   const box=$('hcards');box.innerHTML='';
