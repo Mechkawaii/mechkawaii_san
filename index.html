@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.7</title>
+<title>Mechkawaii San 三 v8.8</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.7 · interface compactée</div>
+  <div class="foot">Version 8.8 · modes de danger</div>
 </main>
 
 <main id="select" class="screen">
@@ -1659,7 +1659,7 @@ const BOSSES={
  carapace:{n:'LA CARAPACE',v:1,hue:210,hp:120,sh:35,rate:.07,lim:34,d:"Bouclier à briser. Il écrase une ligne entière. Piéger un Prodrome casse son bouclier."},
  ruche:{n:'LA RUCHE',v:3,hue:80,hp:100,rate:.05,lim:34,d:"Elle pond des Prodromes sans cesse. Chaque piège la blesse beaucoup."}
 };
-function makeBoss(id){const B=BOSSES[id];return {id,n:B.n,v:B.v,hue:B.hue,hp:B.hp,max:B.hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
+function makeBoss(id){const B=BOSSES[id],hp=Math.round(B.hp*(1+.25*((RG_RUN&&RG_RUN.dg)||0)));return {id,n:B.n,v:B.v,hue:B.hue,hp,max:hp,sh:B.sh||0,smax:B.sh||0,t:0,tele:null,phase:1,flash:0,fx:[],lastTrap:-9,d:B.d,img:null}}
 function bossDmg(d){const b=G.boss;if(!b||b.hp<=0||d<=0)return;let tot=d;
   if(b.sh>0){const a=Math.min(b.sh,d);b.sh-=a;d-=a;if(b.sh<=0)toast('BOUCLIER BRISÉ !',1200)}
   if(d>0)b.hp=Math.max(0,b.hp-d);b.flash=12;b.fx.push({t:0,txt:'-'+tot});
@@ -1743,7 +1743,7 @@ const RLCOL={c:'#9aa0b4',r:'#56e0ff',l:'#ffd84a'},RLP={c:8,r:14,l:22};
 const RGT={mini:{i:'👹',n:'MINI-BOSS'},fight:{i:'⚔️',n:'COMBAT'},elite:{i:'💀',n:'ELITE'},shop:{i:'🛒',n:'MARCHAND'},rest:{i:'🛠️',n:'ATELIER'},boss:{i:'👑',n:'BOSS'}};
 const RG_NAMES=['Périphérie','Zone industrielle','Quartier Néon','Poche ennemie','Centre-ville','Forteresse','Nid de Prodromes','Docks','Raffinerie','Quartier des ruines'];
 const RGF=8;
-let RG_RUN=null,RG_S=null;
+let RG_RUN=null,RG_S=null,RG_DG=0;
 const rgrnd=n=>Math.floor(Math.random()*n),rgpick=a=>a[rgrnd(a.length)];
 function rgSector(f,type){ // fabrique le secteur d'un combat
   const el=type==='elite',boss=type==='boss',k=boss?7.5:f;
@@ -1754,12 +1754,14 @@ function rgSector(f,type){ // fabrique le secteur d'un combat
   if(kind==='pts')S.pts=Math.round(400*(1+k*.95)*(el?1.45:1)*(boss?1.15:1)/50)*50;
   else if(kind==='make'){const t=f<3?3:f<5?4:5;S.make=[t,el?(t>=5?3:3):(t>=5?2:t===3?5:2)]; if(t===3&&!el)S.make[1]=4+Math.floor(f/2)}
   else S.trap=2+Math.floor(f/1.5)+(el?2:0);
+  if(RG_DG>0){const d=RG_DG;S.rate=Math.min(.5,S.rate*(1+.12*d));S.pro+=Math.floor((d+1)/2);S.lim=Math.max(14,S.lim-d);
+    if(S.pts)S.pts=Math.round(S.pts*(1+.15*d)/50)*50;if(S.make&&!boss)S.make[1]+=Math.floor((d+1)/2);if(S.trap)S.trap+=d}
   S.intro=boss?"Le Surchargé ! Tout est en jeu, soldat. Fais tomber ce monstre !":el?"Poche d'élite détectée. Dur, mais la récompense sera à la hauteur.":"Nouveau front. Choisis bien ta stratégie, soldat.";
   return S}
 const RGPL={2:'solaires',3:'bâtiments',4:'usines',5:'bases',6:'tours'};
 function rgDesc(S){return S.bossId?'PV '+BOSSES[S.bossId].hp+(BOSSES[S.bossId].sh?' + bouclier':''):S.pts?S.pts+' pts':S.make?S.make[1]+' '+RGPL[S.make[0]]:S.trap+' pièges'}
-function rgBoss(id,f){const B=BOSSES[id];return {name:B.n,pro:2,free:0,rate:B.rate,lim:B.lim,map:null,rogue:1,boss:1,bossId:id,intro:B.d}}
-function rgMap(){
+function rgBoss(id,f){const B=BOSSES[id];return {name:B.n,pro:2+Math.floor(RG_DG/2),free:0,rate:Math.min(.5,B.rate*(1+.1*RG_DG)),lim:Math.max(20,B.lim-RG_DG*2),map:null,rogue:1,boss:1,bossId:id,intro:B.d}}
+function rgMap(dg){RG_DG=dg||0;
   const rows=[];
   for(let f=0;f<RGF;f++){
     if(f===RGF-1){rows.push([{t:'boss'}]);continue}
@@ -1774,9 +1776,9 @@ function rgMap(){
   rows.forEach((row,f)=>row.forEach(nd=>{if(nd.t==='fight'||nd.t==='elite')nd.S=rgSector(f,nd.t);else if(nd.t==='mini')nd.S=rgBoss(rgpick(['carapace','ruche']),f);else if(nd.t==='boss')nd.S=rgBoss('surcharge',f)}));
   return rows}
 function rgSave(){save.rogue=save.rogue||{best:0,wins:0,runs:0,bestScore:0,run:null};return save.rogue}
-function newRogueRun(){
-  const R=rgSave();R.runs++;
-  RG_RUN=R.run={f:0,hearts:3,coins:6,relics:[],map:rgMap(),pick:[],score:0,kills:0,hero:save.hero||'duke',bonusLim:0,shop:null};
+function newRogueRun(dg){
+  const R=rgSave();R.runs++;dg=Math.min(dg||0,R.dg||0);
+  RG_RUN=R.run={dg,f:0,hearts:3,coins:6,relics:[],map:rgMap(dg),pick:[],score:0,kills:0,hero:save.hero||'duke',bonusLim:0,shop:null};
   persist();buildRogueMap()}
 function openRogue(){
   const go=()=>{const R=rgSave();RG_RUN=R.run||null;show('rmap');buildRogueMap()};
@@ -1790,12 +1792,14 @@ function buildRogueMap(){
     $('rmInfo').innerHTML='';$('rmRel').innerHTML='';$('rmAb').style.display='none';
     box.innerHTML=`<p style="text-align:center;font-size:22px;margin:10px 0">Libère 8 étages d'affilée.<br>Après chaque étape, <b style="color:#ffd84a">tu choisis ton chemin</b> : combat, élite, marchand ou atelier. Gagne des reliques, dépense tes pièces, bats le boss.<br>3 cœurs : 0 et la run est finie. Tes talents et cartes comptent.</p>
      <div class="chips"><div class="chip">Meilleur étage : ${R.best}/${RGF}</div><div class="chip">Victoires : ${R.wins}/${R.runs}</div><div class="chip">Record : ${R.bestScore}</div></div>
+     ${(R.dg||0)>0?`<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:10px"><button class="btn cy sm" id="dgM">−</button><div class="px" style="font-size:10px;min-width:120px;text-align:center;color:#ff7a8a">DANGER ${R.dgSel||0}</div><button class="btn cy sm" id="dgP">+</button></div>`:''}
      <button class="btn pk big" id="rgNew" style="margin-top:12px">NOUVELLE RUN</button>`;
-    $('rgNew').onclick=()=>{au();musicStart();newRogueRun()};return}
+    if($('dgM')){$('dgM').onclick=()=>{au();R.dgSel=Math.max(0,(R.dgSel||0)-1);persist();buildRogueMap()};$('dgP').onclick=()=>{au();R.dgSel=Math.min(R.dg||0,(R.dgSel||0)+1);persist();buildRogueMap()}}
+    $('rgNew').onclick=()=>{au();musicStart();newRogueRun(Math.min(R.dgSel||0,R.dg||0))};return}
   $('rmAb').style.display='';
   $('rmAb').onclick=()=>{au();showModal('<h2>ABANDONNER LA RUN ?</h2><p style="text-align:center">Tu perds tes reliques et ta progression.</p><div class="mrow"><button class="btn pk" data-a="y">ABANDONNER</button><button class="btn cy" data-a="n">GARDER</button></div>',a=>{hideModal();if(a==='y'){R.run=null;RG_RUN=null;persist();buildRogueMap()}})};
   const r=RG_RUN;
-  $('rmInfo').innerHTML=`<div class="chip">${Array.from({length:r.hearts},()=>'♥').join(' ')||'—'}</div><div class="chip">🪙 ${r.coins}</div><div class="chip">Étage ${r.f+1}/${RGF}</div>`;
+  $('rmInfo').innerHTML=`<div class="chip">${Array.from({length:r.hearts},()=>'♥').join(' ')||'—'}</div><div class="chip">🪙 ${r.coins}</div><div class="chip">Étage ${r.f+1}/${RGF}</div>${r.dg?`<div class="chip" style="color:#ff7a8a">DANGER ${r.dg}</div>`:''}`;
   let h='';
   for(let f=RGF-1;f>=0;f--){
     const row=r.map[f];
@@ -1880,8 +1884,8 @@ function rogueFinish(win){
     persist();
     setTimeout(()=>{
       if(nd.t==='boss'){
-        R.wins++;R.run=null;RG_RUN=null;save.frag=(save.frag||0)+20;save.crates=(save.crates||0)+2;track('win');persist();
-        showModal(`<h2>ERRET EST LIBRE !</h2><p style="text-align:center">Le Surchargé est tombé.<br>Score de la run : <span class="px" style="font-size:12px;color:#ffd84a">${r.score}</span><br>Cœurs restants : ${r.hearts}<br><span style="color:#7df0ff">+20 fragments · +2 colis</span></p><div class="mrow"><button class="btn pk" data-a="menu">MENU</button></div>`,()=>{hideModal();toMenu()});return}
+        const wdg=r.dg||0;R.wins++;R.dg=Math.min(5,Math.max(R.dg||0,wdg+1));R.dgSel=R.dg;R.run=null;RG_RUN=null;save.frag=(save.frag||0)+20;save.crates=(save.crates||0)+2;track('win');persist();
+        showModal(`<h2>ERRET EST LIBRE !</h2><p style="text-align:center">Le Surchargé est tombé.<br>Score de la run : <span class="px" style="font-size:12px;color:#ffd84a">${r.score}</span><br>Cœurs restants : ${r.hearts}<br><span style="color:#7df0ff">+20 fragments · +2 colis</span>${wdg<5?`<br><span style="color:#ff7a8a">DANGER ${wdg+1} débloqué !</span>`:''}</p><div class="mrow">${wdg<5?`<button class="btn pk" data-a="next">RUN PLUS DURE · DANGER ${wdg+1}</button>`:''}<button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='next'){show('rmap');newRogueRun(wdg+1)}else toMenu()});return}
       rgPickRelic(nd,`+${bonus} pièces · ${fr?'+'+fr+' fragments · ':''}${Math.max(0,limOf()-G.turn)} tours d'avance`)},900);
   }else{
     sfx.lose();say("Plus de place... Repli !");
@@ -1889,7 +1893,7 @@ function rogueFinish(win){
     const why=(G.S.lim&&G.turn>=limOf())?'TEMPS ECOULE':'PLUS DE PLACE';
     if(r.hearts<=0){
       const fr=Math.floor(r.score/700)+r.f*2;save.frag=(save.frag||0)+fr;R.run=null;RG_RUN=null;persist();
-      setTimeout(()=>showModal(`<h2>FIN DE LA RUN</h2><p style="text-align:center">${why}<br>Étages libérés : <b>${r.f}</b>/${RGF}<br>Score : ${r.score} · Reliques : ${r.relics.map(i=>RLC[i].i).join(' ')||'aucune'}<br><span style="color:#7df0ff">+${fr} fragments</span></p><div class="mrow"><button class="btn pk" data-a="again">NOUVELLE RUN</button><button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='again'){RG_RUN=null;show('rmap');newRogueRun()}else toMenu()}),900);
+      setTimeout(()=>showModal(`<h2>FIN DE LA RUN</h2><p style="text-align:center">${why}<br>Étages libérés : <b>${r.f}</b>/${RGF}<br>Score : ${r.score} · Reliques : ${r.relics.map(i=>RLC[i].i).join(' ')||'aucune'}<br><span style="color:#7df0ff">+${fr} fragments</span></p><div class="mrow"><button class="btn pk" data-a="again">NOUVELLE RUN</button><button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='again'){RG_RUN=null;show('rmap');newRogueRun(r.dg||0)}else toMenu()}),900);
     }else{
       persist();
       setTimeout(()=>showModal(`<h2>COMBAT PERDU</h2><p style="text-align:center">${why}<br>Il te reste <b style="color:#ff7ab8">${r.hearts} ♥</b>. Tu retentes ce combat.</p><div class="mrow"><button class="btn pk" data-a="retry">RETENTER</button><button class="btn cy" data-a="map">CARTE</button></div>`,a=>{hideModal();if(a==='retry'){RG_S=Object.assign({},nd.S,{lim:nd.S.lim+(r.relics.indexOf('pioche')>=0?3:0)});startGame('rogue',0,r.hero)}else{show('rmap');buildRogueMap()}}),900);
@@ -1955,7 +1959,7 @@ function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabl
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.7) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.8) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
