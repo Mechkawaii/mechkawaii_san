@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 · ROGUE (proto 0.1)</title>
+<title>Mechkawaii San 三 · ROGUE (proto 0.2)</title>
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="theme-color" content="#0c0a14">
@@ -301,7 +301,23 @@ function strip(root){root.querySelectorAll('.px,.btn,h2,.rc b,.slot small,#sn,.t
 function show(html,cb){const b=$('box');b.innerHTML=html;strip(b);$('ov').classList.add('on');b.onclick=e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;cb(el.dataset.a)};b.scrollTop=0}
 function hide(){$('ov').classList.remove('on')}
 let tT=null;function toast(m,ms=1200){const t=$('toast');t.textContent=ua(m);t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),ms)}
+const GATE='21445af8f7acc5de30b16b435e488cca8c824c41c178fa56d4bc6fec55d98bf6',UK='mk_rogue_ok';
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function unlocked(){try{return localStorage.getItem(UK)===GATE}catch(e){return false}}
+function gate(){
+  hide();R=null;
+  $('app').innerHTML=`<img class="logo" src="assets/brand/logo.png" alt="">
+   <div class="px" style="text-align:center;color:var(--pk);font-size:14px;margin-top:4px">ROGUE · ACCES PRIVE</div>
+   <p style="text-align:center;font-size:22px;margin:8px 0">Entre le code pour jouer au prototype.</p>
+   <input id="pw" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="CODE" style="font-family:'Press Start 2P';font-size:18px;text-align:center;letter-spacing:6px;padding:14px;background:#1b1230;color:#fff;border:3px solid var(--pk);outline:0;width:100%">
+   <div id="pe" class="px" style="font-size:9px;color:#ff7a8a;text-align:center;min-height:14px"></div>
+   <button class="btn pk" id="pgo">ENTRER</button>
+   <a class="btn sm" href="index.html" style="text-align:center;text-decoration:none;margin-top:6px">← JEU PRINCIPAL</a>`;
+  const go=async()=>{const v=$('pw').value.trim();if(await sha(v)===GATE){try{localStorage.setItem(UK,GATE)}catch(e){}menu()}else{$('pe').textContent='CODE INCORRECT';$('pw').value=''}};
+  $('pgo').onclick=go;$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+}
 function menu(){
+  if(!unlocked())return gate();
   hide();R=null;
   $('app').innerHTML=`<img class="logo" src="assets/brand/logo.png" alt="">
    <div class="px" style="text-align:center;color:var(--pk);font-size:14px;margin-top:4px">ROGUE</div>
