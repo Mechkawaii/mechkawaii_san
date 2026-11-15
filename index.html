@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.13</title>
+<title>Mechkawaii San 三 v8.14</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -92,7 +92,7 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 .ctl .slot,.ctl .pw,.ctl #shopBtn{width:auto;min-width:0;height:84px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
 .ctl .slot .lbl,.ctl #shopBtn{font-size:7px;line-height:1.3}.ctl .pw .t{font-size:6px;line-height:1.3}
 .ctl .slot .lbl{margin:0}
-.ctl .slot canvas,.ctl .pw canvas{width:44px;height:44px;margin:0}
+.ctl .slot canvas,.ctl .pw canvas{width:44px;height:44px;margin:0}.ctl .pw canvas{image-rendering:auto}
 .ctl .slot .nm{font-size:15px;min-height:0;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .ctl .pw .pt{display:flex;flex-direction:column;align-items:center;max-width:100%}
 .ctl .pw .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -153,7 +153,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 .objs .ok{color:#7be05a}
 .radio{display:flex;gap:8px;background:#06101c;border:3px solid var(--cy);padding:6px;min-height:76px}
 .por{position:relative;width:56px;height:56px;flex:none;border:2px solid #1a8aa8;overflow:hidden;background:#0a2030}
-.por canvas{width:100%;height:100%;display:block;filter:saturate(.7) contrast(1.15) brightness(1.05) hue-rotate(150deg);animation:flick 2.4s infinite steps(1)}
+.por canvas{width:100%;height:100%;display:block;image-rendering:auto;filter:contrast(1.05);animation:flick 2.4s infinite steps(1)}
 .por:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 1px,rgba(86,224,255,.12) 1px 3px);pointer-events:none}
 @keyframes flick{0%{opacity:1}92%{opacity:.85}94%{opacity:1}96%{opacity:.7}100%{opacity:1}}
 .rt{flex:1}
@@ -176,7 +176,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 .shopi{display:flex;align-items:center;gap:10px;width:100%;text-align:left}.shopi canvas{width:44px;height:44px;flex:none;background:#2b2740}.shopi .p{margin-left:auto;font-family:'Press Start 2P';font-size:10px;color:var(--yl);white-space:nowrap}
 .shopi:disabled{opacity:.45}
 .pw{display:flex;align-items:center;gap:10px;width:100%;text-align:left}
-.pw canvas{width:40px;height:40px;flex:none;background:#2b2740;border:2px solid #0c0a14}
+.pw canvas{image-rendering:auto;width:40px;height:40px;flex:none;background:#2b2740;border:2px solid #0c0a14}
 .pw .t{font-size:10px;line-height:1.5}.pw .d{font-family:'VT323';font-size:17px;line-height:1;opacity:.9;margin-top:2px}
 .pw.off{filter:grayscale(.8) brightness(.6)}.pw.arm{animation:arm .5s infinite steps(1)}
 @keyframes arm{50%{filter:brightness(1.5)}}
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.13 · équilibrage</div>
+  <div class="foot">Version 8.14 · nouveaux visuels héros</div>
 </main>
 
 <main id="select" class="screen">
@@ -273,7 +273,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     <div class="objs"><div class="lbl">OBJECTIF</div><div id="objs"></div></div>
   </div></div>
   <div class="radio">
-    <div class="por"><canvas id="por" width="32" height="32"></canvas></div>
+    <div class="por"><canvas id="por" width="96" height="96"></canvas></div>
     <div class="rt"><div class="rn">GÉN. SHEEPARD · RADIO</div><div id="radioTxt"></div></div>
   </div>
 </main>
@@ -1022,7 +1022,11 @@ const SPR={};
 const TSZ=[17,20,23,25,27,29];
 const SHARP=new Set([1,2,3,4,5,6]);
 [0,1,2,3,4].forEach(v=>{NAMES[30+v]=PR[v].n;PAINT[30+v]=(g,a,f)=>paintProdrome2(g,v,f);TOPD.add(30+v)});
+const HIMG={};
+(()=>{['johanna','banado','fuyu','meimei','yamabato','sheep'].forEach((n,i)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=128;c.getContext('2d').drawImage(im,0,0);HIMG[n==='sheep'?'sheep':i]=c;cache.clear();try{drawSpriteTo($('por'),'sheep');if(G)updateHud()}catch(e){}};im.src='assets/heroes/'+n+'.png'})})();
 function spriteCanvas(t,v=0,f=0){
+  if(t===7&&HIMG[v|0])return HIMG[v|0];
+  if((t==='sheep'||t===13)&&HIMG.sheep)return HIMG.sheep;
   if(SPR[t])return SPR[t];
   const key=t+'_'+v+'_'+f;if(cache.has(key))return cache.get(key);
   const sharp=SHARP.has(t),SS=sharp?8:4,H=32*SS,hi=document.createElement('canvas');hi.width=hi.height=H;const g=hi.getContext('2d');
@@ -1052,7 +1056,7 @@ function spriteCanvas(t,v=0,f=0){
 function drawPiece(g,t,x,y,w,h,v=0,f=0){ // sprite HD (comme sur la carte) si disponible, sinon pixel art
   const im=hdReady()?hdImg(t,v):null;
   if(im){const sc=Math.min(w/im.width,h/im.height)*.96,iw=im.width*sc,ih=im.height*sc;g.save();g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(im,x+(w-iw)/2,y+h-ih,iw,ih);g.restore()}
-  else{g.imageSmoothingEnabled=false;g.drawImage(spriteCanvas(t,v,f),x,y,w,h)}}
+  else{const sc=spriteCanvas(t,v,f);g.imageSmoothingEnabled=sc.width>32;g.imageSmoothingQuality='high';g.drawImage(sc,x,y,w,h)}}
 function drawSpriteTo(cv,t,v){const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);if(t)drawPiece(g,t,0,0,cv.width,cv.height,v||0)}
 
 /* ---------- sol : rues d'une ville en ruine, sans bordures de cases ---------- */
@@ -1959,11 +1963,11 @@ function updateHud(){
   $('objs').innerHTML=h;
   fitGame();requestAnimationFrame(fitGame);
 }
-function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);g.drawImage(spriteCanvas(7,hIdx(id),f),0,0,cv.width,cv.height)}
+function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d'),sc=spriteCanvas(7,hIdx(id),f);g.imageSmoothingEnabled=sc.width>32;g.imageSmoothingQuality='high';g.clearRect(0,0,cv.width,cv.height);g.drawImage(sc,0,0,cv.width,cv.height)}
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.13) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.14) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
