@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.18</title>
+<title>Mechkawaii San 三 v8.19</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -206,6 +206,9 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 .c3d .shine{position:absolute;inset:0;pointer-events:none;mix-blend-mode:color-dodge;opacity:0;background:radial-gradient(circle at var(--mx,50%) var(--my,30%),rgba(255,255,255,.55),rgba(255,255,255,0) 55%),linear-gradient(115deg,transparent 30%,rgba(255,120,220,.35) 42%,rgba(90,230,255,.35) 50%,rgba(255,240,120,.35) 58%,transparent 70%);background-size:100% 100%,220% 100%;background-position:0 0,var(--bp,50%) 0}
 .c3d.r1 .shine{opacity:.18}.c3d.r2 .shine{opacity:.3}.c3d.r3 .shine{opacity:.45}
 .c3hint{font-family:'VT323';font-size:17px;text-align:center;opacity:.65;margin-top:6px}
+.tc{border-radius:10px;overflow:hidden}.tc canvas{border-radius:6px}
+.tc.big{border-radius:16px}.tc.big canvas{border-radius:10px}
+.c3d .face{border-radius:16px}.c3d .back .bin{border-radius:10px}
 @keyframes flip{0%{transform:rotateY(90deg) scale(.7);opacity:0}100%{transform:none;opacity:1}}
 #hcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .hc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;background:var(--pan);border:3px solid var(--line);color:var(--tx);text-align:center;cursor:pointer;font-family:'VT323'}
@@ -237,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.18 · cartes 3D</div>
+  <div class="foot">Version 8.19 · cartes arrondies</div>
 </main>
 
 <main id="select" class="screen">
@@ -1984,7 +1987,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.18) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.19) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
