@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.17</title>
+<title>Mechkawaii San 三 v8.18</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -189,6 +189,23 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 .tc.r3{animation:legend 2.2s infinite ease-in-out}@keyframes legend{50%{box-shadow:0 0 18px #ffd84a,0 0 4px #fff inset}}
 .tc.big{width:210px;margin:0 auto;padding:10px 8px;cursor:default;animation:flip .6s ease-out}.tc.big.r3{animation:flip .6s ease-out,legend 2.2s .6s infinite ease-in-out}
 .tc.big .cn{font-size:10px;min-height:0;margin-top:4px}.tc.big .cr{font-size:8px}.tc.big .cs{font-size:24px}
+
+.c3d{perspective:900px;width:210px;height:300px;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.c3i{width:100%;height:100%;position:relative;transform-style:preserve-3d;will-change:transform}
+.c3i.snap{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.c3d .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.c3d .face.front .tc.big{width:100%;height:100%;box-sizing:border-box;animation:none;justify-content:space-between}
+.c3d .face.front .tc.big canvas{width:100%;height:auto}
+.c3d .back{transform:rotateY(180deg);border:3px solid var(--rc);background:#120c20;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px color-mix(in srgb,var(--rc) 55%,transparent)}
+.c3d .back .bgt{position:absolute;inset:0;background:url(assets/brand/topo.webp) center/cover;opacity:.35}
+.c3d .back .bin{position:absolute;inset:10px;border:2px solid color-mix(in srgb,var(--rc) 70%,#000);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--rc) 22%,#1a1230),rgba(18,12,32,.7))}
+.c3d .back img.hl{width:96px;image-rendering:auto;filter:drop-shadow(0 0 10px var(--rc))}
+.c3d .back .bt{font-family:'Press Start 2P';font-size:9px;color:#fff;letter-spacing:1px;text-align:center;line-height:1.6}
+.c3d .back .br{font-family:'Press Start 2P';font-size:7px;color:var(--rc)}
+.c3d .back .k3{font-family:'Press Start 2P';font-size:34px;color:var(--rc);text-shadow:0 0 12px var(--rc)}
+.c3d .shine{position:absolute;inset:0;pointer-events:none;mix-blend-mode:color-dodge;opacity:0;background:radial-gradient(circle at var(--mx,50%) var(--my,30%),rgba(255,255,255,.55),rgba(255,255,255,0) 55%),linear-gradient(115deg,transparent 30%,rgba(255,120,220,.35) 42%,rgba(90,230,255,.35) 50%,rgba(255,240,120,.35) 58%,transparent 70%);background-size:100% 100%,220% 100%;background-position:0 0,var(--bp,50%) 0}
+.c3d.r1 .shine{opacity:.18}.c3d.r2 .shine{opacity:.3}.c3d.r3 .shine{opacity:.45}
+.c3hint{font-family:'VT323';font-size:17px;text-align:center;opacity:.65;margin-top:6px}
 @keyframes flip{0%{transform:rotateY(90deg) scale(.7);opacity:0}100%{transform:none;opacity:1}}
 #hcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .hc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;background:var(--pan);border:3px solid var(--line);color:var(--tx);text-align:center;cursor:pointer;font-family:'VT323'}
@@ -220,7 +237,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.17 · skins ajustés</div>
+  <div class="foot">Version 8.18 · cartes 3D</div>
 </main>
 
 <main id="select" class="screen">
@@ -1967,7 +1984,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.17) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.18) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2719,15 +2736,29 @@ function collectionModal(res){
   });
   paintCards();
 }
+function card3d(c){const R=RAR[c.r];
+  return `<div class="c3d r${c.r}" style="--rc:${R.c}"><div class="c3i snap"><div class="face front">${cardHtml(c,true,true)}<div class="shine"></div></div><div class="face back"><div class="bgt"></div><div class="bin"><div class="k3">三</div><img class="hl" src="assets/brand/heart.png" alt=""><div class="bt">MECHKAWAII<br>SAN</div><div class="br">${R.n}</div></div><div class="shine"></div></div></div></div>`}
+function bind3d(el){
+  if(!el)return;const it=el.querySelector('.c3i'),sh=el.querySelectorAll('.shine');let rx=-8,ry=-22,drag=false,moved=0,lx=0,ly=0,t0=0,side=0,idle=true,raf=0;
+  const apply=()=>{it.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;const m=((ry%360)+360)%360,fx=50+Math.sin(ry*Math.PI/180)*45,fy=30-rx;sh.forEach(e=>{e.style.setProperty('--mx',fx+'%');e.style.setProperty('--my',fy+'%');e.style.setProperty('--bp',(50+Math.sin(ry*Math.PI/180)*50+rx)+'%')})};
+  apply();
+  const sway=ts=>{if(!idle||!el.isConnected)return;it.classList.remove('snap');ry=side*180-18+Math.sin(ts/900)*16;rx=-6+Math.cos(ts/1300)*5;apply();raf=requestAnimationFrame(sway)};
+  raf=requestAnimationFrame(sway);
+  el.addEventListener('pointerdown',e=>{idle=false;cancelAnimationFrame(raf);drag=true;moved=0;lx=e.clientX;ly=e.clientY;t0=performance.now();it.classList.remove('snap');try{el.setPointerCapture(e.pointerId)}catch(_){}});
+  el.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);ry+=dx*.7;rx=Math.max(-40,Math.min(40,rx-dy*.5));apply()});
+  const end=()=>{if(!drag)return;drag=false;it.classList.add('snap');
+    if(moved<8&&performance.now()-t0<400){ry=Math.round(ry/180)*180+180}else ry=Math.round(ry/180)*180;
+    rx=0;apply();try{sfx.sel&&sfx.sel()}catch(_){}};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end)}
 function cardModal(c){
   const isSk=c.k==='k',eq=isSk&&save.skin===c.s;
-  showModal(`<div style="text-align:center">${cardHtml(c,true,true)}</div><p style="text-align:center;font-size:20px">${cardDesc(c)}</p><p style="text-align:center;font-size:18px;opacity:.8">Exemplaires : ${save.cards[c.id]} · bonus +${((.005+.0025*(cardLv(c.id)-1))*100).toFixed(2)} %</p>
+  showModal(`${card3d(c)}<div class="c3hint">Glisse pour tourner · touche pour retourner</div><p style="text-align:center;font-size:20px">${cardDesc(c)}</p><p style="text-align:center;font-size:18px;opacity:.8">Exemplaires : ${save.cards[c.id]} · bonus +${((.005+.0025*(cardLv(c.id)-1))*100).toFixed(2)} %</p>
   ${isSk?`<button class="btn ${eq?'':'pk'}" data-a="eq">${eq?'SKIN ÉQUIPÉ':'ÉQUIPER CE SKIN'}</button><button class="btn cy" data-a="std">REMETTRE LE SKIN CLASSIQUE</button>`:''}
   <button class="btn" data-a="back">RETOUR</button>`,a=>{
     if(a==='eq'){save.skin=c.s;persist();checkAch();cardModal(c);return}
     if(a==='std'){save.skin='classic';persist();cardModal(c);return}
     collectionModal()});
-  paintCards();
+  paintCards();bind3d($('mbox').querySelector('.c3d'));
 }
 function buildModes(){
   const box=$('mcards');box.innerHTML='';
