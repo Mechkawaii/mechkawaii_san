@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.14</title>
+<title>Mechkawaii San 三 v8.15</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -192,7 +192,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
 @keyframes flip{0%{transform:rotateY(90deg) scale(.7);opacity:0}100%{transform:none;opacity:1}}
 #hcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .hc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;background:var(--pan);border:3px solid var(--line);color:var(--tx);text-align:center;cursor:pointer;font-family:'VT323'}
-.hc canvas{width:48px;height:48px;background:#2b2740}
+.hc canvas{width:112px;height:112px;background:#2b2740;image-rendering:auto}
 .hc .n{font-family:'Press Start 2P';font-size:9px;color:var(--yl)}.hc .p{font-family:'Press Start 2P';font-size:7px;line-height:1.5;color:var(--cy)}
 .hc .d{font-size:17px;line-height:1}.hc.on{border-color:var(--yl);background:#2a1f34}
 #recipe{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(14,8,26,.94);border:2px solid #56e0ff;padding:6px 10px 5px;display:none;text-align:center;pointer-events:none;z-index:5;white-space:normal;max-width:300px;line-height:1.4}#recipe.on{display:block}#hint{display:block;height:36px;width:189px;image-rendering:pixelated;margin:0 auto}#recN{font-family:'Press Start 2P',monospace;font-size:8px;color:#f1f2dc;margin-top:4px;line-height:1.5}
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.14 · nouveaux visuels héros</div>
+  <div class="foot">Version 8.15 · portraits héros</div>
 </main>
 
 <main id="select" class="screen">
@@ -1943,7 +1943,7 @@ function updateHud(){
   drawSpriteTo($('resC'),G.res||0,0);$('resN').textContent=G.res?NAMES[G.res]:'toucher';
   $('coinN').textContent=G.coins;hintDraw();
   const P=POW[G.hero],pb=$('pwBtn');
-  drawHeroTo($('pwC'),G.hero);$('pwT').textContent=P.n.toUpperCase();pb.title=HN[hIdx(G.hero)]+' · '+P.n+' : '+P.d;
+  drawHeroTo($('pwC'),G.hero,0,true);$('pwT').textContent=P.n.toUpperCase();pb.title=HN[hIdx(G.hero)]+' · '+P.n+' : '+P.d;
   $('pwD').textContent=G.armed?'Touche une case':(G.pcd>0?'dans '+G.pcd+' t':(G.freeze>0?'figé '+G.freeze+' t':'PRÊT'));
   pb.classList.toggle('off',G.pcd>0&&!G.armed);pb.classList.toggle('arm',!!G.armed);
   let h='';
@@ -1963,11 +1963,11 @@ function updateHud(){
   $('objs').innerHTML=h;
   fitGame();requestAnimationFrame(fitGame);
 }
-function drawHeroTo(cv,id,f=0){const g=cv.getContext('2d'),sc=spriteCanvas(7,hIdx(id),f);g.imageSmoothingEnabled=sc.width>32;g.imageSmoothingQuality='high';g.clearRect(0,0,cv.width,cv.height);g.drawImage(sc,0,0,cv.width,cv.height)}
+function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteCanvas(7,hIdx(id),f);g.imageSmoothingEnabled=sc.width>32;g.imageSmoothingQuality='high';g.clearRect(0,0,cv.width,cv.height);if(face&&sc.width>32)g.drawImage(sc,24,0,80,80,0,0,cv.width,cv.height);else g.drawImage(sc,0,0,cv.width,cv.height)}
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.14) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.15) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2405,7 +2405,7 @@ $('shopBtn').addEventListener('click',()=>{au();openShop()});
 function buildHeroes(){
   const box=$('hcards');box.innerHTML='';
   PICK.forEach(id=>{const P=POW[id],open=isOpen(id),b=document.createElement('button');b.className='hc'+(save.hero===id&&open?' on':'');
-    b.innerHTML=`<canvas width="64" height="64"></canvas><div class="n">${HN[hIdx(id)].toUpperCase()}</div><div class="p">${open?P.n.toUpperCase():'???'}</div><div class="d">${open?P.d:'🔒 Libérer le secteur '+(UNLOCK[id]+1)}</div>`;
+    b.innerHTML=`<canvas width="128" height="128"></canvas><div class="n">${HN[hIdx(id)].toUpperCase()}</div><div class="p">${open?P.n.toUpperCase():'???'}</div><div class="d">${open?P.d:'🔒 Libérer le secteur '+(UNLOCK[id]+1)}</div>`;
     drawHeroTo(b.querySelector('canvas'),id);
     if(!open){b.style.opacity=.55;b.querySelector('canvas').style.filter='brightness(0)';b.querySelector('.n').textContent='???';b.addEventListener('click',()=>{au();sfx.bad()});box.appendChild(b);return}
     b.addEventListener('click',()=>{au();musicStart();save.hero=id;persist();const p=pending;pending=null;if(p.mode==='campaign')startGame('campaign',p.si,id);else startGame(p.mode,0,id)});
