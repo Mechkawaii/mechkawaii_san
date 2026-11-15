@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.16</title>
+<title>Mechkawaii San 三 v8.17</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -220,7 +220,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.16 · skins subtils</div>
+  <div class="foot">Version 8.17 · skins ajustés</div>
 </main>
 
 <main id="select" class="screen">
@@ -1967,7 +1967,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.16) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.17) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2127,11 +2127,11 @@ function hdTint(im){ // super bâtiments : léger reflet
   if(HDT.has(im))return HDT.get(im);const out=tintImg(im,70,.4);HDT.set(im,out);return out}
 const SKINS=[
  {id:'classic',n:'Classique'},
- {id:'aurum',n:'Doré',shift:60,mix:.38},
- {id:'glace',n:'Glace',shift:-75,mix:.38},
- {id:'braise',n:'Braise',shift:105,mix:.38},
- {id:'jade',n:'Jade',shift:-125,mix:.38},
- {id:'neon',n:'Néon rose',shift:35,mix:.38}
+ {id:'aurum',n:'Doré',shift:60,mix:.62},
+ {id:'glace',n:'Glace',shift:-75,mix:.62},
+ {id:'braise',n:'Braise',shift:105,mix:.62},
+ {id:'jade',n:'Jade',shift:-125,mix:.62},
+ {id:'neon',n:'Néon rose',shift:35,mix:.62}
 ];
 function hdSkin(im,sk){im.__sk=im.__sk||{};return im.__sk[sk.id]||(im.__sk[sk.id]=tintImg(im,sk.shift,sk.mix))}
 function hdDrawBuilding(g,t,px,py,s,v,an,sup){ // px,py en coordonnées logiques (32/case)
