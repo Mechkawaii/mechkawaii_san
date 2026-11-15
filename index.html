@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.21</title>
+<title>Mechkawaii San 三 v8.22</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.21 · vrais skins</div>
+  <div class="foot">Version 8.22 · colis en 3D</div>
 </main>
 
 <main id="select" class="screen">
@@ -1987,7 +1987,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.21) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.22) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2694,10 +2694,10 @@ function crateAnim(res,done){
     setTimeout(showCard,380)}
   function showCard(){
     cardEl=document.createElement('div');cardEl.style.cssText='position:absolute;left:0;right:0;top:50%;transform:translateY(-54%) scale(1.25);text-align:center;pointer-events:none';
-    cardEl.innerHTML=cardHtml(res.c,true,true)+`<div style="margin-top:14px;font-family:'Press Start 2P';font-size:11px;color:${RC[r]};text-shadow:0 0 12px ${RC[r]}">${res.isNew?'NOUVELLE CARTE !':'DOUBLON +'+res.frag+' ✦'+(res.lvUp?' · NIVEAU +':'')}</div><div id="cfxT" style="margin-top:16px;font-family:VT323;font-size:22px;color:#fff;opacity:0">Touche pour continuer</div>`;
-    ov.appendChild(cardEl);const cc=cardEl.querySelector('canvas[data-card]');if(cc)cardArt(cc,res.c);tCard=performance.now()}
+    cardEl.innerHTML=card3d(res.c)+`<div style="margin-top:14px;font-family:'Press Start 2P';font-size:11px;color:${RC[r]};text-shadow:0 0 12px ${RC[r]}">${res.isNew?'NOUVELLE CARTE !':'DOUBLON +'+res.frag+' ✦'+(res.lvUp?' · NIVEAU +':'')}</div><div id="cfxT" style="margin-top:16px;font-family:VT323;font-size:19px;color:#fff;opacity:0">Tourne la carte · touche ailleurs</div>`;
+    ov.appendChild(cardEl);const cc=cardEl.querySelector('canvas[data-card]');if(cc)cardArt(cc,res.c);const c3=cardEl.querySelector('.c3d');if(c3){c3.style.pointerEvents='auto';bind3d(c3,true)}tCard=performance.now()}
   function close(){if(finished)return;finished=true;cancelAnimationFrame(raf);ov.remove();done&&done()}
-  ov.addEventListener('pointerdown',e=>{e.preventDefault();if(!revealed){skip=true}else if(cardEl&&performance.now()-tCard>1000)close()});
+  ov.addEventListener('pointerdown',e=>{e.preventDefault();if(revealed&&e.target.closest&&e.target.closest('.c3d'))return;if(!revealed){skip=true}else if(cardEl&&performance.now()-tCard>1000)close()});
   let raf;
   function frame(ts){
     if(finished)return;raf=requestAnimationFrame(frame);if(t0===null)t0=ts;let t=ts-t0;
@@ -2753,11 +2753,11 @@ function collectionModal(res){
 }
 function card3d(c){const R=RAR[c.r];
   return `<div class="c3d r${c.r}" style="--rc:${R.c}"><div class="c3i snap"><div class="face front">${cardHtml(c,true,true)}<div class="shine"></div></div><div class="face back"><div class="bgt"></div><div class="bin"><div class="k3">三</div><img class="hl" src="assets/brand/heart.png" alt=""><div class="bt">MECHKAWAII<br>SAN</div><div class="br">${R.n}</div></div><div class="shine"></div></div></div></div>`}
-function bind3d(el){
-  if(!el)return;const it=el.querySelector('.c3i'),sh=el.querySelectorAll('.shine');let rx=-8,ry=-22,drag=false,moved=0,lx=0,ly=0,t0=0,side=0,idle=true,raf=0;
+function bind3d(el,back){
+  if(!el)return;const it=el.querySelector('.c3i'),sh=el.querySelectorAll('.shine');let rx=-8,ry=back?162:-22,drag=false,moved=0,lx=0,ly=0,t0=0,side=back?1:0,idle=true,raf=0;if(back)setTimeout(()=>{side=0},650);
   const apply=()=>{it.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;const m=((ry%360)+360)%360,fx=50+Math.sin(ry*Math.PI/180)*45,fy=30-rx;sh.forEach(e=>{e.style.setProperty('--mx',fx+'%');e.style.setProperty('--my',fy+'%');e.style.setProperty('--bp',(50+Math.sin(ry*Math.PI/180)*50+rx)+'%')})};
   apply();
-  const sway=ts=>{if(!idle||!el.isConnected)return;it.classList.remove('snap');ry=side*180-18+Math.sin(ts/900)*16;rx=-6+Math.cos(ts/1300)*5;apply();raf=requestAnimationFrame(sway)};
+  const sway=ts=>{if(!idle||!el.isConnected)return;it.classList.remove('snap');ry+=(side*180-18+Math.sin(ts/900)*16-ry)*(back?.09:1);rx=-6+Math.cos(ts/1300)*5;apply();raf=requestAnimationFrame(sway)};
   raf=requestAnimationFrame(sway);
   el.addEventListener('pointerdown',e=>{idle=false;cancelAnimationFrame(raf);drag=true;moved=0;lx=e.clientX;ly=e.clientY;t0=performance.now();it.classList.remove('snap');try{el.setPointerCapture(e.pointerId)}catch(_){}});
   el.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);ry+=dx*.7;rx=Math.max(-40,Math.min(40,rx-dy*.5));apply()});
