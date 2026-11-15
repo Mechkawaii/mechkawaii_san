@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.20</title>
+<title>Mechkawaii San 三 v8.21</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.20 · nouveaux visuels pixel art</div>
+  <div class="foot">Version 8.21 · vrais skins</div>
 </main>
 
 <main id="select" class="screen">
@@ -1987,7 +1987,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.20) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.21) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2147,13 +2147,25 @@ function hdTint(im){ // super bâtiments : léger reflet
   if(HDT.has(im))return HDT.get(im);const out=tintImg(im,70,.4);HDT.set(im,out);return out}
 const SKINS=[
  {id:'classic',n:'Classique'},
- {id:'aurum',n:'Doré',shift:60,mix:.62},
- {id:'glace',n:'Glace',shift:-75,mix:.62},
- {id:'braise',n:'Braise',shift:105,mix:.62},
- {id:'jade',n:'Jade',shift:-125,mix:.62},
- {id:'neon',n:'Néon rose',shift:35,mix:.62}
+ {id:'aurum',n:'Doré',bh:44,bs:.5,ah:48,as:1},
+ {id:'glace',n:'Glace',bh:200,bs:.42,ah:188,as:1},
+ {id:'braise',n:'Braise',bh:12,bs:.45,ah:30,as:1},
+ {id:'jade',n:'Jade',bh:150,bs:.42,ah:125,as:1},
+ {id:'neon',n:'Néon rose',bh:318,bs:.4,ah:190,as:1}
 ];
-function hdSkin(im,sk){im.__sk=im.__sk||{};return im.__sk[sk.id]||(im.__sk[sk.id]=tintImg(im,sk.shift,sk.mix))}
+function skinImg(im,sk){ // recolore vraiment : carrosserie (gris-violet) et néons (couleurs vives) ; contours et reflets blancs intacts
+  try{const W=im.width,H=im.height,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');q.drawImage(im,0,0);const id=q.getImageData(0,0,W,H),d=id.data;
+    const hsl2=(h,s,l)=>{const q2=l<.5?l*(1+s):l+s-l*s,p=2*l-q2,f=t=>{t=(t+1)%1;return t<1/6?p+(q2-p)*6*t:t<.5?q2:t<2/3?p+(q2-p)*(2/3-t)*6:p};return [f(h+1/3),f(h),f(h-1/3)]};
+    for(let i=0;i<d.length;i+=4){if(d[i+3]<20)continue;const r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,df=mx-mn;
+      if(l<.16||l>.9)continue;
+      let h=0,sa=0;if(df>0){sa=l>.5?df/(2-mx-mn):df/(mx+mn);h=mx===r?((g-b)/df+(g<b?6:0)):mx===g?((b-r)/df+2):((r-g)/df+4);h/=6}
+      let o;
+      if(sa>.5&&l>.3)o=hsl2(sk.ah/360,Math.min(1,sa*sk.as),l); // néons, voyants, vitres, panneaux
+      else if(sa<=.5)o=hsl2(sk.bh/360,Math.min(.6,sa*.5+sk.bs),l); // carrosserie
+      else continue;
+      d[i]=o[0]*255;d[i+1]=o[1]*255;d[i+2]=o[2]*255}
+    q.putImageData(id,0,0);return c}catch(e){return im}}
+function hdSkin(im,sk){im.__sk=im.__sk||{};return im.__sk[sk.id]||(im.__sk[sk.id]=skinImg(im,sk))}
 function hdDrawBuilding(g,t,px,py,s,v,an,sup){ // px,py en coordonnées logiques (32/case)
   const im0=hdImg(t,v);if(!im0)return false;const im=sup?hdTint(im0):im0;const S=HD.CELL,k=S/C,box=S*(t===12||t>=30&&t<35?1.28:1.2)*s,sc=Math.min(box/im.width,box/im.height),w=im.width*sc,h=im.height*sc;
   const cx=(px+C/2)*k,by=(py+C)*k-S*.03;
