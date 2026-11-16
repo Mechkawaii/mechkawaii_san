@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.27</title>
+<title>Mechkawaii San 三 v8.28</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.27 · arbre de talents</div>
+  <div class="foot">Version 8.28 · plus de cartes</div>
 </main>
 
 <main id="select" class="screen">
@@ -2003,7 +2003,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.27) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.28) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2610,6 +2610,9 @@ const CARDS=[
  {id:'b4',n:'Usine',r:1,k:'p',t:4,d:'Elle fabrique tout ce dont Erret a besoin.'},
  {id:'b5',n:'Base',r:2,k:'p',t:5,d:'Le cœur d’un secteur reconquis.'},
  {id:'b6',n:'Tour',r:3,k:'p',t:6,d:'Elle domine l’horizon et brille de loin.'},
+ {id:'b22',n:'Base de missiles',r:2,k:'p',t:22,d:'Un missile prêt à partir, au-dessus de la Tour.'},
+ {id:'b23',n:'Radar géant',r:3,k:'p',t:23,d:'Il voit les Prodromes arriver avant tout le monde.'},
+ {id:'b24',n:'Usine d’armures mech',r:3,k:'p',t:24,d:'Le sommet de la reconquête : elle assemble des armures de combat.'},
  {id:'r9',n:'Ruines',r:0,k:'p',t:9,d:'Ce que laisse un Prodrome vaincu.'},
  {id:'r10',n:'Balise',r:0,k:'p',t:10,d:'Trois ruines, un signal pour l’armée.'},
  {id:'r11',n:'Phare',r:1,k:'p',t:11,d:'Il guide les convois dans la nuit.'},
@@ -2625,6 +2628,13 @@ const CARDS=[
  {id:'h0',n:'Johanna',r:1,k:'h',h:'johanna'},{id:'h1',n:'Banado',r:1,k:'h',h:'banado'},{id:'h2',n:'Fuyu',r:2,k:'h',h:'fuyu'},
  {id:'h3',n:'Mei Mei',r:0,k:'h',h:'meimei'},{id:'h4',n:'Yamabato',r:0,k:'h',h:'yamabato'},{id:'h5',n:'Duke',r:1,k:'h',h:'duke'},
  {id:'h6',n:'Khurt',r:2,k:'h',h:'khurt'},{id:'h7',n:'Faline',r:2,k:'h',h:'faline'},{id:'h8',n:'Rasmus',r:1,k:'h',h:'rasmus'},{id:'h9',n:'Rhoney',r:0,k:'h',h:'rhoney'},
+ {id:'z1',n:'Général Sheepard',r:2,k:'z',d:'Le mouton le plus galonné de l’armée. Il commente chaque combat à la radio.'},
+ {id:'q_goryo',n:'Goryo le grenadier',r:3,k:'b',b:'goryo',d:'Boss final : bombarde des cases à distance.'},
+ {id:'q_genbu',n:'Genbu le technicien',r:2,k:'b',b:'genbu',d:'Boss : bouclier à briser, écrase des lignes entières.'},
+ {id:'q_gaoro',n:'Gaoro l’éclaireur',r:2,k:'b',b:'gaoro',d:'Boss : appelle des Prodromes sans cesse.'},
+ {id:'q_goky',n:'Goky le pyrotechnicien',r:2,k:'b',b:'goky',d:'Boss : fait sauter des cases à distance.'},
+ {id:'q_gyuki',n:'Gyuki le voltigeur',r:2,k:'b',b:'gyuki',d:'Boss : frappe des lignes entières, très vite.'},
+ ...Object.keys(RLC).map(id=>({id:'rl_'+id,n:RLC[id].n,r:{c:0,r:1,l:3}[RLC[id].r]||0,k:'rl',rl:id,d:'Relique du mode roguelike : '+RLC[id].d})),
  {id:'k1',n:'Skin Doré',r:1,k:'k',s:'aurum',d:'Les bâtiments passent à l’or.'},
  {id:'k2',n:'Skin Glace',r:1,k:'k',s:'glace',d:'Des bâtiments aux reflets glacés.'},
  {id:'k3',n:'Skin Braise',r:2,k:'k',s:'braise',d:'Des bâtiments rougeoyants.'},
@@ -2641,6 +2651,9 @@ function cardArt(cv,c,id){
   if(c.k==='p')drawPiece(g,c.t,0,0,W,H);
   else if(c.k==='x')drawPiece(g,12,0,0,W,H,c.v);
   else if(c.k==='h')g.drawImage(spriteCanvas(7,hIdx(c.h),0),W*.1,H*.1,W*.8,H*.8);
+  else if(c.k==='z'){const im=spriteCanvas('sheep');g.imageSmoothingEnabled=im.width>32;g.drawImage(im,W*.08,H*.08,W*.84,H*.84)}
+  else if(c.k==='b'){const B=BOSSES[c.b],src=HD.p&&HD.p[B.v];if(src){const t=tintImg(src,B.hue,.95);g.imageSmoothingEnabled=true;g.drawImage(t,30,14,180,128,W*.05,H*.08,W*.9,H*.84)}}
+  else if(c.k==='rl'){const R=RAR[c.r],gr=g.createRadialGradient(W/2,H/2,H*.05,W/2,H/2,H*.6);gr.addColorStop(0,R.c+'55');gr.addColorStop(1,'#0000');g.fillStyle=gr;g.fillRect(0,0,W,H);g.font=`${Math.round(H*.55)}px serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(RLC[c.rl].i,W/2,H*.54)}
   else{HD.ov=c.s;try{drawPiece(g,3,0,H*.15,W*.52,H*.7);drawPiece(g,5,W*.48,H*.15,W*.52,H*.7)}finally{HD.ov=null}}}
 function cardHtml(c,own,big){const R=RAR[c.r],l=cardLv(c.id);
   return `<div class="tc r${c.r}${own?'':' lock'}${big?' big':''}" style="--rc:${R.c}" ${big?'':`data-a="c:${c.id}"`}><canvas width="${big?210:96}" height="${big?210:96}" data-card="${c.id}"></canvas><div class="cn">${own?c.n.toUpperCase():'???'}</div><div class="cr">${R.n}</div><div class="cs">${own?'★'.repeat(l)+'☆'.repeat(3-l):''}</div></div>`}
