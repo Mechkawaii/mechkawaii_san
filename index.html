@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.28 · plus de cartes</div>
+  <div class="foot">Version 8.29 · reprise de partie</div>
 </main>
 
 <main id="select" class="screen">
@@ -1636,11 +1636,11 @@ function endTurn(){
   if(objDone()){return finish(true)}
   if((G.mode==='campaign'||G.mode==='rogue')&&G.S.lim&&G.turn>=limOf())return finish(false);
   if(!hasMove()){return finish(false)}
-  G.busy=false;updateHud();
+  G.busy=false;updateHud();saveGame();
 }
 function finish(win){
   if(G.mode==='rogue')return rogueFinish(win);
-  G.over=true;G.busy=true;updateHud();
+  clearGame();G.over=true;G.busy=true;updateHud();
   const key=bestKey();
   if(!save.best[key]||G.score>save.best[key])save.best[key]=G.score;
   if(G.mode==='daily')save.daily={d:todayKey(),score:G.score};
@@ -1688,7 +1688,7 @@ function startGame(mode,si,hero){
   if(mode==='rogue'&&rel('ouverture')){let k=0,z=0;while(k<3&&z++<200){const r=lrnd(N),c=lrnd(N);if(grid[r][c])continue;grid[r][c]=newTile(1,0,r,c,1);if(flood(r,c,1).length>=3){grid[r][c]=null;continue}k++}}
   G.cur=randPiece();
   show('game');resize();updateHud();
-  say(S.intro);
+  say(S.intro);saveGame();
 }
 const startCampaign=i=>startGame('campaign',i,save.hero);
 const startEndless=()=>startGame('endless',0,save.hero);
@@ -1915,7 +1915,7 @@ function rgRest(){
     rgAdvance()});
 }
 function rogueFinish(win){
-  G.over=true;G.busy=true;updateHud();
+  clearGame();G.over=true;G.busy=true;updateHud();
   const r=G.rg,R=rgSave(),nd=r.map[r.cur.f][r.cur.i];
   track('games');track('score',G.score);
   r.score+=G.score;R.bestScore=Math.max(R.bestScore,r.score);
@@ -2390,13 +2390,45 @@ board.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&G)G.sel=nu
 $('resSlot').addEventListener('click',()=>{au();swapReserve()});
 $('bSnd').addEventListener('click',()=>{AU.on=!AU.on;au();try{localStorage.setItem('mk_snd',AU.on?'1':'0')}catch(e){}$('bSnd').style.opacity=AU.on?1:.45;if(AU.on)musicStart()});
 $('bMenu').addEventListener('click',()=>{
-  if(G&&!G.over){showModal(`<h2>PAUSE</h2><div class="mrow"><button class="btn" data-a="go">REPRENDRE</button>${G.mode==='rogue'?'':'<button class="btn cy" data-a="again">RECOMMENCER</button>'}<button class="btn pk" data-a="menu">QUITTER</button></div>`,a=>{hideModal();if(a==='menu'&&G.mode==='rogue'){G=null;show('rmap');buildRogueMap();return}if(a==='again')(G.mode==='campaign'?startCampaign(G.si):startEndless());else if(a==='menu')toMenu()})}
+  if(G&&!G.over){showModal(`<h2>PAUSE</h2><div class="mrow"><button class="btn" data-a="go">REPRENDRE</button>${G.mode==='rogue'?'':'<button class="btn cy" data-a="again">RECOMMENCER</button>'}<button class="btn pk" data-a="menu">QUITTER</button></div>`,a=>{hideModal();if(a==='menu'&&G.mode==='rogue'){G=null;clearGame();show('rmap');buildRogueMap();return}if(a==='again')(G.mode==='campaign'?startCampaign(G.si):startEndless());else if(a==='menu')toMenu()})}
   else toMenu();
 });
 
 /* ---------- écrans ---------- */
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='title'){try{menuInfo();chips()}catch(e){}}}
-function toMenu(){G=null;show('title');say('')}
+/* ---------- sauvegarde de la partie en cours ---------- */
+const PKEY='mk_partie',PSKIP=new Set(['S','lr','lm','rg','parts','ghosts','img','undo','drag','sel']);
+function saveGame(){
+  try{
+    if(!G||G.over||!grid.length)return;
+    localStorage.setItem(PKEY,JSON.stringify({t:Date.now(),G:JSON.parse(JSON.stringify(G,(k,v)=>PSKIP.has(k)?undefined:v)),grid,floorC,run:G.mode==='rogue'?RG_RUN:null,rgS:G.mode==='rogue'?RG_S:null,dseed:+todayKey().replace(/-/g,'')}));
+  }catch(e){}
+}
+function clearGame(){try{localStorage.removeItem(PKEY)}catch(e){}}
+function readGame(){
+  try{const p=JSON.parse(localStorage.getItem(PKEY)||'null');if(!p||!p.G||Date.now()-p.t>7*864e5){return null}
+    if(p.G.mode==='campaign'&&!SECTORS[p.G.si])return null;return p}catch(e){return null}
+}
+function resumeGame(p){
+  const g=p.G,mode=g.mode;let S;
+  if(mode==='rogue'){RG_RUN=p.run;RG_S=p.rgS;rgSave().run=RG_RUN;S=RG_S}
+  else S=mode==='campaign'?SECTORS[g.si]:(MODES[mode]||ENDLESS);
+  const daily=mode==='daily';
+  G=Object.assign(g,{S,parts:[],ghosts:[],busy:false,sel:null,drag:null,undo:null,over:false});
+  if(mode==='rogue')G.rg=RG_RUN;
+  if(daily){G.lr=mul32(p.dseed);G.lm=mul32(p.dseed^0x9e3779b9)}
+  grid=p.grid;buildFloors();floorC=p.floorC;
+  show('game');resize();updateHud();
+}
+function offerResume(){
+  const p=readGame();if(!p)return false;
+  const nm=p.G.mode==='campaign'?'Campagne':p.G.mode==='rogue'?'Rogue':'Partie';
+  showModal(`<h2>PARTIE EN COURS</h2><p style="text-align:center">${nm} · tour ${p.G.turn} · score ${p.G.score}<br>Tu veux la reprendre là où tu t’es arrêté ?</p><div class="mrow"><button class="btn pk" data-a="go">REPRENDRE</button><button class="btn" data-a="no">ABANDONNER</button></div>`,a=>{hideModal();if(a==='go')resumeGame(p);else{clearGame();checkLogin()}});
+  return true;
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!G.busy&&!G.over)saveGame()});
+addEventListener('pagehide',()=>{if(G&&!G.busy&&!G.over)saveGame()});
+function toMenu(){G=null;clearGame();show('title');say('')}
 function showModal(html,cb,cream){const m=$('mbox');m.classList.toggle('cream',!!cream);m.innerHTML=html;{const L=m.lastElementChild;if(L&&(L.matches('.btn')||L.matches('.mrow'))&&m.scrollHeight>m.clientHeight+2||(L&&(L.matches('.btn')||L.matches('.mrow')))){const w=document.createElement('div');w.className='mfoot';m.insertBefore(w,L);w.appendChild(L)}}$('modal').classList.add('on');
   m.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{au();cb(b.dataset.a)}))}
 function hideModal(){$('modal').classList.remove('on')}
@@ -2847,7 +2879,7 @@ $('bCol').addEventListener('click',()=>{au();collectionModal()});
 $('bMis').addEventListener('click',()=>{au();missionsModal()});
 $('bTal').addEventListener('click',()=>{au();musicStart();buildTalents();show('talents')});
 $('bTalBack').addEventListener('click',()=>{fragLabel();show('title')});
-menuInfo();fragLabel();misLabel();streakLabel();colLabel();setTimeout(()=>{if(!save.seen){save.seen=1;persist();helpModal(0,checkLogin)}else checkLogin()},700);
+menuInfo();fragLabel();misLabel();streakLabel();colLabel();setTimeout(()=>{if(offerResume())return;if(!save.seen){save.seen=1;persist();helpModal(0,checkLogin)}else checkLogin()},700);
 $('bHelp').addEventListener('click',()=>{au();helpModal()});
 $('bSelBack').addEventListener('click',()=>show('title'));
 
