@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.30 · 10 Mechkawaii</div>
+  <div class="foot">Version 8.31 · balise bien placée</div>
 </main>
 
 <main id="select" class="screen">
@@ -1405,7 +1405,13 @@ const sfx={
 
 /* ---------- grille ---------- */
 const inb=(r,c)=>r>=0&&c>=0&&r<N&&c<N;
-function newTile(t,v,r,c,s=1.6){return{t,v:v||0,vx:c,vy:r,s,ph:Math.random()*6}}
+const RUINLOG=[];
+function newTile(t,v,r,c,s=1.6){const o={t,v:v||0,vx:c,vy:r,s,ph:Math.random()*6};if(t===9){RUINLOG.push([r,c,o]);if(RUINLOG.length>60)RUINLOG.shift()}return o}
+function mergeRuins(){ // la fusion se fait là où la dernière ruine est apparue
+  const L=RUINLOG.splice(0);
+  for(let i=L.length-1;i>=0;i--){const [r,c,o]=L[i];if(grid[r]&&grid[r][c]===o)resolve(r,c)}
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
+}
 function flood(r,c,t){
   const seen=new Set(),out=[],st=[[r,c]];
   while(st.length){const [y,x]=st.pop();const k=y*N+x;if(seen.has(k))continue;seen.add(k);
@@ -1499,7 +1505,7 @@ function pwArea(r,c){
   return [[r,c]];
 }
 function settle(){ // après un pouvoir : fusions de ruines, purification, victoire
-  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
+  mergeRuins();
   updateHud();
   if(objDone())finish(true);
 }
@@ -1594,7 +1600,7 @@ function trapPhase(){
   if(trapped){
     track('trap',trapped);sfx.trap();G.trap=(G.trap||0)+trapped;if(G.boss)bossTrap(trapped);G.score+=trapped*50+(rel('piegeur')?300*trapped:0);addCoins(trapped*2+(rel('collecteur')?3*trapped:0));toast('PRODROMES PIÉGÉS',1300);
     if(!G.flags.trap){G.flags.trap=1;say("Prodromes piégés ! Trois ruines côte à côte forment une balise.")}
-    for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(grid[r][c]&&grid[r][c].t===9)resolve(r,c)}
+    mergeRuins();
     if(trapped>=2&&(G.made[10]||0)>m10){const b=50*trapped*trapped;G.score+=b;toast('PIÈGE GROUPÉ ! +'+b,1600)}
   }
   const S=G.S;let rate=G.mode==='campaign'?S.rate:Math.min(.03+G.turn*.0007,.11);
@@ -2951,7 +2957,7 @@ function loop(ts){requestAnimationFrame(loop);
   if(ts-last<33)return;last=ts;fr++;
   if($('game').classList.contains('on')){render(ts);if(G&&G.boss)bossDraw(ts);if(fr%4===0)drawBg(ts)}else{drawBg(ts);if($('title').classList.contains('on'))drawStage(ts)}}
 requestAnimationFrame(loop);
-window.__mk={previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis,collectionModal,drawCard,crateAnim};
+window.__mk={mergeRuins,newTile,previewGroup,randPiece,usePower,pwBtn,pwValid,spriteCanvas,get G(){return G},get grid(){return grid},get floorC(){return floorC},place,onCell,swapReserve,startGame,sfx,SMK,previewChain,track,finish,missionsModal,ensureMis,collectionModal,drawCard,crateAnim};
 })();
 </script>
 <script>
