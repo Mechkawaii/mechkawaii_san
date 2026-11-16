@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <script>if(navigator.standalone)document.documentElement.classList.add('sa')</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mechkawaii San 三 v8.26</title>
+<title>Mechkawaii San 三 v8.27</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -45,11 +45,11 @@ body::before{content:'';position:fixed;inset:0;background:url(assets/brand/topo.
 .screen{position:relative;z-index:1}
 #tcards{width:100%}.ttree{display:flex;flex-direction:column;align-items:center}
 .troot img{width:64px;display:block;filter:drop-shadow(0 0 10px rgba(255,122,184,.7))}
-.trbar{display:flex;width:66.7%;justify-content:space-between;height:18px;border-top:4px solid #5a3a7a;margin-top:2px;position:relative}.trbar i{display:block;width:4px;height:18px;background:#5a3a7a;margin-top:-4px}.trbar i:nth-child(2){margin-top:-4px}
-.tcols{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%}.tcol{display:flex;flex-direction:column;align-items:center}
+.trbar{display:flex;width:75%;justify-content:space-between;height:18px;border-top:4px solid #5a3a7a;margin-top:2px;position:relative}.trbar i{display:block;width:4px;height:18px;background:#5a3a7a;margin-top:-4px}.trbar i:nth-child(2){margin-top:-4px}
+.tcols{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%}.tcol{display:flex;flex-direction:column;align-items:center}
 .tbn{font-size:8px;margin-bottom:8px;text-align:center}
 .tlink{width:4px;height:22px;background:#3a2a52}.tlink.on{background:var(--tc);box-shadow:0 0 8px var(--tc)}
-.tnode{width:74px;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#1b1230;border:4px solid var(--tc);color:#fff;cursor:pointer;font-family:inherit;padding:0;box-shadow:inset 0 0 0 2px #0c0a14}
+.tnode{width:66px;height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#1b1230;border:4px solid var(--tc);color:#fff;cursor:pointer;font-family:inherit;padding:0;box-shadow:inset 0 0 0 2px #0c0a14}
 .tnode .ti{font-size:28px;line-height:1}.tp{display:flex;gap:3px}.tp b{display:block;width:8px;height:8px;background:#3a2a52}.tp b.f{background:var(--tc);box-shadow:0 0 6px var(--tc)}
 .tnode.lock{border-color:#3a3a4a;filter:grayscale(1);opacity:.55}
 .tnode.max{background:#3a2e10;box-shadow:inset 0 0 0 2px #0c0a14,0 0 14px #ffd84a}
@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.26 · cristal et ruines</div>
+  <div class="foot">Version 8.27 · arbre de talents</div>
 </main>
 
 <main id="select" class="screen">
@@ -343,7 +343,7 @@ const PR=PN.map(n=>({n}));
 const tileVal=t=>t===1?5:(PTS[t]||0); // valeur d'une pièce : la détruire fait perdre ce score
 function scoreDestroy(tl){ // retourne la variation de score (négative si on détruit du positif, positive si on débarrasse des décombres)
   if(!tl)return 0;let d=0;
-  if(tl.t===9)d=40;else if(tl.t!==12)d=-tileVal(tl.t);
+  if(tl.t===9)d=Math.round(40*(1+.3*tal('ruinx')));else if(tl.t!==12)d=-tileVal(tl.t);
   if(d){const b=G.score;G.score=Math.max(0,G.score+d);return G.score-b}return 0}
 const POW={
  duke:{n:'Terrassement',cd:6,d:'Détruit les Prodromes en croix.'},
@@ -404,16 +404,31 @@ const TAL=[
  {id:'eco',br:0,n:'Économie',d:'+10 % de pièces gagnées par niveau.',max:5,c:[3,5,8,12,16]},
  {id:'bank',br:0,n:'Caisse de départ',d:'+4 pièces au départ par niveau.',max:4,c:[3,6,10,15],req:'eco'},
  {id:'shop',br:0,n:'Négociateur',d:'-8 % sur les prix du marchand par niveau.',max:4,c:[5,8,12,16],req:'bank'},
+ {id:'tip',br:0,n:'Pourboire',d:'+1 pièce à chaque fusion par niveau.',max:3,c:[8,13,19],req:'shop'},
+ {id:'interest',br:0,n:'Intérêts',d:'Au début de chaque combat du mode roguelike : +1 pièce par tranche de 8 pièces possédées, par niveau.',max:3,c:[10,16,24],req:'tip'},
+ {id:'rest',br:0,n:'Atelier rentable',d:'Piller à l’atelier rapporte +5 pièces de plus par niveau.',max:3,c:[10,16,24],req:'interest'},
  {id:'cd',br:1,n:'Recharge rapide',d:'Ton pouvoir se recharge 1 tour plus vite par niveau.',max:3,c:[4,8,14]},
  {id:'shield',br:1,n:'Bouclier de départ',d:'Aucun Prodrome n’arrive pendant 2 tours de plus par niveau.',max:3,c:[4,8,14],req:'cd'},
  {id:'prod',br:1,n:'Anti-Prodromes',d:'-8 % de Prodromes tirés par niveau.',max:4,c:[6,9,13,18],req:'shield'},
+ {id:'trapx',br:1,n:'Frappe renforcée',d:'+12 % de dégâts infligés aux boss par niveau.',max:4,c:[8,12,17,23],req:'prod'},
+ {id:'marathon',br:1,n:'Marathon',d:'+2 tours par combat et par niveau (modes à tours limités).',max:3,c:[12,18,26],req:'trapx'},
+ {id:'heart',br:1,n:'Cœur de réserve',d:'+1 cœur au départ d’une run roguelike par niveau.',max:2,c:[18,30],req:'marathon'},
  {id:'pts',br:2,n:'Rendement',d:'+5 % de points de fusion par niveau.',max:5,c:[3,5,8,12,16]},
  {id:'harv',br:2,n:'Récolteur',d:'+25 % de points sur les capsules et noyaux par niveau.',max:3,c:[5,9,14],req:'pts'},
- {id:'lucky',br:2,n:'Veinard',d:'+10 % de chances de Cristal et de Drone par niveau.',max:3,c:[6,10,16],req:'harv'}
+ {id:'lucky',br:2,n:'Veinard',d:'+10 % de chances de Cristal et de Drone par niveau.',max:3,c:[6,10,16],req:'harv'},
+ {id:'combo',br:2,n:'Réaction en chaîne',d:'+8 % de points par étape de combo, par niveau.',max:4,c:[8,12,17,23],req:'lucky'},
+ {id:'rich',br:2,n:'Pioche généreuse',d:'Plus de pièces de palier 2 et 3 dans la pioche, par niveau.',max:3,c:[10,16,24],req:'combo'},
+ {id:'ruinx',br:2,n:'Fossoyeur',d:'+30 % de points en nettoyant des ruines, par niveau.',max:3,c:[12,18,26],req:'rich'},
+ {id:'pw1',br:3,n:'Démarrage éclair',d:'Ton pouvoir est prêt dès le début de chaque combat.',max:1,c:[8]},
+ {id:'pwdbl',br:3,n:'Maîtrise',d:'15 % de chances par niveau que ton pouvoir se recharge instantanément.',max:3,c:[10,16,24],req:'pw1'},
+ {id:'drone',br:3,n:'Arsenal',d:'+25 % de chances de Drone EMP par niveau.',max:3,c:[8,13,19],req:'pwdbl'},
+ {id:'crys',br:3,n:'Prisme',d:'+25 % de chances de Cristal par niveau.',max:3,c:[8,13,19],req:'drone'},
+ {id:'xp',br:3,n:'Mentor',d:'+10 % de fragments gagnés en roguelike par niveau.',max:3,c:[12,18,26],req:'crys'},
+ {id:'crate',br:3,n:'Butin',d:'+1 colis offert à chaque victoire en roguelike par niveau.',max:2,c:[20,34],req:'xp'}
 ];
-const TBR=['ÉCONOMIE','COMBAT','FUSION'];
+const TBR=['ÉCONOMIE','COMBAT','FUSION','TECHNIQUE'];
 const tal=id=>(G&&G.noTal)?0:((save.tal||{})[id]||0);
-const pcdOf=P=>Math.max(1,P.cd*(G&&G.S&&G.S.surv?2:1)-tal('cd')-(rel('recharge')?2:0));
+const pcdOf=P=>(Math.random()<.15*tal('pwdbl'))?0:Math.max(1,P.cd*(G&&G.S&&G.S.surv?2:1)-tal('cd')-(rel('recharge')?2:0));
 const sp=it=>Math.max(1,Math.round(it.p*(1-.08*tal('shop'))*(rel('marchand')?.7:1)));
 const addCoins=n=>{G.coins+=Math.round(n*(1+.1*tal('eco')+(rel('tirelire')?.25:0)))};
 let G=null,grid=[],floorC=[],texA=null,texB=null,groundCv=null,groundKey='';
@@ -1401,7 +1416,7 @@ function flood(r,c,t){
 function emptyCells(){const o=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c])o.push([r,c]);return o}
 const randMech=()=>rnd(HIDS.length);const randPro=()=>lrnd(PR.length);
 function randPiece(){
-  const lk=1+.1*tal('lucky'),w=[[1,rel('aimant')?125:60],[2,20+(rel('chance')?15:0)],[3,6],[4,1],[20,2.5*lk],[21,3*lk]];
+  const lk=1+.1*tal('lucky'),w=[[1,rel('aimant')?125:60],[2,20+(rel('chance')?15:0)+5*tal('rich')],[3,6+2*tal('rich')],[4,1],[20,2.5*lk*(1+.25*tal('drone'))],[21,3*lk*(1+.25*tal('crys'))]];
   const zen=G&&G.S&&G.S.zen,sv=G&&G.S&&G.S.surv;
   if(G&&!zen&&G.turn>=(sv?1:3)&&!(G.shield>0)&&grid.flat().filter(t=>t&&t.t===12).length<(sv?8:5)){const rt=((G.mode==='campaign'||G.mode==='rogue')?G.S.rate*2.4*(rel('tireur')?.7:1):sv?Math.min(.2+G.turn*.004,.6):Math.min(.08+G.turn*.0015,.3))*(1-.08*tal('prod'));const k=rt*100/5;for(let v=0;v<5;v++)w.push([30+v,k])}
   let tot=w.reduce((a,b)=>a+b[1],0),x=lr()*tot;
@@ -1430,7 +1445,7 @@ function resolve(r,c){
     if(sup&&rel('surcharge'))mult*=2;
     if(sup){grid[r][c].sup=1;addCoins(2*(n-3))}
     G.made[nx]=(G.made[nx]||0)+1;track('make',1,nx);if(sup)track('super');
-    const gain=Math.round((PTS[nx]||0)*mult*(rel('chaine')?chain+.5*(chain-1):chain)*(1+.05*tal('pts')+cardBonus()+(rel('grand')?.25:0)));G.score+=gain;if(G.boss)bossHit(gain);addCoins(Math.max(1,nx-1)*(n-2));
+    const gain=Math.round((PTS[nx]||0)*mult*(rel('chaine')?chain+.5*(chain-1):chain)*(1+.08*tal('combo')*Math.max(0,chain-1))*(1+.05*tal('pts')+cardBonus()+(rel('grand')?.25:0)));G.score+=gain;if(G.boss)bossHit(gain);addCoins(Math.max(1,nx-1)*(n-2)+tal('tip'));
     burst(r,c,12,['#ffd84a','#ff7ab8','#ffffff','#9be07a']);
     sfx.merge(chain+nx*.5);
     if(sup)toast('SUPER '+NAMES[nx].toUpperCase()+' ×'+mult+' ! +'+gain,1400);
@@ -1608,7 +1623,7 @@ function objDone(){
   if(G.mode!=='campaign')return false;
   const S=G.S;return !!S.make&&(G.made[S.make[0]]||0)>=S.make[1];
 }
-const limOf=()=>G.S.lim?G.S.lim+(G.limB||0):0;
+const limOf=()=>G.S.lim?G.S.lim+(G.limB||0)+2*tal('marathon'):0;
 function hasMove(){
   if(emptyCells().length)return true;
   return (G.cur===20||G.res===20)&&grid.flat().some(Boolean);
@@ -1658,7 +1673,7 @@ function startGame(mode,si,hero){
   const daily=mode==='daily',seed=daily?+todayKey().replace(/-/g,''):0;
   G={mode,si,S,hero:hero||(G&&G.hero)||'duke',pcd:2,freeze:0,shield:0,coins:0,armed:false,swapA:null,seed:Math.floor(Math.random()*999),score:0,shown:0,turn:0,busy:false,over:false,sel:null,cur:null,res:null,made:{},freed:0,ghosts:[],parts:[],flags:{},noTal:daily,lr:daily?mul32(seed):null,lm:daily?mul32(seed^0x9e3779b9):null};
   G.prevBest=save.best[bestKey()]||0;G.pcd=Math.max(0,2-tal('cd'));G.coins=4*tal('bank');G.shield=2*tal('shield');
-  if(mode==='rogue'){G.rg=RG_RUN;if(S.bossId){G.boss=makeBoss(S.bossId);toast('BOSS : '+G.boss.n,2000)}G.coins=RG_RUN.coins;G.limB=0;if(rel('recharge'))G.pcd=0;if(rel('givre'))G.freeze=3}
+  if(mode==='rogue'){G.rg=RG_RUN;if(S.bossId){G.boss=makeBoss(S.bossId);toast('BOSS : '+G.boss.n,2000)}G.coins=RG_RUN.coins;G.coins+=Math.floor(G.coins/8)*tal('interest');G.limB=0;if(tal('pw1'))G.pcd=0;if(rel('recharge'))G.pcd=0;if(rel('givre'))G.freeze=3}
   grid=[...Array(N)].map(()=>Array(N).fill(null));
   floorC=[...Array(N)].map(()=>Array(N).fill(false));
   buildFloors();
@@ -1692,7 +1707,7 @@ function bossDmg(d){const b=G.boss;if(!b||b.hp<=0||d<=0)return;let tot=d;
   if(d>0)b.hp=Math.max(0,b.hp-d);b.flash=12;b.fx.push({t:0,txt:'-'+tot});
   const bx=$('bossBox');bx.classList.remove('hit');void bx.offsetWidth;bx.classList.add('hit');
   if(b.phase===1&&b.hp>0&&b.hp<=b.max/2){b.phase=2;toast('PHASE 2 : '+b.s.toUpperCase()+' SE DÉCHAÎNE !',1800);say(b.s+" s'énerve ! Attention, soldat !")}}
-function bossHit(gain){const b=G.boss;if(!b)return;let d=Math.max(1,Math.round(gain/12));if(b.k==='ruche')d=Math.max(1,Math.round(d*.6));bossDmg(d)}
+function bossHit(gain){const b=G.boss;if(!b)return;let d=Math.max(1,Math.round(gain/12*(1+.12*tal('trapx'))));if(b.k==='ruche')d=Math.max(1,Math.round(d*.6));bossDmg(d)}
 function bossTrap(n){const b=G.boss;if(!b||b.hp<=0)return;b.lastTrap=G.turn;
   if(b.k==='surcharge')bossDmg(15*n);else if(b.k==='ruche')bossDmg(18*n);
   else{b.sh=Math.max(0,b.sh-20*n);b.flash=12;if(b.sh<=0)bossDmg(10*n);else toast('BOUCLIER ENTAMÉ',900)}
@@ -1807,7 +1822,7 @@ function rgMap(dg){RG_DG=dg||0;
 function rgSave(){save.rogue=save.rogue||{best:0,wins:0,runs:0,bestScore:0,run:null};return save.rogue}
 function newRogueRun(dg){
   const R=rgSave();R.runs++;dg=Math.min(dg||0,R.dg||0);
-  RG_RUN=R.run={dg,f:0,hearts:3,coins:6,relics:[],map:rgMap(dg),pick:[],score:0,kills:0,hero:save.hero||'duke',bonusLim:0,shop:null};
+  RG_RUN=R.run={dg,f:0,hearts:3+tal('heart'),coins:6,relics:[],map:rgMap(dg),pick:[],score:0,kills:0,hero:save.hero||'duke',bonusLim:0,shop:null};
   persist();buildRogueMap()}
 function openRogue(){
   const go=()=>{const R=rgSave();RG_RUN=R.run||null;show('rmap');buildRogueMap()};
@@ -1894,9 +1909,9 @@ function rgRest(){
   const r=RG_RUN;
   showModal(`<h2>ATELIER</h2><p style="text-align:center">Un abri tranquille. Une seule action.</p>
    <button class="rcard" style="--c:#ff7ab8" data-a="heal"${r.hearts>=5?' disabled':''}><span class="ic">💗</span><div><b>REPARER</b><span>+1 cœur (max 5).</span></div></button>
-   <button class="rcard" style="--c:#ffd84a" data-a="loot"><span class="ic">🪙</span><div><b>PILLER</b><span>+15 pièces.</span></div></button>
+   <button class="rcard" style="--c:#ffd84a" data-a="loot"><span class="ic">🪙</span><div><b>PILLER</b><span>+${15+5*tal('rest')} pièces.</span></div></button>
    <button class="rcard" style="--c:#56e0ff" data-a="fuel"><span class="ic">⏱️</span><div><b>FAIRE LE PLEIN</b><span>+6 tours au prochain combat.</span></div></button>`,a=>{
-    if(a==='heal')r.hearts=Math.min(5,r.hearts+1);else if(a==='loot')r.coins+=15;else r.bonusLim+=6;
+    if(a==='heal')r.hearts=Math.min(5,r.hearts+1);else if(a==='loot')r.coins+=15+5*tal('rest');else r.bonusLim+=6;
     rgAdvance()});
 }
 function rogueFinish(win){
@@ -1909,11 +1924,11 @@ function rogueFinish(win){
     let bonus=5+r.f*2+Math.max(0,limOf()-G.turn);if(r.relics.indexOf('recolte')>=0)bonus=Math.round(bonus*1.5);
     if(nd.t==='elite')bonus+=8;if(nd.t==='mini')bonus+=12;
     r.coins=G.coins+bonus;R.best=Math.max(R.best,r.f+1);
-    const fr=Math.floor(G.score/700)+(nd.t==='elite'?2:0);save.frag=(save.frag||0)+fr;
+    const fr=Math.round((Math.floor(G.score/700)+(nd.t==='elite'?2:0))*(1+.1*tal('xp')));save.frag=(save.frag||0)+fr;
     persist();
     setTimeout(()=>{
       if(nd.t==='boss'){
-        const wdg=r.dg||0;R.wins++;R.dg=Math.min(5,Math.max(R.dg||0,wdg+1));R.dgSel=R.dg;R.run=null;RG_RUN=null;save.frag=(save.frag||0)+20;save.crates=(save.crates||0)+2;track('win');persist();
+        const wdg=r.dg||0;R.wins++;R.dg=Math.min(5,Math.max(R.dg||0,wdg+1));R.dgSel=R.dg;R.run=null;RG_RUN=null;save.frag=(save.frag||0)+Math.round(20*(1+.1*tal('xp')));save.crates=(save.crates||0)+2+tal('crate');track('win');persist();
         showModal(`<h2>ERRET EST LIBRE !</h2><p style="text-align:center">Goryo le grenadier est tombé.<br>Score de la run : <span class="px" style="font-size:12px;color:#ffd84a">${r.score}</span><br>Cœurs restants : ${r.hearts}<br><span style="color:#7df0ff">+20 fragments · +2 colis</span>${wdg<5?`<br><span style="color:#ff7a8a">DANGER ${wdg+1} débloqué !</span>`:''}</p><div class="mrow">${wdg<5?`<button class="btn pk" data-a="next">RUN PLUS DURE · DANGER ${wdg+1}</button>`:''}<button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='next'){show('rmap');newRogueRun(wdg+1)}else toMenu()});return}
       rgPickRelic(nd,`+${bonus} pièces · ${fr?'+'+fr+' fragments · ':''}${Math.max(0,limOf()-G.turn)} tours d'avance`)},900);
   }else{
@@ -1921,7 +1936,7 @@ function rogueFinish(win){
     r.hearts--;r.coins=Math.max(0,G.coins);
     const why=(G.S.lim&&G.turn>=limOf())?'TEMPS ECOULE':'PLUS DE PLACE';
     if(r.hearts<=0){
-      const fr=Math.floor(r.score/700)+r.f*2;save.frag=(save.frag||0)+fr;R.run=null;RG_RUN=null;persist();
+      const fr=Math.round((Math.floor(r.score/700)+r.f*2)*(1+.1*tal('xp')));save.frag=(save.frag||0)+fr;R.run=null;RG_RUN=null;persist();
       setTimeout(()=>showModal(`<h2>FIN DE LA RUN</h2><p style="text-align:center">${why}<br>Étages libérés : <b>${r.f}</b>/${RGF}<br>Score : ${r.score} · Reliques : ${r.relics.map(i=>RLC[i].i).join(' ')||'aucune'}<br><span style="color:#7df0ff">+${fr} fragments</span></p><div class="mrow"><button class="btn pk" data-a="again">NOUVELLE RUN</button><button class="btn cy" data-a="menu">MENU</button></div>`,a=>{hideModal();if(a==='again'){RG_RUN=null;show('rmap');newRogueRun(r.dg||0)}else toMenu()}),900);
     }else{
       persist();
@@ -1988,7 +2003,7 @@ function drawHeroTo(cv,id,f=0,face=false){const g=cv.getContext('2d'),sc=spriteC
 function tickScore(){if(!G)return;if(G.shown<G.score){G.shown=Math.min(G.score,G.shown+Math.max(1,Math.ceil((G.score-G.shown)/8)))}$('hScore').textContent=G?G.shown:0}
 
 
-/* ---------- essai HD (v8.26) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
+/* ---------- essai HD (v8.27) : sprites et tuiles haute résolution, ?hd=0 pour revenir au pixel art ---------- */
 const HD={roads:'new',p:{},on:true,set:'mix',tiles:null,b:{},n:0,cache:new Map(),CELL:128};
 const HDNP=HD.set==='np';HD.dir=HDNP?'assets/np/':HD.set==='mix'?'assets/mix/':'assets/hd/';HD.G0=HDNP?14:34;HD.G1=HDNP?114:94;HD.T1=HDNP?14:28; // terrain NeoPixel par défaut ; ?set=ref pour le terrain de la planche
 (function(){if(!HD.on)return;const ld=(src,cb)=>{const im=new Image();im.onload=()=>{cb(im);HD.n++;groundKey='';HD.cache.clear();try{if(G)updateHud()}catch(e){}};im.src=src};
@@ -2788,13 +2803,13 @@ function buildModes(){
 }
 const talCost=t=>{const l=(save.tal||{})[t.id]||0;return l>=t.max?0:t.c[l]};
 function fragLabel(){const e=$('fragN');if(e)e.textContent=(save.frag||0)+' ✦';chips()}
-const TRICO={eco:'💰',bank:'🏦',shop:'🏷️',cd:'⚡',shield:'🛡️',prod:'👾',pts:'⭐',harv:'🔋',lucky:'🍀'},TBCOL=['#ffd84a','#ff7ab8','#7df0ff'];
+const TRICO={eco:'💰',bank:'🏦',shop:'🏷️',cd:'⚡',shield:'🛡️',prod:'👾',pts:'⭐',harv:'🔋',lucky:'🍀',tip:'🪙',interest:'📈',rest:'🔧',trapx:'💥',marathon:'⏳',heart:'❤️',combo:'🔗',rich:'🎁',ruinx:'🪦',pw1:'🚀',pwdbl:'🔁',drone:'🛸',crys:'💎',xp:'🎓',crate:'📦'},TBCOL=['#ffd84a','#ff7ab8','#7df0ff','#9dff7a'];
 let talSel=null;
 function buildTalents(){
   save.tal=save.tal||{};$('tfrag').innerHTML='Fragments : <b style="color:#7df0ff">'+(save.frag||0)+' ✦</b>';
   const box=$('tcards');box.innerHTML='';
   const tree=document.createElement('div');tree.className='ttree';
-  tree.innerHTML='<div class="troot"><img src="assets/brand/heart.png" alt=""></div><div class="trbar"><i></i><i></i><i></i></div>';
+  tree.innerHTML='<div class="troot"><img src="assets/brand/heart.png" alt=""></div><div class="trbar"><i></i><i></i><i></i><i></i></div>';
   const cols=document.createElement('div');cols.className='tcols';
   TBR.forEach((bn,bi)=>{
     const col=document.createElement('div');col.className='tcol';col.innerHTML='<div class="tbn px" style="color:'+TBCOL[bi]+'">'+bn+'</div>';
