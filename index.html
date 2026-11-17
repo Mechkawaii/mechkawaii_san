@@ -240,7 +240,7 @@ html.sa #game.on{padding-top:max(60px,env(safe-area-inset-top))!important}
     </div>
     <button class="btn cy sm" id="bHelp">COMMENT JOUER</button>
   </div>
-  <div class="foot">Version 8.31 · balise bien placée</div>
+  <div class="foot">Version 8.32 · jeu hors ligne</div>
 </main>
 
 <main id="select" class="screen">
@@ -2970,5 +2970,6 @@ window.__mk={mergeRuins,newTile,previewGroup,randPiece,usePower,pwBtn,pwValid,sp
   window.addEventListener('load',()=>{fix(document.body);document.fonts&&document.fonts.ready.then(()=>fix(document.body))});
 })();
 </script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
 </body>
 </html>
